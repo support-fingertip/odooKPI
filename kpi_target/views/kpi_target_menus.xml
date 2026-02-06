@@ -4,7 +4,6 @@
     <!-- Top-level menu -->
     <menuitem id="menu_kpi_tracker_root"
               name="KPI Tracker"
-              web_icon="kpi_target,static/description/icon.png"
               sequence="10"/>
 
     <!-- Dashboard menu -->

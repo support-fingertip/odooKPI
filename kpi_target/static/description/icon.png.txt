@@ -1,0 +1,3 @@
+# This is a placeholder for the module icon
+# In a real deployment, replace this with a PNG image file named icon.png
+# Recommended size: 256x256 pixels
