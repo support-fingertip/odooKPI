@@ -1,0 +1,64 @@
+.kpi-dashboard-container {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.kpi-dashboard-table {
+    font-size: 0.9rem;
+    
+    thead th {
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+    
+    tbody td {
+        vertical-align: middle;
+    }
+}
+
+.target-cell {
+    cursor: pointer;
+    transition: background-color 0.2s;
+    
+    &:hover {
+        background-color: #d0e7ff !important;
+    }
+}
+
+.bg-light-blue {
+    background-color: #e7f3ff;
+}
+
+.bg-light-green {
+    background-color: #e7ffe7;
+}
+
+.dashboard-table-container {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    
+    &::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+    }
+    
+    &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+        
+        &:hover {
+            background: #555;
+        }
+    }
+}
+
+.progress {
+    border-radius: 4px;
+}

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- KPI Target Period Views -->
+    <record id="view_kpi_target_period_tree" model="ir.ui.view">
+        <field name="name">kpi.target.period.tree</field>
+        <field name="model">kpi.target.period</field>
+        <field name="arch" type="xml">
+            <tree string="Target Periods" editable="bottom">
+                <field name="name"/>
+                <field name="period_type"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="target_count"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kpi_target_period_form" model="ir.ui.view">
+        <field name="name">kpi.target.period.form</field>
+        <field name="model">kpi.target.period</field>
+        <field name="arch" type="xml">
+            <form string="Target Period">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_targets" type="object" class="oe_stat_button" icon="fa-bullseye">
+                            <field name="target_count" widget="statinfo" string="Targets"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="period_type"/>
+                        </group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_kpi_target_period" model="ir.actions.act_window">
+        <field name="name">Target Periods</field>
+        <field name="res_model">kpi.target.period</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- KPI Target Views -->
+    <record id="view_kpi_target_tree" model="ir.ui.view">
+        <field name="name">kpi.target.tree</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <tree string="KPI Targets">
+                <field name="employee_id"/>
+                <field name="period_id"/>
+                <field name="period_type"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'confirmed'" decoration-muted="state == 'done'"/>
+                
+                <!-- Target columns -->
+                <field name="target_sales" string="T: Sales"/>
+                <field name="target_visits" string="T: Visits"/>
+                <field name="target_new_dealers" string="T: New Dealers"/>
+                <field name="target_payment_collected" string="T: Payment"/>
+                <field name="target_complaints_solved" string="T: Complaints"/>
+                
+                <!-- Actual columns with decorations -->
+                <field name="actual_sales" string="A: Sales" decoration-success="actual_sales >= target_sales" decoration-danger="actual_sales &lt; target_sales"/>
+                <field name="actual_visits" string="A: Visits" decoration-success="actual_visits >= target_visits" decoration-danger="actual_visits &lt; target_visits"/>
+                <field name="actual_new_dealers" string="A: New Dealers" decoration-success="actual_new_dealers >= target_new_dealers" decoration-danger="actual_new_dealers &lt; target_new_dealers"/>
+                <field name="actual_payment_collected" string="A: Payment" decoration-success="actual_payment_collected >= target_payment_collected" decoration-danger="actual_payment_collected &lt; target_payment_collected"/>
+                <field name="actual_complaints_solved" string="A: Complaints" decoration-success="actual_complaints_solved >= target_complaints_solved" decoration-danger="actual_complaints_solved &lt; target_complaints_solved"/>
+                
+                <!-- Overall achievement -->
+                <field name="overall_achievement" string="Overall %" widget="progressbar"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kpi_target_form" model="ir.ui.view">
+        <field name="name">kpi.target.form</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <form string="KPI Target">
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_done" string="Mark Done" type="object" class="oe_highlight" invisible="state != 'confirmed'"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group name="assignment">
+                            <field name="employee_id"/>
+                            <field name="period_id"/>
+                            <field name="period_type"/>
+                        </group>
+                        <group name="overall_achievement">
+                            <field name="overall_achievement" widget="progressbar"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Targets &amp; Actuals" name="targets_actuals">
+                            <group>
+                                <group string="Targets">
+                                    <field name="target_sales"/>
+                                    <field name="target_visits"/>
+                                    <field name="target_new_dealers"/>
+                                    <field name="target_payment_collected"/>
+                                    <field name="target_complaints_solved"/>
+                                </group>
+                                <group string="Actuals (Auto-computed)">
+                                    <field name="actual_sales"/>
+                                    <field name="actual_visits"/>
+                                    <field name="actual_new_dealers"/>
+                                    <field name="actual_payment_collected"/>
+                                    <field name="actual_complaints_solved"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Achievement %" name="achievements">
+                            <group>
+                                <field name="achievement_sales" widget="progressbar"/>
+                                <field name="achievement_visits" widget="progressbar"/>
+                                <field name="achievement_new_dealers" widget="progressbar"/>
+                                <field name="achievement_payment_collected" widget="progressbar"/>
+                                <field name="achievement_complaints_solved" widget="progressbar"/>
+                            </group>
+                        </page>
+                        <page string="Actual Entries" name="actual_entries">
+                            <field name="actual_ids">
+                                <tree editable="bottom">
+                                    <field name="date"/>
+                                    <field name="kpi_type"/>
+                                    <field name="value"/>
+                                    <field name="notes"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Target Items" name="target_items">
+                            <field name="item_ids">
+                                <tree editable="bottom">
+                                    <field name="kpi_type"/>
+                                    <field name="target_value"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_kpi_target_search" model="ir.ui.view">
+        <field name="name">kpi.target.search</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <search string="KPI Targets">
+                <field name="employee_id"/>
+                <field name="period_id"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Confirmed" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Done" name="done" domain="[('state', '=', 'done')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Employee" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Period" name="group_period" context="{'group_by': 'period_id'}"/>
+                    <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_kpi_target" model="ir.actions.act_window">
+        <field name="name">KPI Targets</field>
+        <field name="res_model">kpi.target</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- KPI Actual Views -->
+    <record id="view_kpi_actual_tree" model="ir.ui.view">
+        <field name="name">kpi.actual.tree</field>
+        <field name="model">kpi.actual</field>
+        <field name="arch" type="xml">
+            <tree string="KPI Actuals" editable="bottom">
+                <field name="date"/>
+                <field name="employee_id"/>
+                <field name="target_id"/>
+                <field name="kpi_type"/>
+                <field name="value"/>
+                <field name="notes"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_kpi_actual" model="ir.actions.act_window">
+        <field name="name">KPI Actuals</field>
+        <field name="res_model">kpi.actual</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+    <!-- OWL Dashboard Client Action -->
+    <record id="action_kpi_dashboard" model="ir.actions.client">
+        <field name="name">KPI Dashboard</field>
+        <field name="tag">kpi_target_dashboard</field>
+    </record>
+
+</odoo>
