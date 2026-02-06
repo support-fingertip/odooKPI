@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Top-level menu -->
+    <menuitem id="menu_kpi_tracker_root"
+              name="KPI Tracker"
+              web_icon="kpi_target,static/description/icon.png"
+              sequence="10"/>
+
+    <!-- Dashboard menu -->
+    <menuitem id="menu_kpi_dashboard"
+              name="Dashboard"
+              parent="menu_kpi_tracker_root"
+              action="action_kpi_dashboard"
+              sequence="1"/>
+
+    <!-- Targets menu -->
+    <menuitem id="menu_kpi_targets"
+              name="Targets"
+              parent="menu_kpi_tracker_root"
+              action="action_kpi_target"
+              sequence="2"/>
+
+    <!-- Actuals menu -->
+    <menuitem id="menu_kpi_actuals"
+              name="Actuals"
+              parent="menu_kpi_tracker_root"
+              action="action_kpi_actual"
+              sequence="3"/>
+
+    <!-- Configuration menu -->
+    <menuitem id="menu_kpi_configuration"
+              name="Configuration"
+              parent="menu_kpi_tracker_root"
+              sequence="10"/>
+
+    <!-- Target Periods menu under Configuration -->
+    <menuitem id="menu_kpi_target_periods"
+              name="Target Periods"
+              parent="menu_kpi_configuration"
+              action="action_kpi_target_period"
+              sequence="1"/>
+
+</odoo>

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="kpi_target.KpiDashboard">
+    <div class="kpi-dashboard-container p-3">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>KPI Target Dashboard</h2>
+            <div class="d-flex gap-2">
+                <select class="form-select" t-model="state.selectedPeriodId" t-on-change="onPeriodChange">
+                    <option value="">Select Period</option>
+                    <t t-foreach="state.periods" t-as="period" t-key="period.id">
+                        <option t-att-value="period.id" t-att-selected="period.id === state.selectedPeriodId">
+                            <t t-esc="period.name"/>
+                        </option>
+                    </t>
+                </select>
+                <button class="btn btn-primary" t-on-click="() => this.loadData()">
+                    <i class="fa fa-refresh"/> Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div t-if="state.loading" class="text-center py-5">
+            <i class="fa fa-spinner fa-spin fa-3x text-primary"/>
+            <p class="mt-3">Loading dashboard data...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div t-elif="state.rows.length === 0" class="text-center py-5">
+            <i class="fa fa-inbox fa-3x text-muted"/>
+            <p class="mt-3 text-muted">No KPI targets found for the selected period.</p>
+        </div>
+
+        <!-- Main Table -->
+        <div t-else="" class="table-responsive dashboard-table-container">
+            <table class="table table-bordered table-hover kpi-dashboard-table">
+                <thead>
+                    <!-- First header row: group headers -->
+                    <tr class="table-primary">
+                        <th rowspan="2" class="text-center">#</th>
+                        <th rowspan="2">Employee</th>
+                        <th rowspan="2">Period</th>
+                        <th rowspan="2">Status</th>
+                        <th t-att-colspan="state.kpiTypes.length" class="text-center">
+                            Targets
+                            <br/>
+                            <small class="text-muted">click to edit</small>
+                        </th>
+                        <th t-att-colspan="state.kpiTypes.length" class="text-center">
+                            Actuals
+                            <br/>
+                            <small class="text-muted">auto-computed</small>
+                        </th>
+                        <th rowspan="2" class="text-center">Overall</th>
+                        <th rowspan="2" class="text-center">Actions</th>
+                    </tr>
+                    <!-- Second header row: individual KPI headers -->
+                    <tr class="table-primary">
+                        <t t-foreach="state.kpiTypes" t-as="kpi" t-key="'target-' + kpi.key">
+                            <th class="text-center"><t t-esc="kpi.label"/></th>
+                        </t>
+                        <t t-foreach="state.kpiTypes" t-as="kpi" t-key="'actual-' + kpi.key">
+                            <th class="text-center"><t t-esc="kpi.label"/></th>
+                        </t>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="state.rows" t-as="row" t-key="row.id">
+                        <tr>
+                            <td class="text-center"><t t-esc="row_index + 1"/></td>
+                            <td><t t-esc="row.employee_name"/></td>
+                            <td><t t-esc="row.period_name"/></td>
+                            <td>
+                                <span t-att-class="getStateBadgeClass(row.state)">
+                                    <t t-esc="row.state"/>
+                                </span>
+                            </td>
+                            
+                            <!-- Target cells (editable) -->
+                            <t t-foreach="state.kpiTypes" t-as="kpi" t-key="'target-cell-' + row.id + '-' + kpi.key">
+                                <td class="target-cell bg-light-blue" t-on-click="() => this.onCellClick(row.id, kpi.key)">
+                                    <t t-if="state.editingCell === row.id + '-' + kpi.key">
+                                        <input 
+                                            type="number" 
+                                            class="form-control form-control-sm"
+                                            t-model="state.editValue"
+                                            t-on-blur="onInputBlur"
+                                            t-on-keydown="onInputKeydown"
+                                            t-ref="editInput"
+                                        />
+                                    </t>
+                                    <t t-else="">
+                                        <span class="d-flex align-items-center justify-content-between">
+                                            <t t-esc="formatNumber(row.targets[kpi.key])"/>
+                                            <i class="fa fa-pencil text-muted small"/>
+                                        </span>
+                                    </t>
+                                </td>
+                            </t>
+                            
+                            <!-- Actual cells (readonly) -->
+                            <t t-foreach="state.kpiTypes" t-as="kpi" t-key="'actual-cell-' + row.id + '-' + kpi.key">
+                                <td class="bg-light-green">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span><t t-esc="formatNumber(row.actuals[kpi.key])"/></span>
+                                        <span t-att-class="getAchievementClass(row.achievements[kpi.key])">
+                                            <small>(<t t-esc="formatPct(row.achievements[kpi.key])"/>)</small>
+                                        </span>
+                                    </div>
+                                </td>
+                            </t>
+                            
+                            <!-- Overall achievement -->
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span t-att-class="getAchievementClass(row.achievements.overall)" class="mb-1">
+                                        <t t-esc="formatPct(row.achievements.overall)"/>
+                                    </span>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar" 
+                                             t-att-class="'bg-' + getProgressVariant(row.achievements.overall)"
+                                             role="progressbar" 
+                                             t-att-style="'width: ' + Math.min(row.achievements.overall, 100) + '%'"
+                                             t-att-aria-valuenow="row.achievements.overall"
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Actions -->
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary" t-on-click="() => this.openTargetForm(row.id)">
+                                    <i class="fa fa-external-link"/> Open
+                                </button>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Legend -->
+        <div t-if="state.rows.length > 0" class="mt-3 p-2 bg-light border rounded">
+            <small class="text-muted">
+                <strong>Legend:</strong>
+                <span class="ms-2 badge bg-light text-dark border">Blue cells: Click to edit targets</span>
+                <span class="ms-2 badge bg-light text-dark border">Green cells: Auto-computed actuals</span>
+                <span class="ms-2 text-success">Green: ≥100%</span>
+                <span class="ms-2 text-warning">Yellow: ≥75%</span>
+                <span class="ms-2 text-danger">Red: &lt;75%</span>
+            </small>
+        </div>
+    </div>
+</t>
+
+</templates>
