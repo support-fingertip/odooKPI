@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_kpi_tracker_root"
+              name="KPI Tracker"
+              sequence="10"/>
+
+    <menuitem id="menu_kpi_dashboard"
+              name="Dashboard"
+              parent="menu_kpi_tracker_root"
+              action="action_kpi_dashboard"
+              sequence="1"/>
+
+    
+    <menuitem id="menu_kpi_manager_targets"
+              name="Team Targets"
+              parent="menu_kpi_tracker_root"
+              action="action_kpi_manager_target"
+              sequence="2"/>
+
+   
+    <menuitem id="menu_kpi_targets"
+              name="Individual Targets"
+              parent="menu_kpi_tracker_root"
+              action="action_kpi_target"
+              sequence="3"/>
+
+   
+    <menuitem id="menu_kpi_actuals"
+              name="Actuals"
+              parent="menu_kpi_tracker_root"
+              action="action_kpi_actual"
+              sequence="4"/>
+
+    
+    <menuitem id="menu_kpi_configuration"
+              name="Configuration"
+              parent="menu_kpi_tracker_root"
+              sequence="10"/>
+
+    <menuitem id="menu_kpi_target_periods"
+              name="Target Periods"
+              parent="menu_kpi_configuration"
+              action="action_kpi_target_period"
+              sequence="1"/>
+
+</odoo>

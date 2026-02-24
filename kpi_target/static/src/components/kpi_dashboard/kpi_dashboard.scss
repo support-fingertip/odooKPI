@@ -1,0 +1,361 @@
+
+.kpi-dashboard {
+    padding: 20px;
+    background: #f8f9fa;
+    /* Use flex:1 instead of height:100% for reliable Odoo 18 height chain */
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+
+    .kpi-dashboard-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding: 16px 20px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .kpi-title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    .kpi-header-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .kpi-period-selector {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        .kpi-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6c757d;
+            white-space: nowrap;
+        }
+
+        select {
+            min-width: 150px;
+        }
+    }
+
+    .kpi-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 60px;
+        font-size: 16px;
+        color: #6c757d;
+    }
+
+    .kpi-summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .kpi-card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        border-top: 4px solid transparent;
+
+        &.kpi-card-blue  { border-top-color: #0d6efd; }
+        &.kpi-card-green { border-top-color: #198754; }
+        &.kpi-card-orange{ border-top-color: #fd7e14; }
+        &.kpi-card-purple{ border-top-color: #6f42c1; }
+    }
+
+    .kpi-card-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2c3e50;
+        line-height: 1.2;
+    }
+
+    .kpi-card-label {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 4px;
+        font-weight: 500;
+    }
+    .kpi-tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 16px;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .kpi-tab {
+        padding: 10px 20px;
+        border: none;
+        background: transparent;
+        color: #6c757d;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        border-radius: 6px 6px 0 0;
+
+        &:hover {
+            color: #0d6efd;
+            background: rgba(13,110,253,0.05);
+        }
+
+        &.kpi-tab-active {
+            color: #0d6efd;
+            border-bottom-color: #0d6efd;
+            background: rgba(13,110,253,0.05);
+        }
+    }
+
+    .kpi-tab-count {
+        display: inline-block;
+        background: #e9ecef;
+        color: #495057;
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: 20px;
+        padding: 1px 7px;
+        margin-left: 6px;
+    }
+
+    .kpi-tab-active .kpi-tab-count {
+        background: #0d6efd;
+        color: #fff;
+    }
+
+    .kpi-empty {
+        text-align: center;
+        padding: 60px 20px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .kpi-table-wrapper {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        overflow-x: auto;
+        overflow-y: visible;
+
+        &::-webkit-scrollbar {
+            height: 6px;
+        }
+        &::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        &::-webkit-scrollbar-thumb {
+            background: #adb5bd;
+            border-radius: 3px;
+        }
+    }
+
+    .kpi-table-hint {
+        padding: 8px 16px;
+        font-size: 12px;
+        color: #6c757d;
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .kpi-legend-dot {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        vertical-align: middle;
+
+        &.kpi-ach-excellent-bg { background: #d1e7dd; border: 2px solid #198754; }
+        &.kpi-ach-good-bg      { background: #fff3cd; border: 2px solid #ffc107; }
+        &.kpi-ach-low-bg       { background: #f8d7da; border: 2px solid #dc3545; }
+    }
+
+    .kpi-table {
+        margin: 0;
+        font-size: 13px;
+        width: 100%;
+
+        th, td {
+            vertical-align: middle;
+            padding: 8px 10px;
+            white-space: nowrap;
+        }
+    }
+
+    .kpi-thead-top {
+        background: #2c3e50;
+        color: #fff;
+
+        th { border-color: rgba(255,255,255,0.2) !important; }
+    }
+
+    .kpi-thead-sub {
+        background: #3d5166;
+        color: #e9ecef;
+        font-size: 11px;
+
+        th { border-color: rgba(255,255,255,0.15) !important; }
+    }
+
+    .kpi-th-fixed {
+        background: #2c3e50;
+        min-width: 40px;
+    }
+
+    .kpi-th-target {
+        background: #1a4a7a !important;
+        color: #cfe2ff !important;
+    }
+
+    .kpi-th-actual {
+        background: #1a5c3a !important;
+        color: #d1e7dd !important;
+    }
+
+    .kpi-row {
+        &:hover { background: rgba(0,0,0,0.02); }
+        &.kpi-ach-excellent { background: rgba(25, 135, 84, 0.05); }
+        &.kpi-ach-good      { background: rgba(255, 193, 7, 0.06); }
+        &.kpi-ach-average   { background: rgba(253, 126, 20, 0.05); }
+        &.kpi-ach-low       { background: rgba(220, 53, 69, 0.04); }
+    }
+
+    .kpi-ach-excellent { color: #198754 !important; font-weight: 700; }
+    .kpi-ach-good      { color: #856404 !important; font-weight: 600; }
+    .kpi-ach-average   { color: #b45309 !important; font-weight: 600; }
+    .kpi-ach-low       { color: #dc3545 !important; font-weight: 600; }
+    .kpi-target-cell {
+        background: #eef4ff;
+        cursor: pointer;
+        position: relative;
+
+        &:hover {
+            background: #dbeafe;
+
+            .kpi-edit-icon { opacity: 1; }
+        }
+    }
+
+    .kpi-target-value {
+        font-weight: 500;
+        color: #0d6efd;
+    }
+
+    .kpi-edit-icon {
+        font-size: 10px;
+        color: #6c757d;
+        margin-left: 4px;
+        opacity: 0;
+    }
+
+    .kpi-edit-input {
+        min-width: 70px;
+        max-width: 100px;
+        font-size: 12px;
+        padding: 3px 6px;
+    }
+
+    .kpi-actual-cell {
+        background: #f0fff4;
+    }
+
+    .kpi-actual-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 4px;
+    }
+
+    .kpi-actual-value {
+        font-weight: 500;
+        color: #2c3e50;
+    }
+
+    .kpi-pct {
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .kpi-overall-cell {
+        min-width: 130px;
+    }
+
+    .kpi-progress-bar-wrapper {
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        min-width: 60px;
+    }
+
+    .kpi-progress-bar {
+        height: 100%;
+        border-radius: 4px;
+        min-width: 2px;
+    }
+
+    .kpi-overall-pct {
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+        min-width: 42px;
+        text-align: right;
+    }
+
+    .kpi-employee-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .kpi-employee-name {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .kpi-dept-badge {
+        font-size: 11px;
+        color: #6c757d;
+        background: #f1f3f5;
+        padding: 1px 6px;
+        border-radius: 10px;
+        display: inline-block;
+        width: fit-content;
+    }
+
+    .kpi-team-badge {
+        font-size: 10px;
+        color: #0d6efd;
+        background: #e8f0fe;
+        padding: 1px 6px;
+        border-radius: 10px;
+        display: inline-block;
+        width: fit-content;
+    }
+}

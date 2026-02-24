@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="kpi_target.KpiDashboard">
+    <div class="kpi-dashboard" style="display: flex; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; box-sizing: border-box;">
+
+
+        <div class="kpi-dashboard-header">
+            <div class="kpi-header-left">
+                <h2 class="kpi-title">KPI Target Dashboard</h2>
+            </div>
+            <div class="kpi-header-right">
+                <div class="kpi-period-selector">
+                    <label class="kpi-label">Period:</label>
+                    <select class="form-select form-select-sm"
+                            t-on-change="onPeriodChange">
+                        <option value="" t-att-selected="state.selectedPeriodId === null">All Periods</option>
+                        <t t-foreach="state.periods" t-as="period" t-key="period.id">
+                            <option t-att-value="period.id"
+                                    t-att-selected="period.id === state.selectedPeriodId">
+                                <t t-esc="period.name"/>
+                            </option>
+                        </t>
+                    </select>
+                </div>
+                
+                <button class="btn btn-sm btn-outline-secondary kpi-refresh-btn"
+                        t-on-click="() => this.loadData()">
+                    <i class="fa fa-refresh"/>
+                    Refresh
+                </button>
+                <button class="btn btn-sm btn-primary"
+                        t-on-click="() => this.openCreateIndividualTarget()">
+                    <i class="fa fa-plus"/> Individual Target
+                </button>
+                <button class="btn btn-sm btn-success"
+                        t-on-click="() => this.openCreateTeamTarget()">
+                    <i class="fa fa-plus"/> Team Target
+                </button>
+            </div>
+        </div>
+
+        <div t-if="state.loading" class="kpi-loading">
+            <i class="fa fa-spinner fa-spin fa-2x text-primary"/>
+            <span class="ms-2">Loading...</span>
+        </div>
+
+        <div t-else="">
+
+           
+            <div class="kpi-summary-cards">
+                <div class="kpi-card kpi-card-blue">
+                    <div class="kpi-card-value">
+                        <t t-esc="state.summary.totalIndividual"/>
+                    </div>
+                    <div class="kpi-card-label">Individual Targets</div>
+                </div>
+                <div class="kpi-card kpi-card-green">
+                    <div class="kpi-card-value">
+                        <t t-esc="state.summary.teamCount"/>
+                    </div>
+                    <div class="kpi-card-label">Team Targets</div>
+                </div>
+                <div class="kpi-card kpi-card-orange">
+                    <div class="kpi-card-value">
+                        <t t-esc="state.summary.avgAchievement"/>%
+                    </div>
+                    <div class="kpi-card-label">Avg Achievement</div>
+                </div>
+                <div class="kpi-card kpi-card-purple">
+                    <div class="kpi-card-value">
+                        <t t-esc="state.summary.achievedCount"/>
+                        /
+                        <t t-esc="state.summary.totalIndividual"/>
+                    </div>
+                    <div class="kpi-card-label">Targets Achieved (100%+)</div>
+                </div>
+            </div>
+
+            <div class="kpi-tabs">
+                <button t-att-class="'kpi-tab' + (state.activeTab === 'individual' ? ' kpi-tab-active' : '')"
+                        t-on-click="() => this.setTab('individual')">
+                    <i class="fa fa-user me-1"/>
+                    Individual Targets
+                    <span class="kpi-tab-count"><t t-esc="state.rows.length"/></span>
+                </button>
+                <button t-att-class="'kpi-tab' + (state.activeTab === 'team' ? ' kpi-tab-active' : '')"
+                        t-on-click="() => this.setTab('team')">
+                    <i class="fa fa-users me-1"/>
+                    Team Targets
+                    <span class="kpi-tab-count"><t t-esc="state.teamRows.length"/></span>
+                </button>
+            </div>
+
+            
+            <div t-if="state.activeTab === 'individual'">
+
+                <div t-if="state.rows.length === 0" class="kpi-empty">
+                    <i class="fa fa-user-times fa-3x text-muted"/>
+                    <p class="mt-3 text-muted">No individual targets found for the selected period.</p>
+                    <button class="btn btn-primary mt-2"
+                            t-on-click="() => this.openCreateIndividualTarget()">
+                        <i class="fa fa-plus"/> Create Individual Target
+                    </button>
+                </div>
+
+                <div t-else="" class="kpi-table-wrapper">
+                    <div class="kpi-table-hint">
+                        <i class="fa fa-pencil text-primary"/> Click on any target cell to edit
+                        <span class="ms-3 kpi-legend-dot kpi-ach-excellent-bg"/> 100%+ Achieved
+                        <span class="ms-2 kpi-legend-dot kpi-ach-good-bg"/> 75–99%
+                        <span class="ms-2 kpi-legend-dot kpi-ach-low-bg"/> Below 75%
+                    </div>
+                    <table class="table table-bordered table-hover kpi-table">
+                        <thead>
+                            <tr class="kpi-thead-top">
+                                <th rowspan="2" class="kpi-th-fixed">#</th>
+                                <th rowspan="2" class="kpi-th-fixed">Employee</th>
+                                <th rowspan="2" class="kpi-th-fixed" style="min-width:80px;">Status</th>
+                                <th t-att-colspan="state.kpiTypes.length" class="text-center kpi-th-target">
+                                    Target
+                                    <small class="d-block text-muted" style="font-weight:400;">click to edit</small>
+                                </th>
+                                <th t-att-colspan="state.kpiTypes.length" class="text-center kpi-th-actual">
+                                    Actual
+                                    <small class="d-block text-muted" style="font-weight:400;">auto-computed</small>
+                                </th>
+                                <th rowspan="2" class="text-center" style="min-width:130px;">Overall</th>
+                                <th rowspan="2" class="text-center">Action</th>
+                            </tr>
+                            <tr class="kpi-thead-sub">
+                                <t t-foreach="state.kpiTypes" t-as="kpi" t-key="'th-t-' + kpi.key">
+                                    <th class="kpi-th-target text-center">
+                                        <t t-esc="kpi.label"/>
+                                    </th>
+                                </t>
+                                <t t-foreach="state.kpiTypes" t-as="kpi" t-key="'th-a-' + kpi.key">
+                                    <th class="kpi-th-actual text-center">
+                                        <t t-esc="kpi.label"/>
+                                    </th>
+                                </t>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.rows" t-as="row" t-key="row.id">
+                                <tr t-att-class="'kpi-row ' + getAchievementClass(row.achievements.overall)">
+                                    <td class="text-center text-muted" style="font-size:12px;">
+                                        <t t-esc="row_index + 1"/>
+                                    </td>
+                                    <td>
+                                        <div class="kpi-employee-cell">
+                                            <span class="kpi-employee-name">
+                                                <t t-esc="row.employee_name"/>
+                                            </span>
+                                            <span t-if="row.department" class="kpi-dept-badge">
+                                                <t t-esc="row.department"/>
+                                            </span>
+                                            <span t-if="row.is_team_member" class="kpi-team-badge">
+                                                <i class="fa fa-users"/> Team
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span t-att-class="getStateBadgeClass(row.state)">
+                                            <t t-esc="row.state"/>
+                                        </span>
+                                    </td>
+
+                                    <t t-foreach="state.kpiTypes" t-as="kpi" t-key="'tc-' + row.id + kpi.key">
+                                        <td class="kpi-target-cell"
+                                            t-on-click="() => this.onCellClick(row.id, kpi.key)">
+                                            <t t-if="isEditing(row.id, kpi.key)">
+                                                <input type="number"
+                                                       class="form-control form-control-sm kpi-edit-input"
+                                                       t-model="state.editValue"
+                                                       t-on-blur="onInputBlur"
+                                                       t-on-keydown="onInputKeydown"
+                                                       t-ref="editInput"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="kpi-target-value">
+                                                    <t t-esc="formatNumber(row.targets[kpi.key])"/>
+                                                </span>
+                                                <i class="fa fa-pencil kpi-edit-icon"/>
+                                            </t>
+                                        </td>
+                                    </t>
+
+                                    <t t-foreach="state.kpiTypes" t-as="kpi" t-key="'ac-' + row.id + kpi.key">
+                                        <td class="kpi-actual-cell">
+                                            <div class="kpi-actual-content">
+                                                <span class="kpi-actual-value">
+                                                    <t t-esc="formatNumber(row.actuals[kpi.key])"/>
+                                                </span>
+                                                <span t-att-class="'kpi-pct ' + getAchievementClass(row.achievements[kpi.key])">
+                                                    (<t t-esc="formatPct(row.achievements[kpi.key])"/>)
+                                                </span>
+                                            </div>
+                                        </td>
+                                    </t>
+
+                                    <td class="kpi-overall-cell">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="kpi-progress-bar-wrapper flex-grow-1">
+                                                <div class="kpi-progress-bar"
+                                                     t-att-style="getProgressStyle(row.achievements.overall)">
+                                                </div>
+                                            </div>
+                                            <span t-att-class="'kpi-overall-pct ' + getAchievementClass(row.achievements.overall)">
+                                                <t t-esc="formatPct(row.achievements.overall)"/>
+                                            </span>
+                                        </div>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                t-on-click="() => this.openTargetForm(row.id)">
+                                            <i class="fa fa-external-link"/> Open
+                                        </button>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div t-if="state.activeTab === 'team'">
+
+                <div t-if="state.teamRows.length === 0" class="kpi-empty">
+                    <i class="fa fa-users fa-3x text-muted"/>
+                    <p class="mt-3 text-muted">No team targets found for the selected period.</p>
+                    <button class="btn btn-success mt-2"
+                            t-on-click="() => this.openCreateTeamTarget()">
+                        <i class="fa fa-plus"/> Create Team Target
+                    </button>
+                </div>
+
+                <div t-else="" class="kpi-table-wrapper">
+                    <table class="table table-bordered table-hover kpi-table">
+                        <thead>
+                            <tr class="kpi-thead-top">
+                                <th>#</th>
+                                <th>Manager / Executive</th>
+                                <th>Period</th>
+                                <th>Mode</th>
+                                <th class="text-center">Members</th>
+                                <th class="text-center">Status</th>
+                                <th t-att-colspan="state.kpiTypes.length" class="text-center kpi-th-target">
+                                    Total Targets
+                                </th>
+                                <th t-att-colspan="state.kpiTypes.length" class="text-center kpi-th-actual">
+                                    Team Actuals
+                                </th>
+                                <th class="text-center" style="min-width:130px;">Team Achievement</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                            <tr class="kpi-thead-sub">
+                                <th colspan="6"></th>
+                                <t t-foreach="state.kpiTypes" t-as="kpi" t-key="'tth-t-' + kpi.key">
+                                    <th class="kpi-th-target text-center"><t t-esc="kpi.label"/></th>
+                                </t>
+                                <t t-foreach="state.kpiTypes" t-as="kpi" t-key="'tth-a-' + kpi.key">
+                                    <th class="kpi-th-actual text-center"><t t-esc="kpi.label"/></th>
+                                </t>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.teamRows" t-as="trow" t-key="trow.id">
+                                <tr class="kpi-row">
+                                    <td class="text-center text-muted" style="font-size:12px;">
+                                        <t t-esc="trow_index + 1"/>
+                                    </td>
+                                    <td>
+                                        <div class="kpi-employee-cell">
+                                            <span class="kpi-employee-name">
+                                                <t t-esc="trow.manager_name"/>
+                                            </span>
+                                            <span t-if="trow.department" class="kpi-dept-badge">
+                                                <t t-esc="trow.department"/>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td><t t-esc="trow.period_name"/></td>
+                                    <td>
+                                        <span t-att-class="getModeBadgeClass(trow.assignment_mode)">
+                                            <t t-if="trow.assignment_mode === 'distribute'">Distribute</t>
+                                            <t t-else="">Individual</t>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border">
+                                            <t t-esc="trow.member_count"/> members
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span t-att-class="getStateBadgeClass(trow.state)">
+                                            <t t-esc="trow.state"/>
+                                        </span>
+                                    </td>
+                                    <t t-foreach="state.kpiTypes" t-as="kpi" t-key="'ttc-' + trow.id + kpi.key">
+                                        <td class="kpi-target-cell text-center">
+                                            <t t-esc="formatNumber(trow.total_targets[kpi.key])"/>
+                                        </td>
+                                    </t>
+                                    <t t-foreach="state.kpiTypes" t-as="kpi" t-key="'tac-' + trow.id + kpi.key">
+                                        <td class="kpi-actual-cell text-center">
+                                            <t t-esc="formatNumber(trow.team_actuals[kpi.key])"/>
+                                        </td>
+                                    </t>
+                                    <td class="kpi-overall-cell">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="kpi-progress-bar-wrapper flex-grow-1">
+                                                <div class="kpi-progress-bar"
+                                                     t-att-style="getProgressStyle(trow.team_achievement)">
+                                                </div>
+                                            </div>
+                                            <span t-att-class="'kpi-overall-pct ' + getAchievementClass(trow.team_achievement)">
+                                                <t t-esc="formatPct(trow.team_achievement)"/>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-success"
+                                                t-on-click="() => this.openTeamTargetForm(trow.id)">
+                                            <i class="fa fa-external-link"/> Open
+                                        </button>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</t>
+
+</templates>

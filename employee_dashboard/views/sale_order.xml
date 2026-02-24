@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Add Visit field to Sale Order Form -->
+    <record id="view_order_form_visit_inherit" model="ir.ui.view">
+        <field name="name">sale.order.form.visit.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="visit_id" options="{'no_create': True}"
+                 readonly="state not in ['draft']"
+                 />
+                <field name="beat_id" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add Visit field to Sale Order list -->
+    <record id="view_order_list_visit_inherit" model="ir.ui.view">
+        <field name="name">sale.order.list.visit.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="visit_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

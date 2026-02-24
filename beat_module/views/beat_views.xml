@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Beat Module Form View -->
+    <record id="view_beat_module_form" model="ir.ui.view">
+        <field name="name">beat.module.form</field>
+        <field name="model">beat.module</field>
+        <field name="arch" type="xml">
+            <form string="Beat">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="beat_number" readonly="1" class="oe_inline"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name" placeholder="e.g. Downtown Route, Zone A, etc."/>
+                            <field name="employee_id" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <group>
+                            <field name="customer_count" readonly="1"/>
+                             <field name="beat_date" readonly="0"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Customers" name="customers">
+                            <field name="beat_line_ids" widget="one2many">
+                                <list editable="bottom" create="1" delete="1">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="partner_id" 
+                                           options="{'no_create': True, 'no_open': True}"
+                                    />
+                                    <field name="partner_phone" readonly="1" optional="show"/>
+                                    <field name="partner_mobile" readonly="1" optional="show"/>
+                                    <field name="partner_email" readonly="1" optional="show"/>
+                                    <field name="notes" optional="hide"/>
+                                </list>
+                                <form string="Beat Line">
+                                    <sheet>
+                                        <group>
+                                            <group>
+                                                <field name="beat_id" invisible="1"/>
+                                                <field name="partner_id" 
+                                                       options="{'no_create': True}"
+                                                      />
+                                                <field name="sequence"/>
+                                            </group>
+                                            <group>
+                                                <field name="partner_phone" readonly="1"/>
+                                                <field name="partner_mobile" readonly="1"/>
+                                                <field name="partner_email" readonly="1"/>
+                                            </group>
+                                        </group>
+                                        <group>
+                                            <field name="notes" placeholder="Additional notes about this customer visit..."/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Beat Module List View -->
+    <record id="view_beat_module_list" model="ir.ui.view">
+        <field name="name">beat.module.list</field>
+        <field name="model">beat.module</field>
+        <field name="arch" type="xml">
+            <list string="Beats" create="1" delete="1" edit="1">
+                <field name="beat_number"/>
+                <field name="name"/>
+                <field name="beat_date"/>
+                <field name="employee_id"/>
+                <field name="customer_count"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Beat Module Kanban View -->
+    <record id="view_beat_module_kanban" model="ir.ui.view">
+        <field name="name">beat.module.kanban</field>
+        <field name="model">beat.module</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="id"/>
+                <field name="beat_number"/>
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="customer_count"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="o_kanban_record_top">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title">
+                                        <field name="beat_number"/>
+                                    </strong>
+                                    <br/>
+                                    <span class="o_kanban_record_subtitle">
+                                        <field name="name"/>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="employee_id"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <span class="badge badge-pill">
+                                        <i class="fa fa-users"/> <field name="customer_count"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Beat Module Search View -->
+    <record id="view_beat_module_search" model="ir.ui.view">
+        <field name="name">beat.module.search</field>
+        <field name="model">beat.module</field>
+        <field name="arch" type="xml">
+            <search string="Search Beats">
+                <field name="beat_number" filter_domain="[('beat_number', 'ilike', self)]"/>
+                <field name="name" filter_domain="[('name', 'ilike', self)]"/>
+                <field name="employee_id"/>
+                <separator/>
+                <filter string="My Beats" name="my_beats"
+                        domain="[('employee_id.user_id', '=', uid)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Employee" name="group_employee"
+                            context="{'group_by': 'employee_id'}"/>
+                    <filter string="Beat Number" name="group_beat_number"
+                            context="{'group_by': 'beat_number'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+     <record id="view_beat_module_calendar" model="ir.ui.view">
+        <field name="name">beat.module.calendar.view</field>
+        <field name="model">beat.module</field>
+        <field name="arch" type="xml">
+            <calendar
+                string="Beats"
+                date_start="create_date"
+                date_stop="create_date"
+                mode="month"
+                quick_create="0"
+                event_open_popup="False">
+                <field name="name"/>
+            </calendar>
+        </field>
+    </record>
+
+   
+    <!-- Beat Module Action -->
+    <record id="action_beat_module" model="ir.actions.act_window">
+        <field name="name">Beats</field>
+        <field name="res_model">beat.module</field>
+        <field name="view_mode">list,kanban,calendar,form</field>
+        <field name="search_view_id" ref="view_beat_module_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Beat
+            </p>
+            <p>
+                Beats help you organize customer visits by routes.<br/>
+                Assign employees and map customers to each beat.
+            </p>
+        </field>
+    </record>
+
+  
+    <record id="view_partner_form_beat" model="ir.ui.view">
+        <field name="name">res.partner.form.beat</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Beat Assignments" name="beat_assignments">
+                    <group>
+                        <field name="beat_count" invisible="1"/>
+                    </group>
+                    <field name="beat_line_ids" readonly="1">
+                        <list>
+                            <field name="beat_id"/>
+                            <field name="sequence"/>
+                            <field name="notes"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Menu Items -->
+    <menuitem id="menu_beat_root" 
+              name="Beat Management" 
+              sequence="50"/>
+    
+    <menuitem id="menu_beat_module" 
+              name="Beats" 
+              parent="menu_beat_root" 
+              action="action_beat_module" 
+              sequence="10"/>
+
+  
+</odoo>

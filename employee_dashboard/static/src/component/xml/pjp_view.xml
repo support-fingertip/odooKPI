@@ -1,0 +1,666 @@
+<templates xml:space="preserve">
+
+    <t t-name="employee_dashboard.PJPList">
+
+        <t t-if="state.showCustomerSelection">
+            <div style="flex: 1; display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden;">
+                <div class="d-flex align-items-center mb-3 pb-2 border-bottom" style="flex-shrink: 0;">
+                    <button class="btn btn-primary me-3" t-on-click="goBackToPJP">
+                        <i class="fa fa-arrow-left"></i>
+                    </button>
+                    <h4 class="mb-0">Add Customers to Beat</h4>
+                </div>
+
+                <div class="row mb-3" style="flex-shrink: 0;">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Select Beat</label>
+                        <select class="form-select" t-on-change="onBeatChange" t-model="state.selectedBeatId" t-att-disabled="state.beatReadonly ? 'disabled' : null">
+                            <t t-foreach="state.availableBeats" t-as="beat" t-key="beat.id">
+                                <option t-att-value="beat.id" t-att-selected="beat.id === state.selectedBeatId">
+                                    <t t-esc="beat.beat_number"/> - <t t-esc="beat.name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Search by name</label>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Search..."
+                               t-on-input="onSearchChange"
+                               t-model="state.customerSearchText"/>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Search by Area</label>
+                        <select class="form-select" t-on-change="onAreaChange">
+                            <option value="All">All</option>
+                            <t t-foreach="getUniqueAreas()" t-as="area" t-key="area">
+                                <option t-att-value="area">
+                                    <t t-esc="area"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Search by City</label>
+                        <select class="form-select" t-on-change="onCityChange">
+                            <option value="All">All</option>
+                            <t t-foreach="getUniqueCities()" t-as="city" t-key="city">
+                                <option t-att-value="city">
+                                    <t t-esc="city"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Search by Category</label>
+                        <select class="form-select" t-on-change="onCategoryChange">
+                            <option value="All">All</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" t-on-click="saveCustomerSelection">
+                            Save
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive" style="flex: 1; min-height: 0; overflow-y: auto; overflow-x: auto;">
+                    <table class="table table-hover table-bordered">
+                        <thead class="table-light sticky-top" style="top: 0; z-index: 10; background: white;">
+                            <tr>
+                                <th style="width: 50px;">
+                                    <input type="checkbox" class="form-check-input"/>
+                                </th>
+                                <th>Name ▲</th>
+                                <th>Date</th>
+                                <th>Area</th>
+                                <th>AVG Sales</th>
+                                <th>Outstanding</th>
+                                <th style="width: 100px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-if="state.filteredCustomers.length === 0">
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        No customers found
+                                    </td>
+                                </tr>
+                            </t>
+                            <t t-foreach="state.filteredCustomers" t-as="customer" t-key="customer.id">
+                                <tr t-att-class="{'table-secondary': isCustomerAlreadyInBeat(customer.id)}">
+                                    <td>
+                                        <input type="checkbox"
+                                               class="form-check-input"
+                                               t-att-checked="isCustomerSelected(customer.id)"
+                                               t-att-disabled="isCustomerAlreadyInBeat(customer.id)"
+                                               t-on-click="() => this.toggleCustomerSelection(customer.id)"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="customer.name"/>
+                                        <t t-if="isCustomerAlreadyInBeat(customer.id)">
+                                            <span class="badge bg-info ms-2">Already Added</span>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-esc="customer.create_date ? customer.create_date.split(' ')[0] : '-'"/>
+                                    </td>
+                                    <td>
+                                        <t t-esc="customer.state_id ? customer.state_id[1] : '-'"/>
+                                    </td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td class="text-center">
+                                        <t t-if="!isCustomerAlreadyInBeat(customer.id)">
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    t-on-click="() => this.addSingleCustomerToBeat(customer.id)"
+                                                    title="Add to Beat">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </t>
+                                        <t t-else="">
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    t-on-click="() => this.removeSingleCustomerFromBeat(customer.id)"
+                                                    title="Remove from Beat">
+                                                <i class="fa fa-minus"></i>
+                                            </button>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </t>
+
+        <t t-elif="state.showCalendarSelection">
+            <div class="calendar-view-wrapper">
+                <div class="calendar-header-section">
+                    <div class="d-flex align-items-center mb-3">
+                        <button class="btn btn-primary me-3" t-on-click="goBackToPJP">
+                            <i class="fa fa-arrow-left"></i> Back
+                        </button>
+                        <h4 class="mb-0">Calendar View - Beat Rotation</h4>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3 bg-light p-3 rounded">
+                        <button class="btn btn-outline-primary" t-on-click="previousMonth">
+                            <i class="fa fa-chevron-left"></i> Previous
+                        </button>
+                        
+                        <div class="d-flex align-items-center gap-3">
+                            <h3 class="mb-0">
+                                <t t-esc="getMonthName()"/> <t t-esc="state.currentYear"/>
+                            </h3>
+                        
+                            <div class="d-flex align-items-center gap-2 border-start ps-3">
+                                
+                                <input type="number" 
+                                       class="form-control form-control-sm" 
+                                       style="width: 80px;"
+                                       t-att-min="state.beats.length"
+                                       step="1"
+                                       t-model="state.rotationFrequency"
+                                       t-on-input="onRotationFrequencyChange"
+                                       placeholder="Days"/>
+                                <button class="btn btn-sm btn-primary" t-on-click="rotateBeats">
+                                    <i class="fa fa-refresh me-1"></i> Rotate
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-outline-primary" t-on-click="nextMonth">
+                            Next <i class="fa fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    
+                    
+                </div>
+
+                <div class="calendar-content-section">
+                    <div class="row gx-3" style="height: 100%;">
+                        <div class="col-md-3 beats-sidebar">
+                            <div class="beats-sidebar-content">
+                                <h5 class="mb-2">
+                                    <i class="fa fa-map-marker me-2"></i>
+                                    Beats (<t t-esc="state.beats.length"/>)
+                                </h5>
+
+                                <div class="mb-3">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           placeholder="Search beats..."
+                                           t-model="state.beatSearchText"
+                                           t-on-input="onBeatSearchChange"/>
+                                </div>
+
+                                <div class="beats-list-scroll">
+                                    <t t-if="state.filteredBeats.length === 0">
+                                        <div class="text-center text-muted py-3">
+                                            <i class="fa fa-exclamation-circle fa-2x mb-2 d-block"></i>
+                                            <t t-if="state.beatSearchText">
+                                                No beats found
+                                            </t>
+                                            <t t-else="">
+                                                No beats available
+                                            </t>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <t t-foreach="state.filteredBeats" t-as="beat" t-key="beat.id">
+                                            <div class="draggable-beat card mb-2 p-2 shadow-sm"
+                                                 draggable="true"
+                                                 t-on-dragstart="(ev) => this.onBeatDragStart(ev, beat)"
+                                                 t-on-dragend="(ev) => this.onBeatDragEnd(ev)">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fa fa-bars me-2 text-muted"></i>
+                                                    <div class="flex-grow-1">
+                                                        <div class="fw-bold" style="font-size: 0.9em;">
+                                                            <t t-esc="beat.beat_number || 'N/A'"/>
+                                                        </div>
+                                                        <div class="text-muted small">
+                                                            <t t-esc="beat.name"/>
+                                                        </div>
+                                                        <div class="small">
+                                                            <span class="badge bg-info">
+                                                                <t t-esc="beat.customer_count || 0"/> customers
+                                                            </span>
+                                                            <t t-if="beat.beat_date">
+                                                                <span class="badge bg-primary ms-1">
+                                                                    <i class="fa fa-calendar"></i>
+                                                                    <t t-esc="beat.beat_date"/>
+                                                                </span>
+                                                            </t>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-9 calendar-main-area">
+                            <div class="calendar-scroll-wrapper">
+                                <div class="calendar-container">
+                                    <div class="calendar-header">
+                                        <div class="calendar-day-header">Sun</div>
+                                        <div class="calendar-day-header">Mon</div>
+                                        <div class="calendar-day-header">Tue</div>
+                                        <div class="calendar-day-header">Wed</div>
+                                        <div class="calendar-day-header">Thu</div>
+                                        <div class="calendar-day-header">Fri</div>
+                                        <div class="calendar-day-header">Sat</div>
+                                    </div>
+
+                                    <div class="calendar-grid">
+                                        <t t-foreach="state.calendarDates" t-as="dateData" t-key="dateData.fullDate">
+                                            <div class="calendar-date-cell"
+                                                 t-att-class="{
+                                                     'current-month': dateData.isCurrentMonth,
+                                                     'other-month': !dateData.isCurrentMonth,
+                                                     'today': dateData.isToday,
+                                                     'rotation-highlight': dateData.isInRotationCycle
+                                                 }"
+                                                 t-on-dragover="(ev) => this.onCalendarDragOver(ev, dateData)"
+                                                 t-on-dragenter="(ev) => this.onCalendarDragEnter(ev, dateData)"
+                                                 t-on-dragleave="(ev) => this.onCalendarDragLeave(ev)"
+                                                 t-on-drop="(ev) => this.onCalendarDrop(ev, dateData)">
+                                                
+                                                <div class="calendar-date-number">
+                                                    <t t-esc="dateData.date"/>
+                                                </div>
+
+                                                <div class="calendar-date-beats">
+                                                    <t t-set="beat" t-value="getBeatForDate(dateData.fullDate)"/>
+                                                    <t t-if="beat">
+                                                        <div class="calendar-beat-badge">
+                                                            <span><t t-esc="beat.beat_number || beat.name"/></span>
+                                                            <button class="btn-remove" 
+                                                                    t-on-click="() => this.removeBeatFromDate(beat.id, dateData.fullDate)"
+                                                                    title="Remove">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+
+        <t t-else="">
+            <div style="flex: 1; display: flex; flex-direction: column; min-height: 0; overflow-x: hidden; overflow-y: auto;">
+                <div class="mb-3 d-flex gap-2" style="flex-shrink: 0;padding:5px;" >
+                    <button class="btn btn-primary btn-sm" t-on-click="openCreatePJPModal">
+                        <i class="fa fa-plus me-1"></i> Create PJP
+                    </button>
+                    <button class="btn btn-primary btn-sm" t-on-click="addBeat">
+                        <i class="fa fa-plus me-1"></i> Add Beat
+                    </button>
+                    <button class="btn btn-primary btn-sm" t-on-click="addCustomers">
+                        <i class="fa fa-edit me-1"></i> Edit Beat
+                    </button>
+                    <button class="btn btn-primary btn-sm" t-on-click="cloneBeatPopup">
+                        <i class="fa fa-copy me-1"></i> Clone Beat
+                    </button>
+                    <button class="btn btn-primary btn-sm" t-on-click="movetoCalendar">
+                        <i class="fa fa-calendar me-1"></i> View Calendar
+                    </button>
+                    <button class="btn btn-primary btn-sm" t-on-click="actionUpload">
+                        <i class="fa fa-upload me-1"></i> Upload
+                    </button>
+                    <button class="btn btn-md d-flex align-items-center gap-1" t-on-click="toggleCustomerList">
+                        Customers
+                        <t t-if="state.showCustomerList">
+                            <i class="fa fa-toggle-on text-primary" style="font-size:20px;"></i>
+                        </t>
+                        <t t-else="">
+                            <i class="fa fa-toggle-off text-muted" style="font-size:20px;"></i>
+                        </t>
+                    </button>
+                </div>
+
+                <div t-if="!props.employeeId" class="alert alert-info" style="flex-shrink: 0;">
+                    <i class="fa fa-info-circle me-2"></i>
+                    Please select an employee to view PJP beats.
+                </div>
+
+                <div t-elif="state.beats.length === 0" class="alert alert-warning" style="flex-shrink: 0;">
+                    <i class="fa fa-exclamation-triangle me-2"></i>
+                    No beats mapped to this employee. Click "Add Beat" to create one automatically.
+                </div>
+
+                <div t-else=""  class="dynamic-grid" t-att-style="getGridHeight()">
+                    <t t-foreach="state.beats" t-as="beat" t-key="beat.id">
+                        <div class="beat-card">
+                            <div class="card shadow-sm" t-att-style="state.showCustomerList
+                                ? 'display:flex;flex-direction:column;height:100%;max-height:100%;'
+                                : 'display:flex;flex-direction:column;height:auto;max-height:none;'">
+                                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center" style="flex-shrink: 0;">
+                                    <div class="flex-grow-1 text-center">
+                                        <div class="fw-bold">
+                                            <i class="fa fa-map-marker me-2"></i>
+                                            <t t-esc="beat.beat_number"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <t t-if="state.showCustomerList">
+                                    <div class="card-body p-2" style="flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0;">
+                                        <t t-if="state.beatCustomers[beat.id] &amp;&amp; state.beatCustomers[beat.id].length > 0">
+                                            <t t-foreach="state.beatCustomers[beat.id]" t-as="beatLine" t-key="beatLine.id">
+                                                <div class="card mb-2 p-2 shadow-sm"
+                                                     style="border-left: 4px solid #0d6efd; cursor: pointer;"
+                                                     t-on-click="() => this.openBeatLineForm(beatLine.id)">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div class="flex-grow-1">
+                                                            <div class="fw-bold mb-1" style="font-size: 0.9em;">
+                                                                <t t-esc="beatLine.partner_id[1]"/>
+                                                            </div>
+                                                            <div t-if="beatLine.partner_phone || beatLine.partner_mobile"
+                                                                 class="text-muted"
+                                                                 style="font-size: 0.75em;">
+                                                                <i class="fa fa-phone me-1"></i>
+                                                                <t t-esc="beatLine.partner_phone || beatLine.partner_mobile"/>
+                                                            </div>
+                                                        </div>
+                                                        <small class="text-muted">
+                                                            <i class="fa fa-edit"></i>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </t>
+                                        <div t-else="" class="text-muted text-center py-3">
+                                            <i class="fa fa-users fa-2x mb-2 d-block"></i>
+                                            <small>No customers mapped</small>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-light text-center py-1" style="flex-shrink: 0;">
+                                        <small class="text-muted">
+                                            <i class="fa fa-users me-1"></i>
+                                            <t t-esc="beat.customer_count || 0"/>
+                                            <t t-if="beat.customer_count === 1">Customer</t>
+                                            <t t-else="">Customers</t>
+                                        </small>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </t>
+
+        <t t-if="state.showCreatePJPModal">
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block" tabindex="-1">
+                <div class="modal-dialog modal-md modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fa fa-calendar-plus-o me-2"></i>
+                                Create PJP from Calendar
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" t-on-click="closeCreatePJPModal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-info py-2 mb-3" style="font-size:0.85rem;">
+                                <i class="fa fa-info-circle me-1"></i>
+                                PJP will be created for beats already assigned in the calendar for the selected future date range.
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Start Date <span class="text-danger">*</span></label>
+                                    <input type="date"
+                                           class="form-control"
+                                           t-model="state.createPJPForm.startDate"
+                                           t-att-min="getToday()"
+                                           required="required"/>
+                                    <div class="form-text text-muted">Must be today or a future date</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">End Date <span class="text-danger">*</span></label>
+                                    <input type="date"
+                                           class="form-control"
+                                           t-model="state.createPJPForm.endDate"
+                                           t-att-min="state.createPJPForm.startDate || getToday()"
+                                           required="required"/>
+                                    <div class="form-text text-muted">Must be on or after start date</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" t-on-click="closeCreatePJPModal">
+                                <i class="fa fa-times me-1"></i> Cancel
+                            </button>
+                            <button type="button" class="btn btn-primary" t-on-click="saveCreatePJP">
+                                <i class="fa fa-check me-1"></i> Create PJP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+
+        <t t-if="state.cloneBeatForm.show">
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block" tabindex="-1">
+                <div class="modal-dialog modal-md">
+                    <div class="modal-content p-3">
+                        <h5 class="mb-3">Clone Beat</h5>
+                        <label class="form-label">Select Beat</label>
+                        <select class="form-control mb-3"
+                                t-model="state.cloneBeatForm.selectedBeatId">
+                            <option value="">-- Select --</option>
+                            <t t-foreach="state.beats" t-as="b" t-key="b.id">
+                                <option t-att-value="b.id">
+                                    <t t-esc="b.name"/>
+                                </option>
+                            </t>
+                        </select>
+
+                        <label class="form-label">New Beat Name</label>
+                        <input type="text"
+                               class="form-control mb-3"
+                               t-model="state.cloneBeatForm.newBeatName"/>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button class="btn btn-light" t-on-click="closeClonePopup">
+                                Cancel
+                            </button>
+                            <button class="btn btn-primary" t-on-click="cloneBeat">
+                                Clone
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+
+        <style>
+            .calendar-view-wrapper {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                height: 100%;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            .calendar-header-section {
+                flex-shrink: 0;
+                padding: 10px;
+                background: white;
+                z-index: 10;
+            }
+
+            .calendar-content-section {
+                flex: 1;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .beats-sidebar {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                border-right: 2px solid #ddd;
+                padding-right: 10px;
+            }
+
+            .beats-sidebar-content {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            .beats-list-scroll {
+                flex: 1;
+                overflow-y: auto;
+                overflow-x: hidden;
+                padding-right: 5px;
+            }
+
+            .calendar-main-area {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            .calendar-scroll-wrapper {
+                flex: 1;
+                overflow-y: auto;
+                overflow-x: hidden;
+                padding: 10px;
+            }
+
+            .calendar-container {
+                background: white;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 15px;
+                min-width: 800px;
+            }
+
+            .calendar-header {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 5px;
+                margin-bottom: 10px;
+            }
+
+            .calendar-day-header {
+                text-align: center;
+                font-weight: bold;
+                padding: 10px;
+                background: #f8f9fa;
+                border-radius: 4px;
+            }
+
+            .calendar-grid {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 5px;
+            }
+
+            .calendar-date-cell {
+                min-height: 100px;
+                border: 1px solid #dee2e6;
+                border-radius: 4px;
+                padding: 8px;
+                background: white;
+                transition: all 0.2s ease;
+            }
+
+            .calendar-date-cell.current-month {
+                background: #ffffff;
+            }
+
+            .calendar-date-cell.other-month {
+                background: #f8f9fa;
+                opacity: 0.6;
+            }
+
+            .calendar-date-cell.today {
+                border: 2px solid #0d6efd;
+                background: #e7f1ff;
+            }
+
+            .calendar-date-cell.rotation-highlight {
+                background: #fff3cd !important;
+                border: 2px solid #ffc107 !important;
+            }
+
+            .calendar-date-cell:hover {
+                background: #f0f0f0;
+                cursor: pointer;
+            }
+
+            .calendar-date-cell.drag-over {
+                background: #d1e7dd !important;
+                border: 2px dashed #198754 !important;
+                transform: scale(1.02);
+            }
+
+            .calendar-date-number {
+                font-weight: bold;
+                font-size: 14px;
+                margin-bottom: 5px;
+                color: #495057;
+            }
+
+            .calendar-date-beats {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                margin-top: 5px;
+            }
+
+            .calendar-beat-badge {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: #0d6efd;
+                color: white;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 11px;
+                font-weight: 500;
+            }
+
+            .calendar-beat-badge .btn-remove {
+                background: none;
+                border: none;
+                color: white;
+                padding: 0 4px;
+                cursor: pointer;
+                opacity: 0.8;
+                transition: opacity 0.2s;
+            }
+
+            .calendar-beat-badge .btn-remove:hover {
+                opacity: 1;
+            }
+        </style>
+
+    </t>
+
+</templates>

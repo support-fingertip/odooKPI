@@ -1,0 +1,156 @@
+<templates xml:space="preserve">
+    <t t-name="employee_dashboard.EmployeeComponent">
+        <!-- Root: fill Odoo 18 action manager via flex:1, hide overflow, flex column so header stays fixed -->
+        <div class="o_employee_dashboard_wrap p-3">
+
+            <div class="mb-3" style="flex-shrink: 0;" t-if="state.isManager">
+                <label>Select Employee:</label>
+                <select t-on-change="selectEmployee" class="form-select" t-model="state.selectedEmployee">
+                    <option value="">-- Select employee --</option>
+                    <t t-foreach="state.employees" t-as="emp" t-key="emp.id">
+                        <option t-att-value="emp.id" t-att-selected="emp.id === state.selectedEmployee">
+                            <t t-esc="emp.name"/>
+                        </option>
+                    </t>
+                </select>
+            </div>
+            <div class="mb-3" style="flex-shrink: 0;" t-else="">
+                <h5 class="mb-0">
+                    <t t-if="state.details">
+                        <t t-esc="state.details.name"/>
+                    </t>
+                </h5>
+            </div>
+
+            <ul class="nav nav-tabs" style="flex-shrink: 0;">
+                <li class="nav-item">
+                    <a class="nav-link" t-att-class="{active: state.activeTab === 'details'}" t-on-click="() => this.changeTab('details')">Details</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" t-att-class="{active: state.activeTab === 'summary'}" t-on-click="() => this.changeTab('summary')">Summary</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" t-att-class="{active: state.activeTab === 'pjp'}" t-on-click="() => this.changeTab('pjp')">PJP</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" t-att-class="{active: state.activeTab === 'visits'}" t-on-click="() => this.changeTab('visits')">Visits</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" t-att-class="{active: state.activeTab === 'todayvisit'}" t-on-click="() => this.changeTab('todayvisit')">Today Visit</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" t-att-class="{active: state.activeTab === 'orders'}" t-on-click="() => this.changeTab('orders')">Orders</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" t-att-class="{active: state.activeTab === 'invoices'}" t-on-click="() => this.changeTab('invoices')">Invoices</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" t-att-class="{active: state.activeTab === 'incentives'}" t-on-click="() => this.changeTab('incentives')">Incentives</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" t-att-class="{active: state.activeTab === 'expenses'}" t-on-click="() => this.changeTab('expenses')">Expenses</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" t-att-class="{active: state.activeTab === 'attendance'}" t-on-click="() => this.changeTab('attendance')">Attendance</a>
+                </li>
+            </ul>
+
+            <!-- Tab content area: flex:1 fills remaining space, min-height:0 allows shrink, overflow-y:auto scrolls -->
+            <t t-if="state.activeTab === 'details'">
+                <div class="mt-3" style="flex: 1; min-height: 0; overflow-y: auto;" t-if="state.details">
+                    <p>
+                        <b>Name:</b>
+                        <t t-esc="state.details.name"/>
+                    </p>
+                    <p>
+                        <b>Email:</b>
+                        <t t-esc="state.details.work_email"/>
+                    </p>
+                    <p>
+                        <b>Phone:</b>
+                        <t t-esc="state.details.work_phone"/>
+                    </p>
+                </div>
+                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
+                    Select an employee to view details.
+                </div>
+            </t>
+
+            <t t-if="state.activeTab === 'visits'">
+                <div class="mt-3" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;" t-if="state.selectedEmployee">
+                    <VisitList t-props="{ employeeId: state.selectedEmployee }" t-key="state.selectedEmployee"/>
+                </div>
+                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
+                    Please select an employee to view visits.
+                </div>
+            </t>
+
+            <t t-if="state.activeTab === 'todayvisit'">
+                <div class="mt-3" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;" t-if="state.selectedEmployee">
+                    <TodayVisit t-props="{ employeeId: state.selectedEmployee }" t-key="state.selectedEmployee"/>
+                </div>
+                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
+                    Please select an employee to view today's visits.
+                </div>
+            </t>
+
+            <t t-if="state.activeTab === 'invoices'">
+                <div class="mt-3" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column;" t-if="state.selectedEmployee">
+                    <InvoiceList t-props="{ employeeId: state.selectedEmployee }" t-key="state.selectedEmployee"/>
+                </div>
+                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
+                    Please select an employee to view invoices.
+                </div>
+            </t>
+
+            <t t-if="state.activeTab === 'orders'">
+                <div class="mt-3" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column;" t-if="state.selectedEmployee">
+                    <OrdersList t-props="{ employeeId: state.selectedEmployee }" t-key="state.selectedEmployee"/>
+                </div>
+                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
+                    Please select an employee to view orders.
+                </div>
+            </t>
+
+            <t t-if="state.activeTab === 'pjp'">
+                <div class="mt-3" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;" t-if="state.selectedEmployee">
+                    <PJPList t-props="{ employeeId: state.selectedEmployee }" t-key="state.selectedEmployee"/>
+                </div>
+                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
+                    Please select an employee to view PJP.
+                </div>
+            </t>
+
+            <t t-if="state.activeTab === 'expenses'">
+                <div class="mt-3" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;" t-if="state.selectedEmployee">
+                    <ExpenseList t-props="{ employeeId: state.selectedEmployee }" t-key="state.selectedEmployee"/>
+                </div>
+                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
+                    Please select an employee to view expenses.
+                </div>
+            </t>
+
+            <t t-if="state.activeTab === 'attendance'">
+                <div class="mt-3" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;" t-if="state.selectedEmployee">
+                    <AttendanceList t-props="{ employeeId: state.selectedEmployee }" t-key="state.selectedEmployee"/>
+                </div>
+                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
+                    Please select an employee to view attendance.
+                </div>
+            </t>
+
+            <t t-if="state.activeTab === 'summary'">
+                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;">
+                    Summary content coming soon.
+                </div>
+            </t>
+
+            <t t-if="state.activeTab === 'incentives'">
+                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;">
+                    Incentives content coming soon.
+                </div>
+            </t>
+
+        </div>
+    </t>
+</templates>

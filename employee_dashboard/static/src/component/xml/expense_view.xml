@@ -1,0 +1,67 @@
+<templates xml:space="preserve">
+    <t t-name="employee_dashboard.ExpenseList">
+        <div style="flex: 1; display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden;">
+            <div class="row mb-3" style="flex-shrink: 0;">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">From Date</label>
+                    <input type="date"
+                           class="form-control"
+                           t-model="state.expenseFromDate"
+                           t-on-change="onExpenseDateChange"/>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">To Date</label>
+                    <input type="date"
+                           class="form-control"
+                           t-model="state.expenseToDate"
+                           t-on-change="onExpenseDateChange"/>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Select Status</label>
+                    <select class="form-select" t-on-change="onExpenseStatusChange" t-model="state.expenseStatus">
+                        <option value="all">All</option>
+                        <option value="draft">Not Submitted</option>
+                        <option value="reported">Submitted</option>
+                        <option value="approved">Approved</option>
+                        <option value="done">Paid</option>
+                        <option value="refused">Refused</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive" style="flex: 1; min-height: 0; overflow-y: auto; overflow-x: auto;">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-primary sticky-top" style="top: 0; z-index: 10;">
+                        <tr>
+                            <th>Month</th>
+                            <th>Status</th>
+                            <th>TA</th>
+                            <th>DA</th>
+                            <th>Other</th>
+                            <th>Total Amt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-if="state.expenseRecords.length === 0">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    No expense records found
+                                </td>
+                            </tr>
+                        </t>
+                        <t t-foreach="state.expenseRecords" t-as="expense" t-key="expense.month">
+                            <tr>
+                                <td><t t-esc="expense.month"/></td>
+                                <td><t t-esc="expense.status"/></td>
+                                <td><t t-esc="expense.ta"/></td>
+                                <td><t t-esc="expense.da"/></td>
+                                <td><t t-esc="expense.other"/></td>
+                                <td class="fw-bold"><t t-esc="expense.totalAmt"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+</templates>

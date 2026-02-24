@@ -1,0 +1,1388 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    
+    <t t-name="employee_dashboard.TodayVisit">
+        <div class="o_today_visit_wrap">
+
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style="flex-shrink: 0;">
+                <h4 class="mb-0">
+                    <i class="fa fa-calendar-check-o me-2"></i>
+                    Today's Visit Plan
+                </h4>
+                
+                <div class="d-flex gap-2">
+                    <t t-if="!state.dayStarted &amp;&amp; !state.dayEnded">
+                        <button class="btn btn-primary" t-on-click="() => this.openStartDayModal()">
+                            <i class="fa fa-play me-1"></i> Start Day
+                        </button>
+                    </t>
+                    <t t-if="state.dayEnded">
+                        <span class="badge bg-secondary fs-6 px-3 py-2">
+                            <i class="fa fa-check-circle me-1"></i> Day Ended
+                        </span>
+                    </t>
+                    
+                    <t t-if="state.dayStarted">
+                        <button class="btn btn-primary" 
+                                t-on-click="() => this.openEndDayModal()"
+                                t-att-disabled="state.isProcessing || state.activeVisit || state.beatStarted">
+                            <i t-if="!state.isProcessing" class="fa fa-stop me-1"></i>
+                            <i t-else="" class="fa fa-spinner fa-spin me-1"></i>
+                            <t t-if="!state.isProcessing">End Day</t>
+                            <t t-else="">Ending Day...</t>
+                        </button>
+                        
+                        <t t-if="state.beatStarted">
+                            <button class="btn btn-primary"
+                                    t-on-click="() => this.openSwitchBeatSelection()"
+                                    t-att-disabled="state.activeVisit">
+                                <i class="fa fa-exchange me-1"></i> Switch Beat
+                            </button>
+                            <button class="btn btn-primary" t-on-click="() => this.openEndBeatModal()">
+                                <i class="fa fa-stop-circle me-1"></i> End Beat
+                            </button>
+                        </t>
+                        <t t-if="state.beatSwitchHistory &amp;&amp; state.beatSwitchHistory.length > 0">
+                            <button class="btn btn-outline-secondary btn-sm"
+                                    t-on-click="() => this.openSwitchHistoryModal()"
+                                    title="View beat switch history">
+                                <i class="fa fa-history me-1"></i> Switch History
+                                <span class="badge bg-warning text-dark ms-1">
+                                    <t t-esc="state.beatSwitchHistory.length"/>
+                                </span>
+                            </button>
+                        </t>
+                    </t>
+                </div>
+            </div>
+
+
+            <div t-if="state.activeVisit &amp;&amp; state.customerSummary" class="mb-2" style="flex-shrink: 0;">
+                <div class="card shadow-sm border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fa fa-user me-2"></i>
+                                <strong><t t-esc="state.customerSummary.name"/></strong>
+                                <div class="mt-1" style="font-size: 0.82rem; opacity: 0.9;">
+                                    <t t-if="state.customerSummary.phone">
+                                        <span class="me-3"><i class="fa fa-phone me-1"></i><t t-esc="state.customerSummary.phone"/></span>
+                                    </t>
+                                    <t t-if="state.customerSummary.mobile">
+                                        <span class="me-3"><i class="fa fa-mobile me-1"></i><t t-esc="state.customerSummary.mobile"/></span>
+                                    </t>
+                                    <t t-if="state.customerSummary.email">
+                                        <span class="me-3"><i class="fa fa-envelope me-1"></i><t t-esc="state.customerSummary.email"/></span>
+                                    </t>
+                                    <t t-if="state.customerSummary.address">
+                                        <span><i class="fa fa-map-marker me-1"></i><t t-esc="state.customerSummary.address"/></span>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="card-body py-3">
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                            <button class="btn btn-outline-primary btn-lg px-4" t-on-click="() => this.openQuickOrder()">
+                                <i class="fa fa-shopping-cart me-2"></i> Quick Order
+                            </button>
+                            <button class="btn btn-outline-primary btn-lg px-4" t-on-click="() => this.openVisitListView()">
+                                <i class="fa fa-calendar-check-o me-2"></i> Visit List
+                            </button>
+                            <button class="btn btn-outline-primary btn-lg px-4" t-on-click="() => this.openSalesOrderList()">
+                                <i class="fa fa-file-text-o me-2"></i> Sales Orders
+                            </button>
+                            <button class="btn btn-outline-primary btn-lg px-4" t-on-click="() => this.openEndVisitModal()">
+                                <i class="fa fa-stop me-2"></i>  End Visit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+         
+            <div t-if="state.activeVisit &amp;&amp; state.customerSummary" class="row g-3 mb-3" style="flex-shrink: 0;">
+
+                <div class="col-6 col-md-3">
+                    <div class="card bg-light h-100">
+                        <div class="card-body text-center py-2">
+                            <i class="fa fa-money fa-2x text-primary mb-1"></i>
+                            <h6 class="mb-1">Outstanding</h6>
+                            <h4 class="mb-0 text-primary">
+                                ₹<t t-esc="state.customerSummary.outstanding.toFixed(2)"/>
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <div class="card bg-light h-100">
+                        <div class="card-body text-center py-2">
+                            <i class="fa fa-line-chart fa-2x text-primary mb-1"></i>
+                            <h6 class="mb-1">Total Sales</h6>
+                            <h4 class="mb-0 text-primary">
+                                ₹<t t-esc="state.customerSummary.totalSales.toFixed(2)"/>
+                            </h4>
+                            <small class="text-muted">
+                                <t t-esc="state.customerSummary.orderCount"/> Orders
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <div class="card bg-light h-100">
+                        <div class="card-body text-center py-2">
+                            <i class="fa fa-calendar-check-o fa-2x text-info mb-1"></i>
+                            <h6 class="mb-1">Total Visits</h6>
+                            <h4 class="mb-0 text-info">
+                                <t t-esc="state.customerSummary.visitCount"/>
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <div class="card bg-light h-100">
+                        <div class="card-body text-center py-2">
+                            <i class="fa fa-clock-o fa-2x text-warning mb-1"></i>
+                            <h6 class="mb-1">Last Order Date</h6>
+                            <h5 class="mb-0 text-warning">
+                                <t t-if="state.customerSummary.lastOrderDate">
+                                    <t t-esc="formatDateOnly(state.customerSummary.lastOrderDate)"/>
+                                </t>
+                                <t t-else="">No orders yet</t>
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <t t-if="state.todayKpi">
+                <div class="mb-3" style="flex-shrink: 0;">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                            <h6 class="mb-0 text-muted">
+                                <i class="fa fa-bar-chart me-1 text-primary"></i>
+                                <strong>Today's Performance (Period Target)</strong>
+                            </h6>
+                        </div>
+                        <div class="card-body py-2">
+                            <div class="row g-2">
+                                <div class="col-6 col-md-3">
+                                    <div class="card bg-light border-0 h-100">
+                                        <div class="card-body text-center py-2">
+                                            <i class="fa fa-calendar-check-o text-info mb-1"></i>
+                                            <div class="small text-muted mb-1">Visits Today</div>
+                                            <h5 class="mb-0 text-info">
+                                                <t t-esc="state.todayKpi.actualVisitsToday"/>
+                                            </h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="card bg-light border-0 h-100">
+                                        <div class="card-body text-center py-2">
+                                            <i class="fa fa-shopping-cart text-success mb-1"></i>
+                                            <div class="small text-muted mb-1">Orders Today</div>
+                                            <h5 class="mb-0 text-success">
+                                                <t t-esc="state.todayKpi.actualOrdersToday"/>
+                                            </h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="card bg-light border-0 h-100">
+                                        <div class="card-body py-2">
+                                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                                <small class="text-muted">Visit Target</small>
+                                                <span class="badge bg-primary" style="font-size:0.7rem;">
+                                                    <t t-esc="state.todayKpi.visitPct"/>%
+                                                </span>
+                                            </div>
+                                            <div class="d-flex gap-2 text-center">
+                                                <div class="flex-fill">
+                                                    <div class="small text-muted">Target</div>
+                                                    <strong class="text-dark"><t t-esc="state.todayKpi.targetVisits"/></strong>
+                                                </div>
+                                                <div class="flex-fill">
+                                                    <div class="small text-muted">Actual</div>
+                                                    <strong class="text-success"><t t-esc="state.todayKpi.periodActualVisits"/></strong>
+                                                </div>
+                                                <div class="flex-fill">
+                                                    <div class="small text-muted">Remaining</div>
+                                                    <strong class="text-warning"><t t-esc="state.todayKpi.remainingVisits"/></strong>
+                                                </div>
+                                            </div>
+                                            <div class="progress mt-1" style="height: 4px;">
+                                                <div class="progress-bar bg-primary"
+                                                     t-att-style="'width:' + state.todayKpi.visitPct + '%'">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="card bg-light border-0 h-100">
+                                        <div class="card-body py-2">
+                                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                                <small class="text-muted">Order Target</small>
+                                                <span class="badge bg-success" style="font-size:0.7rem;">
+                                                    <t t-esc="state.todayKpi.orderPct"/>%
+                                                </span>
+                                            </div>
+                                            <div class="d-flex gap-2 text-center">
+                                                <div class="flex-fill">
+                                                    <div class="small text-muted">Target</div>
+                                                    <strong class="text-dark"><t t-esc="state.todayKpi.targetOrders"/></strong>
+                                                </div>
+                                                <div class="flex-fill">
+                                                    <div class="small text-muted">Actual</div>
+                                                    <strong class="text-success"><t t-esc="state.todayKpi.periodActualOrders"/></strong>
+                                                </div>
+                                                <div class="flex-fill">
+                                                    <div class="small text-muted">Remaining</div>
+                                                    <strong class="text-warning"><t t-esc="state.todayKpi.remainingOrders"/></strong>
+                                                </div>
+                                            </div>
+                                            <div class="progress mt-1" style="height: 4px;">
+                                                <div class="progress-bar bg-success"
+                                                     t-att-style="'width:' + state.todayKpi.orderPct + '%'">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <div t-if="!getEmployeeId()" class="alert alert-warning">
+                <i class="fa fa-info-circle me-2"></i>
+                Please select an employee to view today's visits.
+            </div>
+            <div t-elif="state.loading" class="text-center py-5">
+                <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
+                <p class="mt-3 text-muted">Loading today's beats...</p>
+            </div>
+            <div t-elif="state.beats.length === 0" class="alert alert-primary text-center">
+                <i class="fa fa-check-circle me-2 fa-2x"></i>
+                <h5 class="mb-2">All beats completed for today!</h5>
+                <p class="mb-0">Great job! All customer visits have been finished.</p>
+            </div>
+            <div t-else="" style="flex-shrink: 0; padding-bottom: 16px;">
+                <div class="row g-3">
+                    <t t-foreach="state.beats" t-as="beat" t-key="beat.id">
+                        <t t-if="!state.beatStarted || state.selectedBeat?.id === beat.id">
+                            <div class="col-md-12">
+                                <div class="card shadow-sm" t-att-class="state.selectedBeat?.id === beat.id ? 'border-primary border-3' : ''">
+                                    <div class="card-header d-flex justify-content-between align-items-center" t-att-class="state.selectedBeat?.id === beat.id ? 'bg-primary text-white' : 'bg-light'">
+                                        <div>
+                                            <i class="fa fa-map-marker me-2"></i>
+                                            <strong><t t-esc="beat.beat_number"/> - <t t-esc="beat.name"/></strong>
+                                            <t t-if="beat.beat_date">
+                                                <span class="ms-2 badge bg-secondary" style="font-size:0.72rem;">
+                                                    <i class="fa fa-calendar me-1"></i>
+                                                    <t t-esc="beat.beat_date"/>
+                                                </span>
+                                            </t>
+                                            <t t-if="beat.swapped_from_beat_id">
+                                                <span class="ms-1 badge bg-warning text-dark" style="font-size:0.72rem;">
+                                                    <i class="fa fa-exchange me-1"></i> Switched
+                                                </span>
+                                            </t>
+                                        </div>
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <span class="badge bg-primary">
+                                                <t t-esc="beat.customerCount || 0"/> Customers
+                                            </span>
+                                            <span class="badge bg-primary">
+                                                Progress: <t t-esc="getBeatProgress(beat)"/>
+                                            </span>
+                                            <t t-if="!state.beatStarted || state.selectedBeat?.id !== beat.id">
+                                                <button class="btn btn-sm btn-primary"
+                                                        t-on-click="() => this.openStartBeatModal(beat)"
+                                                        t-att-disabled="!state.dayStarted || state.beatStarted">
+                                                    <i class="fa fa-play me-1"></i> Start Beat
+                                                </button>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="badge bg-primary">
+                                                    <i class="fa fa-check"></i> Active
+                                                </span>
+                                            </t>
+                                        </div>
+                                    </div>
+
+                                    <div t-if="state.selectedBeat?.id === beat.id &amp;&amp; state.beatStarted" class="card-body p-0">
+                                        <t t-if="state.activeVisit">
+                                        </t>
+                                        <t t-else="">
+                                            <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
+                                                <table class="table table-hover mb-0">
+                                                    <thead class="table-light sticky-top" style="top: 0; z-index: 5;">
+                                                        <tr>
+                                                            <th style="width: 50px;">#</th>
+                                                            <th>Customer Name</th>
+                                                            <th>Phone</th>
+                                                            <th>Email</th>
+                                                            <th>Address</th>
+                                                            <th>Status</th>
+                                                            <th style="width: 150px;">Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="beat.beatLines" t-as="line" t-key="line.id">
+                                                            <tr t-att-class="state.activeVisit &amp;&amp; state.currentBeatLine?.id === line.id ? 'table-warning' : ''">
+                                                                <td><t t-esc="line_index + 1"/></td>
+                                                                <td>
+                                                                    <i class="fa fa-user me-2"></i>
+                                                                    <strong><t t-esc="line.partner_id[1]"/></strong>
+                                                                </td>
+                                                                <td>
+                                                                    <i class="fa fa-phone me-1"></i>
+                                                                    <t t-esc="line.partner_phone || line.partner_mobile || '-'"/>
+                                                                </td>
+                                                                <td>
+                                                                    <t t-if="line.partner_email">
+                                                                        <i class="fa fa-envelope me-1 text-muted"></i>
+                                                                        <t t-esc="line.partner_email"/>
+                                                                    </t>
+                                                                    <t t-else=""><span class="text-muted">-</span></t>
+                                                                </td>
+                                                                <td>
+                                                                    <t t-if="line.partner_street">
+                                                                        <i class="fa fa-map-marker me-1 text-muted"></i>
+                                                                        <t t-esc="line.partner_street"/>
+                                                                    </t>
+                                                                    <t t-else=""><span class="text-muted">-</span></t>
+                                                                </td>
+                                                                <td>
+                                                                    <t t-set="visitStatus" t-value="getCustomerVisitStatus(line)"/>
+                                                                    <span t-attf-class="badge {{visitStatus.badge}}">
+                                                                        <i t-attf-class="fa {{visitStatus.icon}}"></i>
+                                                                        <t t-esc="visitStatus.text"/>
+                                                                    </span>
+                                                                </td>
+                                                                <td>
+                                                                    <t t-if="state.activeVisit &amp;&amp; state.currentBeatLine?.id === line.id">
+                                                                        <span class="badge bg-primary w-100">
+                                                                            <i class="fa fa-clock-o me-1"></i> In Progress
+                                                                        </span>
+                                                                    </t>
+                                                                    <t t-elif="!state.activeVisit &amp;&amp; (!line.visitStatus || line.visitStatus.status !== 'completed')">
+                                                                        <button class="btn btn-sm btn-primary w-100" 
+                                                                                t-on-click="() => this.openStartVisitModal(line, line_index)">
+                                                                            <i class="fa fa-play me-1"></i> Start Visit
+                                                                        </button>
+                                                                    </t>
+                                                                    <t t-elif="line.visitStatus &amp;&amp; line.visitStatus.status === 'completed'">
+                                                                        <span class="badge bg-primary w-100">
+                                                                            <i class="fa fa-check me-1"></i> Completed
+                                                                        </span>
+                                                                    </t>
+                                                                </td>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+                </div>
+            </div>
+        </div>
+
+        <t t-if="state.showSwitchBeatModal">
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-dark">
+                            <h5 class="modal-title">
+                                <i class="fa fa-exchange me-2"></i> Switch Beat
+                            </h5>
+                            <button type="button" class="btn-close" t-on-click="() => this.closeSwitchBeatModal()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    Select Beat to Switch To <span class="text-primary">*</span>
+                                </label>
+                                <t t-if="state.switchBeatLoading">
+                                    <div class="text-center py-4">
+                                        <i class="fa fa-spinner fa-spin fa-2x text-primary"></i>
+                                        <p class="mt-2 text-muted">Loading available beats...</p>
+                                    </div>
+                                </t>
+                                <t t-elif="getAvailableBeatsForSwitch().length &gt; 0">
+                                    <div class="row g-3">
+                                        <t t-foreach="getAvailableBeatsForSwitch()" t-as="beat" t-key="beat.id">
+                                            <div class="col-12">
+                                                <div class="card" 
+                                                    t-att-class="state.switchBeatForm.newBeat?.id === beat.id ? 'border-primary border-3 bg-light' : 'border'"
+                                                    style="cursor: pointer;"
+                                                    t-on-click="() => this.selectNewBeat(beat)">
+                                                    <div class="card-body">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <div class="flex-grow-1">
+                                                                <h6 class="mb-1">
+                                                                    <i class="fa fa-map-marker me-2 text-primary"></i>
+                                                                    <strong><t t-esc="beat.beat_number"/> - <t t-esc="beat.name"/></strong>
+                                                                </h6>
+                                                                <small class="text-muted me-3">
+                                                                    <i class="fa fa-users me-1"></i>
+                                                                    <t t-esc="beat.customerCount || 0"/> Customers
+                                                                </small>
+                                                                <small class="text-muted">
+                                                                    <i class="fa fa-tasks me-1"></i>
+                                                                    Pending: <t t-esc="(beat.beatLines || []).filter(l => !l.visitStatus || l.visitStatus.status !== 'completed').length"/> visits
+                                                                </small>
+                                                            </div>
+                                                            <div>
+                                                                <t t-if="state.switchBeatForm.newBeat?.id === beat.id">
+                                                                    <i class="fa fa-check-circle fa-2x text-primary"></i>
+                                                                </t>
+                                                                <t t-else="">
+                                                                    <i class="fa fa-circle-o fa-2x text-muted"></i>
+                                                                </t>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                                <t t-elif="!state.switchBeatLoading">
+                                    <div class="alert alert-info">
+                                        <i class="fa fa-info-circle me-2"></i>
+                                        No other beats available.
+                                    </div>
+                                </t>
+                            </div>
+
+                            <div t-if="state.switchBeatForm.newBeat" class="mb-3">
+                                <label class="form-label fw-bold">
+                                    Reason for Switch <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" 
+                                        rows="4" 
+                                        t-model="state.switchBeatForm.reason"
+                                        placeholder="Please provide a detailed reason for Switch the beat..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" t-on-click="() => this.closeSwitchBeatModal()">
+                                <i class="fa fa-times me-1"></i> Cancel
+                            </button>
+                            <button type="button" 
+                                    class="btn btn-primary" 
+                                    t-on-click="() => this.saveSwitchBeat()"
+                                    t-att-disabled="!state.switchBeatForm.newBeat || !state.switchBeatForm.reason || !state.switchBeatForm.reason.trim()">
+                                <i class="fa fa-exchange me-1"></i> Confirm Switch &amp; Start Beat
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+
+        <t t-if="state.showVisitListModal">
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block" tabindex="-1">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content" style="max-height: 90vh;">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fa fa-calendar-check-o me-2"></i> 
+                                Visit History - <t t-esc="state.customerSummary?.name"/>
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" t-on-click="() => this.closeVisitListModal()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <t t-if="state.visitListData &amp;&amp; state.visitListData.length > 0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 50px;">#</th>
+                                                <th>Visit Date</th>
+                                                <th>Start Time</th>
+                                                <th>End Time</th>
+                                                <th>Duration</th>
+                                                <th>Status</th>
+                                                <th>Orders</th>
+                                                <th>Productive</th>
+                                                <th>Comments</th>
+                                                <th style="width: 100px;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="state.visitListData" t-as="visit" t-key="visit.id">
+                                                <tr>
+                                                    <td><t t-esc="visit_index + 1"/></td>
+                                                    <td>
+                                                        <i class="fa fa-calendar me-1"></i>
+                                                        <strong><t t-esc="formatDateTime(visit.actual_start_time).split(',')[0]"/></strong>
+                                                    </td>
+                                                    <td>
+                                                        <i class="fa fa-clock-o me-1"></i>
+                                                        <t t-esc="formatDateTime(visit.actual_start_time).split(',')[1]"/>
+                                                    </td>
+                                                    <td>
+                                                        <t t-if="visit.actual_end_time">
+                                                            <i class="fa fa-clock-o me-1"></i>
+                                                            <t t-esc="formatDateTime(visit.actual_end_time).split(',')[1]"/>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span class="badge bg-primary">In Progress</span>
+                                                        </t>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-info">
+                                                            <t t-esc="calculateDuration(visit.actual_start_time, visit.actual_end_time)"/>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span t-attf-class="badge bg-{{visit.status === 'completed' ? 'primary' : 'warning'}}">
+                                                            <t t-esc="visit.status"/>
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <t t-if="visit.order_count &amp;&amp; visit.order_count > 0">
+                                                            <span class="badge bg-primary">
+                                                                <i class="fa fa-shopping-cart me-1"></i>
+                                                                <t t-esc="visit.order_count"/>
+                                                            </span>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span class="text-muted">0</span>
+                                                        </t>
+                                                    </td>
+                                                    <td>
+                                                        <t t-if="visit.is_productive">
+                                                            <span class="badge bg-primary">
+                                                                <i class="fa fa-check"></i> Yes
+                                                            </span>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span class="badge bg-primary">
+                                                                <i class="fa fa-times"></i> No
+                                                            </span>
+                                                        </t>
+                                                    </td>
+                                                    <td>
+                                                        <t t-if="visit.visit_comments">
+                                                            <span class="badge bg-info" 
+                                                                  t-att-title="visit.visit_comments"
+                                                                  style="cursor: help;">
+                                                                <i class="fa fa-comment"></i> View
+                                                            </span>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span class="text-muted">-</span>
+                                                        </t>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-primary w-100" 
+                                                                t-on-click="() => this.viewVisitDetails(visit.id)">
+                                                            <i class="fa fa-eye"></i> View
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div class="alert alert-info text-center">
+                                    <i class="fa fa-info-circle fa-2x mb-2 d-block"></i>
+                                    <strong>No visit history found</strong>
+                                    <p class="mb-0">This is the first visit to this customer.</p>
+                                </div>
+                            </t>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" t-on-click="() => this.closeVisitListModal()">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+
+        <t t-if="state.showSalesOrderListModal">
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block" tabindex="-1">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content" style="max-height: 90vh;">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fa fa-file-text-o me-2"></i> 
+                                Sales Orders - <t t-esc="state.customerSummary?.name"/>
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" t-on-click="() => this.closeSalesOrderListModal()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <t t-if="state.salesOrderListData &amp;&amp; state.salesOrderListData.length > 0">
+
+                                <div class="d-flex align-items-center mb-3 mt-1">
+                                    <span class="badge bg-secondary me-2" style="font-size:0.85rem;">
+                                        <i class="fa fa-history me-1"></i> Previous Sales Orders
+                                    </span>
+                                    <span class="text-muted" style="font-size:0.8rem;"><t t-esc="state.salesOrderListData.length"/> order(s)</span>
+                                </div>
+                                <t t-foreach="state.salesOrderListData" t-as="order" t-key="order.id">
+                                        <div class="card mb-3 shadow-sm">
+                                            <div class="card-header bg-light"
+                                                 style="cursor: pointer;"
+                                                 t-on-click="() => this.viewSalesOrderDetails(order.id)">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-8">
+                                                        <h6 class="mb-0">
+                                                            <i class="fa fa-file-text-o me-2"></i>
+                                                            <strong><t t-esc="order.name"/></strong>
+                                                            <span t-attf-class="badge ms-2 {{getOrderStateBadge(order.state)}}">
+                                                                <t t-esc="getOrderStateText(order.state)"/>
+                                                            </span>
+                                                        </h6>
+                                                        <small class="text-muted">
+                                                            <i class="fa fa-calendar me-1"></i>
+                                                            <t t-esc="formatDateTime(order.date_order)"/>
+                                                        </small>
+                                                    </div>
+                                                    <div class="col-md-4 text-end">
+                                                        <h5 class="mb-0 text-primary">₹<t t-esc="order.amount_total.toFixed(2)"/></h5>
+                                                        <small class="text-muted"><i class="fa fa-hand-pointer-o me-1"></i> Click to view</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <t t-if="order.lines &amp;&amp; order.lines.length > 0">
+                                                    <table class="table table-sm table-bordered mb-0">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th style="width: 50px;">#</th>
+                                                                <th>Product</th>
+                                                                <th class="text-center" style="width: 100px;">Qty</th>
+                                                                <th class="text-end" style="width: 120px;">Unit Price</th>
+                                                                <th class="text-end" style="width: 120px;">Subtotal</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <t t-foreach="order.lines" t-as="line" t-key="line.id">
+                                                                <tr>
+                                                                    <td><t t-esc="line_index + 1"/></td>
+                                                                    <td><strong><t t-esc="line.product_id ? line.product_id[1] : line.name"/></strong></td>
+                                                                    <td class="text-center"><span class="badge bg-info"><t t-esc="line.product_uom_qty"/></span></td>
+                                                                    <td class="text-end">₹<t t-esc="line.price_unit.toFixed(2)"/></td>
+                                                                    <td class="text-end"><strong>₹<t t-esc="line.price_subtotal.toFixed(2)"/></strong></td>
+                                                                </tr>
+                                                            </t>
+                                                        </tbody>
+                                                        <tfoot class="table-light">
+                                                            <tr>
+                                                                <td colspan="4" class="text-end"><strong>Total Amount:</strong></td>
+                                                                <td class="text-end"><h6 class="mb-0 text-primary">₹<t t-esc="order.amount_total.toFixed(2)"/></h6></td>
+                                                            </tr>
+                                                        </tfoot>
+                                                    </table>
+                                                </t>
+                                                <t t-else="">
+                                                    <div class="text-muted text-center py-2"><i class="fa fa-inbox"></i> No items in this order</div>
+                                                </t>
+                                            </div>
+                                        </div>
+                                </t>
+
+                            </t>
+                            <t t-else="">
+                                <div class="alert alert-info text-center">
+                                    <i class="fa fa-info-circle fa-2x mb-2 d-block"></i>
+                                    <strong>No sales orders found</strong>
+                                    <p class="mb-0">This customer hasn't placed any orders yet.</p>
+                                </div>
+                            </t>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" t-on-click="() => this.closeSalesOrderListModal()">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+
+        <t t-if="state.showQuickOrder">
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block" tabindex="-1">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content" style="height: 90vh;">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fa fa-shopping-cart me-2"></i> Quick Order - <t t-esc="state.customerSummary?.name"/>
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" t-on-click="() => this.closeQuickOrder()"></button>
+                        </div>
+                        <div class="card-header bg-light">
+                            <ul class="nav nav-tabs card-header-tabs">
+                                <li class="nav-item">
+                                    <a class="nav-link" 
+                                       t-att-class="state.quickOrderTab === 'orders' ? 'active' : ''"
+                                       t-on-click="() => this.switchQuickOrderTab('orders')"
+                                       style="cursor: pointer;">
+                                        <i class="fa fa-shopping-cart me-1"></i> Create Order
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" 
+                                       t-att-class="state.quickOrderTab === 'sales' ? 'active' : ''"
+                                       t-on-click="() => this.switchQuickOrderTab('sales')"
+                                       style="cursor: pointer;">
+                                        <i class="fa fa-line-chart me-1"></i> Sales History
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" 
+                                       t-att-class="state.quickOrderTab === 'visits' ? 'active' : ''"
+                                       t-on-click="() => this.switchQuickOrderTab('visits')"
+                                       style="cursor: pointer;">
+                                        <i class="fa fa-calendar me-1"></i> Visit History
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" 
+                                       t-att-class="state.quickOrderTab === 'lastorder' ? 'active' : ''"
+                                       t-on-click="() => this.switchQuickOrderTab('lastorder')"
+                                       style="cursor: pointer;">
+                                        <i class="fa fa-clock-o me-1"></i> Last Order
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="modal-body p-0" style="overflow-y: auto;">
+                        
+                            <div t-if="state.quickOrderTab === 'orders'" class="p-3">
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-4">
+                                        <select class="form-select form-select-lg"
+                                                t-on-change="(ev) => this.onCategoryChange(ev)">
+                                            <option value="">All Categories</option>
+                                            <t t-foreach="state.productCategories" t-as="cat" t-key="cat.id">
+                                                <option t-att-value="cat.id"
+                                                        t-att-selected="state.selectedCategoryId == cat.id">
+                                                    <t t-esc="cat.complete_name || cat.name"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <input type="text"
+                                               class="form-control form-control-lg"
+                                               placeholder="Search products (e.g., Maida, Rice, Sugar)..."
+                                               t-model="state.productSearchText"
+                                               t-on-input="(ev) => this.onProductSearchChange(ev)"/>
+                                    </div>
+                                </div>
+                                <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
+                                    <table class="table table-hover table-bordered">
+                                        <thead class="table-light sticky-top" style="z-index: 1;">
+                                            <tr>
+                                                <th style="width: 50px;">#</th>
+                                                <th>Product Name</th>
+                                                <th>Code</th>
+                                                <th>Category</th>
+                                                <th style="width: 120px;">Price (₹)</th>
+                                                <th style="width: 120px;">Quantity</th>
+                                                <th style="width: 120px;">Subtotal (₹)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-if="state.filteredProducts.length === 0">
+                                                <tr>
+                                                    <td colspan="7" class="text-center text-muted py-4">
+                                                        No products found. Try a different search term.
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                            <t t-foreach="state.filteredProducts" t-as="product" t-key="product.id">
+                                                <tr t-att-class="state.selectedProducts[product.id] ? 'table-primary' : ''">
+                                                    <td><t t-esc="product_index + 1"/></td>
+                                                    <td><strong><t t-esc="product.name"/></strong></td>
+                                                    <td>
+                                                        <span class="badge bg-primary">
+                                                            <t t-esc="product.default_code || 'N/A'"/>
+                                                        </span>
+                                                    </td>
+                                                    <td><t t-esc="product.categ_id ? product.categ_id[1] : '-'"/></td>
+                                                    <td class="text-end">
+                                                        <strong><t t-esc="product.list_price.toFixed(2)"/></strong>
+                                                    </td>
+                                                    <td>
+                                                        <input type="number" 
+                                                               class="form-control" 
+                                                               min="0" step="1" placeholder="0"
+                                                               t-att-value="state.selectedProducts[product.id]?.quantity || 0"
+                                                               t-on-input="(ev) => this.onQuantityChange(product.id, ev.target.value)"/>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <t t-if="state.selectedProducts[product.id]">
+                                                            <strong class="text-primary">
+                                                                <t t-esc="state.selectedProducts[product.id].subtotal.toFixed(2)"/>
+                                                            </strong>
+                                                        </t>
+                                                        <t t-else=""><span class="text-muted">0.00</span></t>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div t-elif="state.quickOrderTab === 'sales'" class="p-3">
+                                <h5 class="mb-3"><i class="fa fa-shopping-cart me-2"></i>Sales Order History</h5>
+                                <t t-if="state.customerOrders &amp;&amp; state.customerOrders.length > 0">
+                                    <t t-foreach="state.customerOrders" t-as="order" t-key="order.id">
+                                        <div class="card mb-3 shadow-sm">
+                                            <div class="card-header bg-light" style="cursor: pointer;" t-on-click="() => this.viewOrderDetails(order.id)">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-8">
+                                                        <h6 class="mb-0">
+                                                            <i class="fa fa-file-text-o me-2"></i>
+                                                            <strong><t t-esc="order.name"/></strong>
+                                                            <span t-attf-class="badge ms-2 bg-{{order.state === 'sale' || order.state === 'done' ? 'primary' : order.state === 'draft' ? 'secondary' : 'warning'}}">
+                                                                <t t-esc="order.state"/>
+                                                            </span>
+                                                        </h6>
+                                                    </div>
+                                                    <div class="col-md-4 text-end">
+                                                        <h5 class="mb-0 text-primary">₹<t t-esc="order.amount_total.toFixed(2)"/></h5>
+                                                        <small class="text-muted"><i class="fa fa-hand-pointer-o me-1"></i> Click to view</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <t t-if="order.lines &amp;&amp; order.lines.length > 0">
+                                                    <table class="table table-sm table-bordered mb-0">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Product</th>
+                                                                <th class="text-center" style="width: 100px;">Qty</th>
+                                                                <th class="text-end" style="width: 120px;">Unit Price</th>
+                                                                <th class="text-end" style="width: 120px;">Subtotal</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <t t-foreach="order.lines" t-as="line" t-key="line.id">
+                                                                <tr>
+                                                                    <td><strong><t t-esc="line.product_id ? line.product_id[1] : line.name"/></strong></td>
+                                                                    <td class="text-center"><span class="badge bg-info"><t t-esc="line.product_uom_qty"/></span></td>
+                                                                    <td class="text-end">₹<t t-esc="line.price_unit.toFixed(2)"/></td>
+                                                                    <td class="text-end"><strong>₹<t t-esc="line.price_subtotal.toFixed(2)"/></strong></td>
+                                                                </tr>
+                                                            </t>
+                                                        </tbody>
+                                                    </table>
+                                                </t>
+                                                <t t-else=""><div class="text-muted text-center py-2"><i class="fa fa-inbox"></i> No items</div></t>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <div class="alert alert-info text-center">
+                                        <i class="fa fa-info-circle fa-2x mb-2 d-block"></i>
+                                        <strong>No sales orders found</strong>
+                                        <p class="mb-0">This customer hasn't placed any orders yet.</p>
+                                    </div>
+                                </t>
+                            </div>
+                            <div t-elif="state.quickOrderTab === 'visits'" class="p-3">
+                                <h5 class="mb-3"><i class="fa fa-calendar-check-o me-2"></i>Visit History</h5>
+                                <t t-if="state.customerVisits &amp;&amp; state.customerVisits.length > 0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 50px;">#</th>
+                                                    <th>Visit Date</th>
+                                                    <th>Start Time</th>
+                                                    <th>End Time</th>
+                                                    <th>Duration</th>
+                                                    <th>Status</th>
+                                                    <th>Orders</th>
+                                                    <th>Productive</th>
+                                                    <th>Comments</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.customerVisits" t-as="visit" t-key="visit.id">
+                                                    <tr>
+                                                        <td><t t-esc="visit_index + 1"/></td>
+                                                        <td><i class="fa fa-calendar me-1"></i><strong><t t-esc="visit.actual_start_time.split(' ')[0]"/></strong></td>
+                                                        <td><i class="fa fa-clock-o me-1"></i><t t-esc="visit.actual_start_time.split(' ')[1]"/></td>
+                                                        <td>
+                                                            <t t-if="visit.actual_end_time"><i class="fa fa-clock-o me-1"></i><t t-esc="visit.actual_end_time.split(' ')[1]"/></t>
+                                                            <t t-else=""><span class="badge bg-primary">In Progress</span></t>
+                                                        </td>
+                                                        <td>
+                                                            <t t-if="visit.actual_end_time">
+                                                                <t t-set="startTime" t-value="new Date(visit.actual_start_time)"/>
+                                                                <t t-set="endTime" t-value="new Date(visit.actual_end_time)"/>
+                                                                <t t-set="duration" t-value="Math.floor((endTime - startTime) / 1000 / 60)"/>
+                                                                <span class="badge bg-info"><t t-esc="duration"/> min</span>
+                                                            </t>
+                                                            <t t-else="">-</t>
+                                                        </td>
+                                                        <td>
+                                                            <span t-attf-class="badge bg-{{visit.status === 'completed' ? 'primary' : visit.status === 'in_progress' ? 'warning' : 'secondary'}}">
+                                                                <t t-esc="visit.status"/>
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <t t-if="visit.order_count &amp;&amp; visit.order_count > 0">
+                                                                <span class="badge bg-primary"><i class="fa fa-shopping-cart me-1"></i><t t-esc="visit.order_count"/></span>
+                                                            </t>
+                                                            <t t-else=""><span class="text-muted">0</span></t>
+                                                        </td>
+                                                        <td>
+                                                            <t t-if="visit.is_productive"><span class="badge bg-primary"><i class="fa fa-check"></i> Yes</span></t>
+                                                            <t t-else=""><span class="badge bg-primary"><i class="fa fa-times"></i> No</span></t>
+                                                        </td>
+                                                        <td>
+                                                            <t t-if="visit.visit_comments">
+                                                                <span class="badge bg-info" t-att-title="visit.visit_comments" style="cursor: help;"><i class="fa fa-comment"></i> View</span>
+                                                            </t>
+                                                            <t t-else=""><span class="text-muted">-</span></t>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="alert alert-info text-center">
+                                        <i class="fa fa-info-circle fa-2x mb-2 d-block"></i>
+                                        <strong>No visit history found</strong>
+                                        <p class="mb-0">This is the first visit to this customer.</p>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <div t-elif="state.quickOrderTab === 'lastorder'" class="p-3">
+                                <h5 class="mb-3"><i class="fa fa-clock-o me-2"></i>Last Order Details</h5>
+                                <t t-if="state.lastOrderDetails">
+                                    <div class="card shadow-sm">
+                                        <div class="card-header bg-primary text-white">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-8">
+                                                    <h5 class="mb-0"><i class="fa fa-file-text-o me-2"></i><t t-esc="state.lastOrderDetails.name"/></h5>
+                                                    <small><i class="fa fa-calendar me-1"></i>Order Date: <t t-esc="state.lastOrderDetails.date_order"/></small>
+                                                </div>
+                                                <div class="col-md-4 text-end">
+                                                    <h4 class="mb-0">₹<t t-esc="state.lastOrderDetails.amount_total.toFixed(2)"/></h4>
+                                                    <span t-attf-class="badge bg-{{state.lastOrderDetails.state === 'sale' || state.lastOrderDetails.state === 'done' ? 'primary' : 'warning'}}">
+                                                        <t t-esc="state.lastOrderDetails.state"/>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <h6 class="mb-3"><i class="fa fa-list me-2"></i>Order Items</h6>
+                                            <t t-if="state.lastOrderDetails.lines &amp;&amp; state.lastOrderDetails.lines.length > 0">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover table-bordered">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th style="width: 50px;">#</th>
+                                                                <th>Product Name</th>
+                                                                <th class="text-center" style="width: 100px;">Quantity</th>
+                                                                <th class="text-end" style="width: 120px;">Unit Price</th>
+                                                                <th class="text-end" style="width: 120px;">Subtotal</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <t t-foreach="state.lastOrderDetails.lines" t-as="line" t-key="line.id">
+                                                                <tr>
+                                                                    <td><t t-esc="line_index + 1"/></td>
+                                                                    <td><strong><t t-esc="line.product_id ? line.product_id[1] : line.name"/></strong></td>
+                                                                    <td class="text-center"><span class="badge bg-primary"><t t-esc="line.product_uom_qty"/></span></td>
+                                                                    <td class="text-end">₹<t t-esc="line.price_unit.toFixed(2)"/></td>
+                                                                    <td class="text-end"><strong class="text-primary">₹<t t-esc="line.price_subtotal.toFixed(2)"/></strong></td>
+                                                                </tr>
+                                                            </t>
+                                                        </tbody>
+                                                        <tfoot class="table-light">
+                                                            <tr>
+                                                                <td colspan="4" class="text-end"><strong>Total Amount:</strong></td>
+                                                                <td class="text-end"><h5 class="mb-0 text-primary">₹<t t-esc="state.lastOrderDetails.amount_total.toFixed(2)"/></h5></td>
+                                                            </tr>
+                                                        </tfoot>
+                                                    </table>
+                                                </div>
+                                                <div class="text-end mt-3">
+                                                    <button class="btn btn-primary" t-on-click="() => this.viewOrderDetails(state.lastOrderDetails.id)">
+                                                        <i class="fa fa-eye me-1"></i> View Full Order
+                                                    </button>
+                                                </div>
+                                            </t>
+                                            <t t-else="">
+                                                <div class="text-muted text-center py-3">
+                                                    <i class="fa fa-inbox fa-2x mb-2 d-block"></i>No items in this order
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="alert alert-warning text-center">
+                                        <i class="fa fa-exclamation-circle fa-2x mb-2 d-block"></i>
+                                        <strong>No Previous Orders</strong>
+                                        <p class="mb-0">This customer hasn't placed any confirmed orders yet.</p>
+                                    </div>
+                                </t>
+                            </div>
+
+                        </div>
+                        <div t-if="state.quickOrderTab === 'orders'" class="modal-footer bg-light">
+                            <div class="w-100">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5 class="mb-2">Order Summary</h5>
+                                        <div class="d-flex gap-4">
+                                            <div><small class="text-muted">Items:</small><strong class="ms-1"><t t-esc="getOrderSummary().itemCount"/></strong></div>
+                                            <div><small class="text-muted">Subtotal:</small><strong class="ms-1">₹<t t-esc="getOrderSummary().subtotal.toFixed(2)"/></strong></div>
+                                            <div><small class="text-muted">GST (18%):</small><strong class="ms-1">₹<t t-esc="getOrderSummary().tax.toFixed(2)"/></strong></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <h4 class="text-primary mb-2">Total: ₹<t t-esc="getOrderSummary().total.toFixed(2)"/></h4>
+                                        <button type="button" class="btn btn-primary me-2" t-on-click="() => this.closeQuickOrder()">Cancel</button>
+                                        <button type="button" class="btn btn-primary" t-on-click="() => this.saveQuickOrder()">
+                                            <i class="fa fa-check me-1"></i> Save Order
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div t-else="" class="modal-footer bg-light">
+                            <button type="button" class="btn btn-primary" t-on-click="() => this.closeQuickOrder()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+
+        <t t-if="state.showStartDayModal">
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title"><i class="fa fa-play me-2"></i> Start Day</h5>
+                            <button type="button" class="btn-close btn-close-white" t-on-click="() => this.closeStartDayModal()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Today's Work Plan <span class="text-danger">*</span></label>
+                                <select class="form-select" t-model="state.startDayForm.todayWorkPlan">
+                                    <option value="Customer Visit">Customer Visit</option>
+                                    <option value="Conference">Conference</option>
+                                    <option value="Training">Training</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Travel Type <span class="text-danger">*</span></label>
+                                <select class="form-select" t-model="state.startDayForm.travelType">
+                                    <option value="">--Select--</option>
+                                    <option value="Headquarters">Headquarters</option>
+                                    <option value="Up country">Up country</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Vehicle Used <span class="text-danger">*</span></label>
+                                <select class="form-select" t-model="state.startDayForm.vehicleUsed">
+                                    <option value="">--Select--</option>
+                                    <option value="Personal/own">Personal/own</option>
+                                    <option value="Office">Office</option>
+                                </select>
+                            </div>
+                            <hr class="my-4"/>
+                            <div t-if="state.isCapturingLocation" class="alert alert-info text-center">
+                                <i class="fa fa-spinner fa-spin fa-2x mb-2"></i>
+                                <h5>Capturing Your Location...</h5>
+                                <p class="mb-0">Please wait while we get your current location</p>
+                            </div>
+                            <div t-if="state.startDayForm.locationData &amp;&amp; !state.isCapturingLocation" class="card border-primary mb-3">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold"><i class="fa fa-map-marker me-1"></i> Address:</label>
+                                        <p class="form-control-plaintext border rounded p-2 bg-light">
+                                            <t t-esc="state.startDayForm.locationData.full_address || 'Address not available'"/>
+                                        </p>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <label class="form-label fw-bold"><i class="fa fa-globe me-1"></i> Latitude:</label>
+                                            <p class="form-control-plaintext border rounded p-2 bg-light">
+                                                <t t-esc="state.startDayForm.locationData.latitude.toFixed(6)"/>
+                                            </p>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label fw-bold"><i class="fa fa-globe me-1"></i> Longitude:</label>
+                                            <p class="form-control-plaintext border rounded p-2 bg-light">
+                                                <t t-esc="state.startDayForm.locationData.longitude.toFixed(6)"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-6" t-if="state.startDayForm.locationData.city">
+                                            <small class="text-muted">City:</small>
+                                            <div class="fw-bold"><t t-esc="state.startDayForm.locationData.city"/></div>
+                                        </div>
+                                        <div class="col-6" t-if="state.startDayForm.locationData.state">
+                                            <small class="text-muted">State:</small>
+                                            <div class="fw-bold"><t t-esc="state.startDayForm.locationData.state"/></div>
+                                        </div>
+                                        <div class="col-6" t-if="state.startDayForm.locationData.country">
+                                            <small class="text-muted">Country:</small>
+                                            <div class="fw-bold"><t t-esc="state.startDayForm.locationData.country"/></div>
+                                        </div>
+                                        <div class="col-6" t-if="state.startDayForm.locationData.postcode">
+                                            <small class="text-muted">Postal Code:</small>
+                                            <div class="fw-bold"><t t-esc="state.startDayForm.locationData.postcode"/></div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button type="button" class="btn btn-outline-primary btn-sm w-100" t-on-click="() => this.captureStartDayLocation()">
+                                            <i class="fa fa-refresh me-1"></i> Recapture Location
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div t-if="!state.startDayForm.locationData &amp;&amp; !state.isCapturingLocation" class="alert alert-danger">
+                                <i class="fa fa-exclamation-triangle me-2"></i>
+                                <strong>Location capture failed.</strong>
+                                <p class="mb-2">Please ensure location services are enabled.</p>
+                                <button type="button" class="btn btn-primary btn-sm" t-on-click="() => this.captureStartDayLocation()">
+                                    <i class="fa fa-refresh me-1"></i> Try Again
+                                </button>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" t-on-click="() => this.closeStartDayModal()">Cancel</button>
+                            <button type="button" class="btn btn-primary" t-on-click="() => this.saveStartDay()"
+                                    t-att-disabled="!state.startDayForm.locationData || state.isProcessing || state.isCapturingLocation">
+                                <i class="fa fa-check me-1"></i> Start Day
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+
+        <t t-if="state.showStartBeatModal">
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title"><i class="fa fa-map-marker me-2"></i> Start Beat</h5>
+                            <button type="button" class="btn-close btn-close-white" t-on-click="() => this.closeStartBeatModal()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-info">
+                                <strong>Beat:</strong> <t t-esc="state.selectedBeat?.beat_number"/>
+                                <br/>
+                                <strong>Customers:</strong> <t t-esc="state.selectedBeat?.customerCount || 0"/>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" t-on-click="() => this.closeStartBeatModal()">Cancel</button>
+                            <button type="button" class="btn btn-primary" t-on-click="() => this.saveStartBeat()">
+                                <i class="fa fa-play me-1"></i> Start Beat
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+        <t t-if="state.showStartVisitModal">
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title"><i class="fa fa-user me-2"></i> Start Visit</h5>
+                            <button type="button" class="btn-close btn-close-white" t-on-click="() => this.closeStartVisitModal()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-info">
+                                <strong>Customer:</strong> <t t-esc="state.currentBeatLine?.partner_id[1]"/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Store Image <span class="text-danger">*</span></label>
+                                <input type="file" class="form-control" accept="image/*" t-on-change="(ev) => this.handleImageUpload(ev)"/>
+                                <t t-if="state.startVisitForm.storeImageName">
+                                    <small class="text-success"><i class="fa fa-check me-1"></i><t t-esc="state.startVisitForm.storeImageName"/></small>
+                                </t>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" t-on-click="() => this.closeStartVisitModal()">Cancel</button>
+                            <button type="button" class="btn btn-primary" t-on-click="() => this.saveStartVisit()">
+                                <i class="fa fa-play me-1"></i> Start Visit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+
+        <t t-if="state.showEndVisitModal">
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title"><i class="fa fa-stop me-2"></i> End Visit</h5>
+                            <button type="button" class="btn-close btn-close-white" t-on-click="() => this.closeEndVisitModal()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Visit Comments</label>
+                                <textarea class="form-control" rows="3" t-model="state.endVisitForm.comments"
+                                          placeholder="Add any additional notes about this visit..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" t-on-click="() => this.closeEndVisitModal()">Cancel</button>
+                            <button type="button" class="btn btn-primary" t-on-click="() => this.saveEndVisit()">
+                                <i class="fa fa-stop me-1"></i> End Visit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+        <t t-if="state.showEndBeatModal">
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-dark">
+                            <h5 class="modal-title"><i class="fa fa-stop-circle me-2"></i> End Beat</h5>
+                            <button type="button" class="btn-close" t-on-click="() => this.closeEndBeatModal()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to end this beat?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" t-on-click="() => this.closeEndBeatModal()">Cancel</button>
+                            <button type="button" class="btn btn-primary" t-on-click="() => this.saveEndBeat()">
+                                <i class="fa fa-stop-circle me-1"></i> End Beat
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+        <t t-if="state.showSwitchHistoryModal">
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal fade show d-block" tabindex="-1">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content" style="max-height: 90vh;">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fa fa-history me-2"></i> Beat Switch History - Today
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white"
+                                    t-on-click="() => this.closeSwitchHistoryModal()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <t t-if="state.beatSwitchHistory &amp;&amp; state.beatSwitchHistory.length > 0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 50px;">#</th>
+                                                <th>Executive</th>
+                                                <th>Date</th>
+                                                <th>Switch Time</th>
+                                                <th>Start Beat</th>
+                                                <th>Switched To Beat</th>
+                                                <th>Reason</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="state.beatSwitchHistory" t-as="row" t-key="row.id">
+                                                <tr>
+                                                    <td><t t-esc="row_index + 1"/></td>
+                                                    <td>
+                                                        <i class="fa fa-user me-1 text-primary"></i>
+                                                        <strong><t t-esc="row.employee_name"/></strong>
+                                                    </td>
+                                                    <td>
+                                                        <i class="fa fa-calendar me-1"></i>
+                                                        <t t-esc="row.switch_date"/>
+                                                    </td>
+                                                    <td>
+                                                        <i class="fa fa-clock-o me-1"></i>
+                                                        <t t-esc="formatDateTime(row.switch_time)"/>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-secondary">
+                                                            <t t-esc="row.start_beat_number"/>
+                                                        </span>
+                                                        <t t-esc="' - ' + row.start_beat_name"/>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-primary">
+                                                            <t t-esc="row.switched_beat_number"/>
+                                                        </span>
+                                                        <t t-esc="' - ' + row.switched_beat_name"/>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-muted" style="font-size:0.9rem;">
+                                                            <t t-esc="row.reason"/>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div class="alert alert-info text-center">
+                                    <i class="fa fa-info-circle fa-2x mb-2 d-block"></i>
+                                    <strong>No beat switches recorded today</strong>
+                                </div>
+                            </t>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary"
+                                    t-on-click="() => this.closeSwitchHistoryModal()">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+
+    </t>
+</templates>

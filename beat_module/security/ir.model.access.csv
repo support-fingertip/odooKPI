@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_beat_module,beat.module,model_beat_module,,1,1,1,1
+access_beat_line,beat.line,model_beat_line,,1,1,1,1
+access_beat_switch_history,beat.switch.history,model_beat_switch_history,,1,1,1,1

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Visit Form View -->
+    <record id="view_visit_model_form" model="ir.ui.view">
+        <field name="name">visit.model.form</field>
+        <field name="model">visit.model</field>
+        <field name="arch" type="xml">
+            <form string="Visit">
+                <header>
+                    <field name="status" widget="statusbar" statusbar_visible="planned,in_progress,completed"/>
+                </header>
+                <sheet>
+                    
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group string="Visit Information">
+                            <field name="employee_id" options="{'no_create': True}"/>
+                            <field name="partner_id" options="{'no_create': True}"/>
+                            <field name="beat_id" options="{'no_create': True}"/>
+                            <field name="beat_line_id" options="{'no_create': True}"/>
+                            <field name="visit_for"/>
+                        </group>
+                        <group string="Visit Details">
+                            <field name="today_work_plan"/>
+                            <field name="travel_type"/>
+                            <field name="vehicle_used"/>
+                            <field name="is_productive"/>
+                            <field name="productivity_reason"/>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <group string="Timing">
+                            <field name="planned_start_time"/>
+                            <field name="actual_start_time"/>
+                            <field name="planned_end_time"/>
+                            <field name="actual_end_time"/>
+                            <field name="duration_display"/>
+                        </group>
+                        <group string="Financial Summary">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="total_order_amount" widget="monetary"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Order Lines" name="order_lines">
+                            <field name="order_line_ids" readonly="1">
+                                <list string="Order Lines" decoration-info="state=='draft'" decoration-success="state=='sale'">
+                                    <field name="product_id"/>
+                                    <field name="name"/>
+                                    <field name="product_uom_qty"/>
+                                    <field name="product_uom" groups="uom.group_uom"/>
+                                    <field name="price_unit"/>
+                                    <field name="tax_id" widget="many2many_tags" optional="show"/>
+                                    <field name="price_subtotal" sum="Total"/>
+                                    <field name="state" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                        
+                        <page string="Comments &amp; Images" name="comments">
+                            <group>
+                                <field name="visit_comments" widget="text"/>
+                                <field name="store_image" widget="image" class="oe_avatar"/>
+                                <field name="store_image_filename" invisible="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                
+            </form>
+        </field>
+    </record>
+
+    <!-- Rest of your views remain the same -->
+    <record id="view_visit_model_list" model="ir.ui.view">
+        <field name="name">visit.model.list</field>
+        <field name="model">visit.model</field>
+        <field name="arch" type="xml">
+            <list string="Visits" decoration-success="status=='completed'" 
+                  decoration-warning="status=='in_progress'" decoration-muted="status=='cancelled'">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="partner_id"/>
+                <field name="beat_id"/>
+                <field name="actual_start_time"/>
+                <field name="actual_end_time"/>
+                <field name="duration_display"/>
+                <field name="status"/>
+                <field name="order_count"/>
+                <field name="total_order_amount" sum="Total"/>
+                <field name="is_productive"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Visit Search View -->
+    <record id="view_visit_model_search" model="ir.ui.view">
+        <field name="name">visit.model.search</field>
+        <field name="model">visit.model</field>
+        <field name="arch" type="xml">
+            <search string="Search Visits">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="partner_id"/>
+                <field name="beat_id"/>
+                <filter string="Today" name="today" domain="[('actual_start_time', '&gt;=', datetime.datetime.now().replace(hour=0, minute=0, second=0)), ('actual_start_time', '&lt;=', datetime.datetime.now().replace(hour=23, minute=59, second=59))]"/>
+                <filter string="In Progress" name="in_progress" domain="[('status', '=', 'in_progress')]"/>
+                <filter string="Completed" name="completed" domain="[('status', '=', 'completed')]"/>
+                <filter string="Productive" name="productive" domain="[('is_productive', '=', True)]"/>
+                <filter string="Non-Productive" name="non_productive" domain="[('is_productive', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Employee" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Customer" name="group_customer" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Beat" name="group_beat" context="{'group_by': 'beat_id'}"/>
+                    <filter string="Status" name="group_status" context="{'group_by': 'status'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'actual_start_time:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Visit Action -->
+    <record id="action_visit_model" model="ir.actions.act_window">
+        <field name="name">Visits</field>
+        <field name="res_model">visit.model</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_today': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first visit!
+            </p>
+        </field>
+    </record>
+
+</odoo>

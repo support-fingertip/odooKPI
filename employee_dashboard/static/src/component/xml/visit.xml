@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="employee_dashboard.VisitList">
+        <div style="flex: 1; display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden;">
+           
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style="flex-shrink: 0;">
+                <h4 class="mb-0">
+                    <i class="fa fa-history me-2"></i>
+                    Visits
+                </h4>
+                
+                <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm" style="width: auto;" t-model="state.filterStatus" t-on-change="loadVisits">
+                        <option value="">All Status</option>
+                        <option value="planned">Planned</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                    
+                    <button class="btn btn-primary btn-primary" t-on-click="refreshVisits">
+                        <i class="fa fa-refresh me-1"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div t-if="!getEmployeeId()" class="alert alert-primary">
+                <i class="fa fa-primary-circle me-2"></i>
+                Please select an employee to view visits.
+            </div>
+
+            <div t-elif="state.loading" class="text-center py-5">
+                <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
+                <p class="mt-3 text-muted">Loading visits...</p>
+            </div>
+            <div t-elif="state.visits.length === 0" class="alert alert-warning">
+                <i class="fa fa-exclamation-triangle me-2"></i>
+                No visits found.
+            </div>
+
+            <div t-else="" style="flex: 1; min-height: 0; overflow-y: auto; overflow-x: auto;">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th>Visit ID</th>
+                            <th>Customer</th>
+                            <th>Beat</th>
+                            <th>Date</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th>Productive</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="state.visits" t-as="visit" t-key="visit.id">
+                            <tr t-attf-class="{{getRowClass(visit)}}">
+                                <td><t t-esc="visit.name"/></td>
+                                <td>
+                                    <i class="fa fa-user me-1"></i>
+                                    <t t-esc="visit.partner_id[1]"/>
+                                </td>
+                                <td>
+                                    <i class="fa fa-map-marker me-1"></i>
+                                    <t t-esc="visit.beat_id[1]"/>
+                                </td>
+                                <td><t t-esc="formatDate(visit.actual_start_time)"/></td>
+                                <td><t t-esc="formatTime(visit.actual_start_time)"/></td>
+                                <td><t t-esc="formatTime(visit.actual_end_time)"/></td>
+                                <td>
+                                    <span class="badge bg-primary">
+                                        <t t-esc="visit.duration_display"/>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span t-attf-class="badge {{getStatusBadge(visit.status)}}">
+                                        <t t-esc="getStatusText(visit.status)"/>
+                                    </span>
+                                </td>
+                                <td>
+                                    <t t-if="visit.is_productive">
+                                        <span class="badge bg-primary">
+                                            <i class="fa fa-check"></i> Yes
+                                        </span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="badge bg-primary">
+                                            <i class="fa fa-times"></i> No
+                                        </span>
+                                    </t>
+                                </td>
+                                <td>
+                                    <button class="btn btn-primary btn-outline-primary" 
+                                            t-on-click="() => this.viewVisit(visit.id)">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+
+            <div t-if="state.visits.length > 0" class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top" style="flex-shrink: 0;">
+                <div class="text-muted">
+                    Showing <strong><t t-esc="state.visits.length"/></strong> visits
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary btn-outline-primary" 
+                            t-on-click="loadMoreVisits"
+                            t-if="state.hasMore">
+                        Load More
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

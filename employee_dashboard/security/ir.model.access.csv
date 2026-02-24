@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_visit_model_user,visit.model.user,model_visit_model,employee_dashboard.group_employee_dashboard_user,1,1,1,0
+access_visit_model_manager,visit.model.manager,model_visit_model,employee_dashboard.group_employee_dashboard_manager,1,1,1,1
+access_pjp_item_user,pjp.item.user,model_pjp_item,employee_dashboard.group_employee_dashboard_user,1,1,1,0
+access_pjp_item_manager,pjp.item.manager,model_pjp_item,employee_dashboard.group_employee_dashboard_manager,1,1,1,1
+access_pjp_model_user,pjp.model.user,model_pjp_model,employee_dashboard.group_employee_dashboard_user,1,1,1,0
+access_pjp_model_manager,pjp.model.manager,model_pjp_model,employee_dashboard.group_employee_dashboard_manager,1,1,1,1

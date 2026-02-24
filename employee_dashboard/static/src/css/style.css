@@ -1,0 +1,213 @@
+/* ================================================================
+   Calendar wrapper — FullCalendar needs a fixed height to render
+   ================================================================ */
+#contained_calendar_wrapper {
+    width: 100%;
+    height: 520px;
+    max-height: 80vh;
+    overflow: hidden;
+    border: 1px solid #e6e6e6;
+    border-radius: 6px;
+    position: relative;
+    background: #fff;
+}
+
+#month_calendar {
+    width: 100%;
+    height: 100% !important;
+}
+
+#month_calendar .fc-view-harness,
+#month_calendar .fc-scroller,
+#month_calendar .fc-view {
+    height: 100% !important;
+    max-height: 100% !important;
+}
+
+/* ================================================================
+   Card grid
+   ================================================================ */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    width: 100%;
+    padding: 10px;
+}
+
+.card-grid .card {
+    min-height: 150px;
+    box-sizing: border-box;
+}
+
+.card[style*="cursor: pointer"]:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ================================================================
+   Modal — scrollable body and sticky table headers
+   ================================================================ */
+.modal-body .table-responsive {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.table-responsive .sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #fff;
+}
+
+/* ================================================================
+   Odoo 18 — Fix client-action height & scrolling chain
+   Every custom OWL page must be able to scroll its own content.
+   The chain is:
+     .o_action_manager  (flex col, overflow hidden)
+       └─ .o_action     (flex 1, overflow hidden, FLEX CONTAINER)
+            └─ <component root>  (flex 1, overflow hidden)
+                 └─ <scrollable content>  (flex 1, overflow-y auto)
+   ================================================================ */
+
+/* 1. Action manager — flex column, clipped */
+.o_action_manager {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+    min-height: 0;
+}
+
+/* 2. Odoo's action wrapper — becomes a flex container so
+      the OWL component root can use flex:1 instead of height:100% */
+.o_action_manager > .o_action {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+/* 3. Odoo 18 sometimes adds .o_view_controller between
+      .o_action and the OWL component */
+.o_action_manager > .o_action > .o_view_controller,
+.o_action_manager > .o_action > .o_client_action_view {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 4. Any unknown OWL fragment wrapper Odoo 18 may inject */
+.o_action_manager > .o_action > div:not([class]) {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ================================================================
+   Custom component roots — fill the flex parent reliably
+   ================================================================ */
+
+/* Employee Dashboard root (class added in employee_dashboard.xml) */
+.o_employee_dashboard_wrap {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* Today Visit root — wraps all page content and is the scroll container.
+   All direct children use flex-shrink:0 so they stay at natural height;
+   when total height exceeds the available space the wrapper scrolls. */
+.o_today_visit_wrap {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    padding-bottom: 16px;
+}
+
+/* KPI dashboard root — override height:100% with flex approach */
+.kpi-dashboard {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+/* ================================================================
+   Tab content scrollable areas inside employee dashboard
+   ================================================================ */
+.o_employee_dashboard_wrap .tab-content-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* ================================================================
+   Table scrollable wrapper used in all list views
+   ================================================================ */
+.scroll-table-wrapper {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+/* ================================================================
+   Sticky table headers in scrollable containers
+   ================================================================ */
+.scroll-table-wrapper thead.sticky-top th,
+.table-responsive thead.sticky-top th,
+div[style*="overflow-y: auto"] thead.sticky-top th,
+div[style*="overflow-y: auto"] thead[style*="sticky"] th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: inherit;
+}
+
+/* ================================================================
+   Custom scrollbar styling (webkit)
+   ================================================================ */
+.o_today_visit_wrap ::-webkit-scrollbar,
+.o_employee_dashboard_wrap ::-webkit-scrollbar,
+.kpi-dashboard ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.o_today_visit_wrap ::-webkit-scrollbar-track,
+.o_employee_dashboard_wrap ::-webkit-scrollbar-track,
+.kpi-dashboard ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.o_today_visit_wrap ::-webkit-scrollbar-thumb,
+.o_employee_dashboard_wrap ::-webkit-scrollbar-thumb,
+.kpi-dashboard ::-webkit-scrollbar-thumb {
+    background: #adb5bd;
+    border-radius: 3px;
+}
+
+.o_today_visit_wrap ::-webkit-scrollbar-thumb:hover,
+.o_employee_dashboard_wrap ::-webkit-scrollbar-thumb:hover,
+.kpi-dashboard ::-webkit-scrollbar-thumb:hover {
+    background: #6c757d;
+}
