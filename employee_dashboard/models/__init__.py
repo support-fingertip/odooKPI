@@ -3,3 +3,4 @@ from . import visit_model
 from . import pjp_model
 from . import sale_order
 from . import hr_attendance
+from . import executive_bid_report
