@@ -617,28 +617,11 @@
                                     </table>
                                 </div>
                             </div>
-                            <div class="alert alert-light border" role="alert" style="margin-top: 8px; font-size: 12px;">
-                                <i class="fa fa-database text-primary me-1"/>
-                                <strong>Data sources:</strong>
-                                <ul style="margin: 6px 0 0 0; padding-left: 18px;">
-                                    <li><strong>Visits</strong> — completed visits in the period (<code>visit.model</code>, status=completed)</li>
-                                    <li><strong>Orders</strong> — all sale orders in the period (<code>sale.order</code>, date_order in period)</li>
-                                    <li><strong>New Dealers</strong> — <em>add manually in the tab below</em></li>
-                                    <li><strong>Payment Collected</strong> — <em>add manually in the tab below</em></li>
-                                    <li><strong>Complaints Solved</strong> — <em>add manually in the tab below</em></li>
-                                </ul>
-                            </div>
+                           
                         </page>
 
                         <page string="Manual Actual Entries" name="actual_entries">
-                            <div class="alert alert-warning" role="alert" style="margin-bottom: 12px;">
-                                <i class="fa fa-exclamation-triangle me-1"/>
-                                <strong>New Dealers</strong>, <strong>Payment Collected</strong>, and
-                                <strong>Complaints Solved</strong> require manual entries here.
-                                <strong>Visits</strong> are auto-computed from completed visit records
-                                and <strong>Orders</strong> are auto-computed from all sale orders in the period.
-                                To add or correct a value, add an entry below — the higher value will be used.
-                            </div>
+                           
                             <field name="actual_ids">
                                 <list editable="bottom">
                                     <field name="date"/>

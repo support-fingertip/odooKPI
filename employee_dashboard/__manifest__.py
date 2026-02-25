@@ -15,7 +15,7 @@
         'views/pjp_model_views.xml',
         'views/sale_order.xml',
         "views/employee_client_action_views.xml",
-        "views/executive_bid_report_views.xml",
+        "views/executive_beat_report_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
