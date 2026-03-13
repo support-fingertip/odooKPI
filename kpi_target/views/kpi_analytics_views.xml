@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         KPI TARGET (INDIVIDUAL) – GRAPH &amp; PIVOT DASHBOARD REPORTS
+    ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- 1. Overall Achievement by Employee (Bar) -->
+    <record id="view_kpi_target_graph_overall_achievement" model="ir.ui.view">
+        <field name="name">kpi.target.graph.overall.achievement</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <graph string="Overall KPI Achievement by Employee" type="bar">
+                <field name="employee_id" type="row"/>
+                <field name="period_id" type="col"/>
+                <field name="overall_achievement" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 2. Achievement by Department (Bar) -->
+    <record id="view_kpi_target_graph_dept_achievement" model="ir.ui.view">
+        <field name="name">kpi.target.graph.dept.achievement</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <graph string="KPI Achievement by Department" type="bar">
+                <field name="department_id" type="row"/>
+                <field name="period_id" type="col"/>
+                <field name="overall_achievement" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 3. Achievement by Period (Bar) -->
+    <record id="view_kpi_target_graph_period_achievement" model="ir.ui.view">
+        <field name="name">kpi.target.graph.period.achievement</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <graph string="KPI Achievement by Period" type="bar">
+                <field name="period_id" type="row"/>
+                <field name="overall_achievement" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 4. KPI Target Status Distribution (Pie) -->
+    <record id="view_kpi_target_graph_state_pie" model="ir.ui.view">
+        <field name="name">kpi.target.graph.state.pie</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <graph string="KPI Target Status Distribution" type="pie">
+                <field name="state" type="row"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 5. All 5 KPI Type Achievements by Employee (Bar) -->
+    <record id="view_kpi_target_graph_all_types" model="ir.ui.view">
+        <field name="name">kpi.target.graph.all.types</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <graph string="All KPI Type Achievements by Employee" type="bar">
+                <field name="employee_id" type="row"/>
+                <field name="achievement_orders" type="measure" string="Orders Ach. %"/>
+                <field name="achievement_visits" type="measure" string="Visits Ach. %"/>
+                <field name="achievement_new_dealers" type="measure" string="New Dealers Ach. %"/>
+                <field name="achievement_payment_collected" type="measure" string="Payment Ach. %"/>
+                <field name="achievement_complaints_solved" type="measure" string="Complaints Ach. %"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 6. Target vs Actual Orders by Employee (Bar) -->
+    <record id="view_kpi_target_graph_orders_compare" model="ir.ui.view">
+        <field name="name">kpi.target.graph.orders.compare</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <graph string="Target vs Actual Orders" type="bar">
+                <field name="employee_id" type="row"/>
+                <field name="target_orders" type="measure" string="Target Orders"/>
+                <field name="actual_orders" type="measure" string="Actual Orders"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 7. Target vs Actual Visits by Employee (Bar) -->
+    <record id="view_kpi_target_graph_visits_compare" model="ir.ui.view">
+        <field name="name">kpi.target.graph.visits.compare</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <graph string="Target vs Actual Visits" type="bar">
+                <field name="employee_id" type="row"/>
+                <field name="target_visits" type="measure" string="Target Visits"/>
+                <field name="actual_visits" type="measure" string="Actual Visits"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 8. Target vs Actual New Dealers (Bar) -->
+    <record id="view_kpi_target_graph_dealers_compare" model="ir.ui.view">
+        <field name="name">kpi.target.graph.dealers.compare</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <graph string="Target vs Actual New Dealers" type="bar">
+                <field name="employee_id" type="row"/>
+                <field name="target_new_dealers" type="measure" string="Target Dealers"/>
+                <field name="actual_new_dealers" type="measure" string="Actual Dealers"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 9. Actual Order Amount by Employee and Period (Bar) -->
+    <record id="view_kpi_target_graph_order_amount" model="ir.ui.view">
+        <field name="name">kpi.target.graph.order.amount</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <graph string="Order Revenue by Employee and Period" type="bar">
+                <field name="employee_id" type="row"/>
+                <field name="period_id" type="col"/>
+                <field name="actual_order_amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 10. Period Type Achievement Distribution (Pie) -->
+    <record id="view_kpi_target_graph_period_type" model="ir.ui.view">
+        <field name="name">kpi.target.graph.period.type</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <graph string="Achievement by Period Type" type="pie">
+                <field name="period_type" type="row"/>
+                <field name="overall_achievement" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 11. Comprehensive KPI Pivot – Employee x Period -->
+    <record id="view_kpi_target_pivot_employee_period" model="ir.ui.view">
+        <field name="name">kpi.target.pivot.employee.period</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <pivot string="KPI Performance – Employee × Period">
+                <field name="employee_id" type="row"/>
+                <field name="period_id" type="col"/>
+                <field name="overall_achievement" type="measure"/>
+                <field name="achievement_orders" type="measure"/>
+                <field name="achievement_visits" type="measure"/>
+                <field name="achievement_payment_collected" type="measure"/>
+                <field name="actual_order_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- 12. Department KPI Pivot – Department x Period -->
+    <record id="view_kpi_target_pivot_dept_period" model="ir.ui.view">
+        <field name="name">kpi.target.pivot.dept.period</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <pivot string="Department KPI – Dept × Period">
+                <field name="department_id" type="row"/>
+                <field name="period_id" type="col"/>
+                <field name="overall_achievement" type="measure"/>
+                <field name="actual_order_amount" type="measure"/>
+                <field name="actual_visits" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- 13. Full Targets vs Actuals Pivot – All 5 KPI Types -->
+    <record id="view_kpi_target_pivot_targets_actuals" model="ir.ui.view">
+        <field name="name">kpi.target.pivot.targets.actuals</field>
+        <field name="model">kpi.target</field>
+        <field name="arch" type="xml">
+            <pivot string="Targets vs Actuals – Full KPI Breakdown">
+                <field name="employee_id" type="row"/>
+                <field name="period_id" type="col"/>
+                <field name="target_orders" type="measure"/>
+                <field name="actual_orders" type="measure"/>
+                <field name="target_visits" type="measure"/>
+                <field name="actual_visits" type="measure"/>
+                <field name="target_new_dealers" type="measure"/>
+                <field name="actual_new_dealers" type="measure"/>
+                <field name="target_payment_collected" type="measure"/>
+                <field name="actual_payment_collected" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Individual KPI Analytics Actions -->
+    <record id="action_kpi_individual_analytics" model="ir.actions.act_window">
+        <field name="name">Individual KPI Analytics</field>
+        <field name="res_model">kpi.target</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="view_id" ref="view_kpi_target_graph_overall_achievement"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No KPI targets found. Create target periods and assign targets.
+            </p>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         KPI MANAGER TARGET (TEAM) – GRAPH &amp; PIVOT DASHBOARD REPORTS
+    ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- 14. Team Achievement by Manager (Bar) -->
+    <record id="view_kpi_manager_graph_achievement" model="ir.ui.view">
+        <field name="name">kpi.manager.target.graph.achievement</field>
+        <field name="model">kpi.manager.target</field>
+        <field name="arch" type="xml">
+            <graph string="Team Achievement by Manager" type="bar">
+                <field name="manager_id" type="row"/>
+                <field name="period_id" type="col"/>
+                <field name="team_overall_achievement" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 15. Team Achievement by Department (Bar) -->
+    <record id="view_kpi_manager_graph_dept_achievement" model="ir.ui.view">
+        <field name="name">kpi.manager.target.graph.dept.achievement</field>
+        <field name="model">kpi.manager.target</field>
+        <field name="arch" type="xml">
+            <graph string="Team Achievement by Department" type="bar">
+                <field name="department_id" type="row"/>
+                <field name="period_id" type="col"/>
+                <field name="team_overall_achievement" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 16. Team Target vs Actual Orders (Bar) -->
+    <record id="view_kpi_manager_graph_orders_compare" model="ir.ui.view">
+        <field name="name">kpi.manager.target.graph.orders.compare</field>
+        <field name="model">kpi.manager.target</field>
+        <field name="arch" type="xml">
+            <graph string="Team Target vs Actual Orders" type="bar">
+                <field name="manager_id" type="row"/>
+                <field name="total_target_orders" type="measure" string="Target Orders"/>
+                <field name="team_actual_orders" type="measure" string="Actual Orders"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 17. Team Target vs Actual Visits (Bar) -->
+    <record id="view_kpi_manager_graph_visits_compare" model="ir.ui.view">
+        <field name="name">kpi.manager.target.graph.visits.compare</field>
+        <field name="model">kpi.manager.target</field>
+        <field name="arch" type="xml">
+            <graph string="Team Target vs Actual Visits" type="bar">
+                <field name="manager_id" type="row"/>
+                <field name="total_target_visits" type="measure" string="Target Visits"/>
+                <field name="team_actual_visits" type="measure" string="Actual Visits"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 18. Team All KPI Achievements (Bar) -->
+    <record id="view_kpi_manager_graph_all_achievements" model="ir.ui.view">
+        <field name="name">kpi.manager.target.graph.all.achievements</field>
+        <field name="model">kpi.manager.target</field>
+        <field name="arch" type="xml">
+            <graph string="All Team KPI Achievements by Manager" type="bar">
+                <field name="manager_id" type="row"/>
+                <field name="team_achievement_orders" type="measure" string="Orders Ach. %"/>
+                <field name="team_achievement_visits" type="measure" string="Visits Ach. %"/>
+                <field name="team_achievement_new_dealers" type="measure" string="Dealers Ach. %"/>
+                <field name="team_achievement_payment_collected" type="measure" string="Payment Ach. %"/>
+                <field name="team_achievement_complaints_solved" type="measure" string="Complaints Ach. %"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 19. Team State Distribution (Pie) -->
+    <record id="view_kpi_manager_graph_state_pie" model="ir.ui.view">
+        <field name="name">kpi.manager.target.graph.state.pie</field>
+        <field name="model">kpi.manager.target</field>
+        <field name="arch" type="xml">
+            <graph string="Team Target Status Distribution" type="pie">
+                <field name="state" type="row"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 20. Team Member Count by Manager (Bar) -->
+    <record id="view_kpi_manager_graph_member_count" model="ir.ui.view">
+        <field name="name">kpi.manager.target.graph.member.count</field>
+        <field name="model">kpi.manager.target</field>
+        <field name="arch" type="xml">
+            <graph string="Team Size by Manager" type="bar">
+                <field name="manager_id" type="row"/>
+                <field name="period_id" type="col"/>
+                <field name="member_count" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- 21. Team KPI Pivot – Manager x Period -->
+    <record id="view_kpi_manager_pivot_manager_period" model="ir.ui.view">
+        <field name="name">kpi.manager.target.pivot.manager.period</field>
+        <field name="model">kpi.manager.target</field>
+        <field name="arch" type="xml">
+            <pivot string="Team KPI Analysis – Manager × Period">
+                <field name="manager_id" type="row"/>
+                <field name="period_id" type="col"/>
+                <field name="team_overall_achievement" type="measure"/>
+                <field name="team_actual_orders" type="measure"/>
+                <field name="team_actual_visits" type="measure"/>
+                <field name="member_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- 22. Team vs Individual KPI Pivot – Department x Period -->
+    <record id="view_kpi_manager_pivot_dept_period" model="ir.ui.view">
+        <field name="name">kpi.manager.target.pivot.dept.period</field>
+        <field name="model">kpi.manager.target</field>
+        <field name="arch" type="xml">
+            <pivot string="Team KPI – Department × Period">
+                <field name="department_id" type="row"/>
+                <field name="period_id" type="col"/>
+                <field name="team_overall_achievement" type="measure"/>
+                <field name="team_actual_orders" type="measure"/>
+                <field name="team_actual_visits" type="measure"/>
+                <field name="team_actual_new_dealers" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Team KPI Analytics Action -->
+    <record id="action_kpi_team_analytics" model="ir.actions.act_window">
+        <field name="name">Team KPI Analytics</field>
+        <field name="res_model">kpi.manager.target</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="view_id" ref="view_kpi_manager_graph_achievement"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No team targets found. Create team targets to see analytics.
+            </p>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         KPI TARGET PERIOD – GRAPH REPORTS
+    ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- 23. Targets per Period (Bar) -->
+    <record id="view_kpi_period_graph_target_count" model="ir.ui.view">
+        <field name="name">kpi.target.period.graph.target.count</field>
+        <field name="model">kpi.target.period</field>
+        <field name="arch" type="xml">
+            <graph string="Targets per Period" type="bar">
+                <field name="period_type" type="row"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         ANALYTICS MENU ITEMS
+    ═══════════════════════════════════════════════════════════════ -->
+
+    <menuitem id="menu_kpi_analytics_root"
+              name="Analytics"
+              parent="menu_kpi_tracker_root"
+              sequence="8"/>
+
+    <menuitem id="menu_kpi_individual_analytics"
+              name="Individual KPI Analytics"
+              parent="menu_kpi_analytics_root"
+              action="action_kpi_individual_analytics"
+              sequence="10"/>
+
+    <menuitem id="menu_kpi_team_analytics"
+              name="Team KPI Analytics"
+              parent="menu_kpi_analytics_root"
+              action="action_kpi_team_analytics"
+              sequence="20"/>
+
+</odoo>

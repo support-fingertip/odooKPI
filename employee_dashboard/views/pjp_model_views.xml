@@ -164,8 +164,9 @@
     <!-- Menu Items -->
     <menuitem id="menu_pjp_root" 
               name="PJP" 
-              parent="hr.menu_hr_root" 
+            parent="hr.menu_hr_root" 
             action="action_pjp_model" 
+             active="False"
               sequence="15"/>
     
     

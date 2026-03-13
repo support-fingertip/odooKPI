@@ -4,3 +4,10 @@ from . import pjp_model
 from . import sale_order
 from . import hr_attendance
 from . import executive_beat_report
+from . import dashboard_report
+from . import visit_stock
+from . import visit_collection
+from . import visit_ticket
+from . import visit_competitor
+from . import visit_checklist
+from . import visit_geofence

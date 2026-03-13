@@ -28,4 +28,111 @@
         </field>
     </record>
 
+    <!-- Add Must Sell / Focus Sell / Scheme fields to Sale Order Line -->
+    <record id="view_order_line_scheme_inherit" model="ir.ui.view">
+        <field name="name">sale.order.line.scheme.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_line']/list//field[@name='product_id']" position="after">
+                <field name="product_tag" optional="show" readonly="1"/>
+                <field name="scheme_id" optional="show" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ── Scheme Master Views ─────────────────────────────────── -->
+    <record id="view_scheme_master_list" model="ir.ui.view">
+        <field name="name">scheme.master.list</field>
+        <field name="model">scheme.master</field>
+        <field name="arch" type="xml">
+            <list string="Schemes">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="scheme_type"/>
+                <field name="discount_pct" string="Disc%"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_scheme_master_form" model="ir.ui.view">
+        <field name="name">scheme.master.form</field>
+        <field name="model">scheme.master</field>
+        <field name="arch" type="xml">
+            <form string="Scheme Master">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="scheme_type"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="discount_pct"
+                            invisible="scheme_type != 'discount'"
+                                 />
+                            <field name="buy_qty"
+                            invisible="scheme_type != 'free_qty'"
+                                  />
+                            <field name="free_qty"
+                            invisible="scheme_type != 'free_qty'"
+                                />
+                            <field name="cashback_amount"
+                            invisible="scheme_type != 'cashback'"
+                             />
+                        </group>
+                    </group>
+                    <field name="product_ids" widget="many2many_tags"/>
+                    <field name="notes"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_scheme_master" model="ir.actions.act_window">
+        <field name="name">Scheme Master</field>
+        <field name="res_model">scheme.master</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ── Must Sell / Focus Sell Views ───────────────────────── -->
+    <record id="view_must_sell_product_list" model="ir.ui.view">
+        <field name="name">must.sell.product.list</field>
+        <field name="model">must.sell.product</field>
+        <field name="arch" type="xml">
+            <list string="Must Sell / Focus Sell">
+                <field name="sequence" widget="handle"/>
+                <field name="product_id"/>
+                <field name="tag_type"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_must_sell_product" model="ir.actions.act_window">
+        <field name="name">Must Sell / Focus Sell</field>
+        <field name="res_model">must.sell.product</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_scheme_master"
+              name="Scheme Master"
+              action="action_scheme_master"
+              parent="employee_dashboard.menu_employee_dashboard_config"
+              sequence="10"/>
+
+    <menuitem id="menu_must_sell_product"
+              name="Must Sell / Focus Sell"
+              action="action_must_sell_product"
+              parent="employee_dashboard.menu_employee_dashboard_config"
+              sequence="20"/>
+
 </odoo>

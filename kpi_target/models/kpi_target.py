@@ -55,6 +55,9 @@ class KpiTarget(models.Model):
 
     actual_orders = fields.Float(
         string='Actual Orders', compute='_compute_actuals', store=True)
+    actual_order_amount = fields.Float(
+        string='Actual Order Amount', compute='_compute_actuals', store=True,
+        help='Total confirmed sale order amount (sum of amount_total) for the period')
     actual_visits = fields.Float(
         string='Actual Visits', compute='_compute_actuals', store=True)
     actual_new_dealers = fields.Float(
@@ -104,6 +107,7 @@ class KpiTarget(models.Model):
 
             sys_visits = 0.0
             sys_orders = 0.0
+            sys_order_amount = 0.0
 
             if employee and period and period.date_from and period.date_to:
                 date_from = str(period.date_from) + ' 00:00:00'
@@ -111,7 +115,7 @@ class KpiTarget(models.Model):
 
                 if 'visit.model' in self.env:
                     try:
-                        completed_visits = self.env['visit.model'].search([
+                        completed_visits = self.env['visit.model'].sudo().search([
                             ('employee_id', '=', employee.id),
                             ('status', '=', 'completed'),
                             ('actual_start_time', '>=', date_from),
@@ -121,19 +125,33 @@ class KpiTarget(models.Model):
                     except Exception:
                         pass
 
-                if 'sale.order' in self.env and employee.user_id:
+                if 'sale.order' in self.env:
                     try:
-                        sale_orders = self.env['sale.order'].search([
-                            ('user_id', '=', employee.user_id.id),
-                            ('date_order', '>=', date_from),
-                            ('date_order', '<=', date_to),
-                        ])
+                        if employee.user_id:
+                            order_domain = [
+                                '|',
+                                ('user_id', '=', employee.user_id.id),
+                                ('visit_id.employee_id', '=', employee.id),
+                            ]
+                        else:
+                            order_domain = [
+                                ('visit_id.employee_id', '=', employee.id),
+                            ]
+                        sale_orders = self.env['sale.order'].sudo().search(
+                            order_domain + [
+                                ('date_order', '>=', date_from),
+                                ('date_order', '<=', date_to),
+                                ('state', 'in', ['sale', 'done']),
+                            ]
+                        )
                         sys_orders = float(len(sale_orders))
+                        sys_order_amount = sum(sale_orders.mapped('amount_total'))
                     except Exception:
                         pass
 
             record.actual_visits = max(sys_visits, manual['visits'])
             record.actual_orders = max(sys_orders, manual['orders'])
+            record.actual_order_amount = sys_order_amount
             record.actual_new_dealers = manual['new_dealers']
             record.actual_payment_collected = manual['payment_collected']
             record.actual_complaints_solved = manual['complaints_solved']
@@ -217,7 +235,7 @@ class KpiTarget(models.Model):
 
  
     def _get_live_actuals(self, employee, period):
-        """Compute visits and orders actuals live from source records.
+        """Compute visits, order count, and order amount live from source records.
 
         This ensures the dashboard always reflects real-time data even when
         stored computed fields haven't been invalidated yet (e.g. after a
@@ -225,12 +243,13 @@ class KpiTarget(models.Model):
         """
         sys_visits = 0.0
         sys_orders = 0.0
+        sys_order_amount = 0.0
         if employee and period and period.date_from and period.date_to:
             date_from = str(period.date_from) + ' 00:00:00'
             date_to = str(period.date_to) + ' 23:59:59'
             if 'visit.model' in self.env:
                 try:
-                    sys_visits = float(self.env['visit.model'].search_count([
+                    sys_visits = float(self.env['visit.model'].sudo().search_count([
                         ('employee_id', '=', employee.id),
                         ('status', '=', 'completed'),
                         ('actual_start_time', '>=', date_from),
@@ -238,23 +257,36 @@ class KpiTarget(models.Model):
                     ]))
                 except Exception:
                     pass
-            if 'sale.order' in self.env and employee.user_id:
+            if 'sale.order' in self.env:
                 try:
-                    sys_orders = float(self.env['sale.order'].search_count([
-                        ('user_id', '=', employee.user_id.id),
-                        ('date_order', '>=', date_from),
-                        ('date_order', '<=', date_to),
-                        ('state', 'in', ['sale', 'done']),
-                    ]))
+                    if employee.user_id:
+                        order_domain = [
+                            '|',
+                            ('user_id', '=', employee.user_id.id),
+                            ('visit_id.employee_id', '=', employee.id),
+                        ]
+                    else:
+                        order_domain = [
+                            ('visit_id.employee_id', '=', employee.id),
+                        ]
+                    live_orders = self.env['sale.order'].sudo().search(
+                        order_domain + [
+                            ('date_order', '>=', date_from),
+                            ('date_order', '<=', date_to),
+                            ('state', 'in', ['sale', 'done']),
+                        ]
+                    )
+                    sys_orders = float(len(live_orders))
+                    sys_order_amount = sum(live_orders.mapped('amount_total'))
                 except Exception:
                     pass
-        return sys_visits, sys_orders
+        return sys_visits, sys_orders, sys_order_amount
 
     @api.model
     def get_kpi_dashboard_data(self, period_id=None):
         """Return dashboard data for both individual and team targets."""
         domain = [('period_id', '=', period_id)] if period_id else []
-        targets = self.search(domain, order='employee_id')
+        targets = self.sudo().search(domain, order='employee_id')
 
         kpi_types = [
             {'key': 'orders', 'label': 'Orders'},
@@ -266,11 +298,12 @@ class KpiTarget(models.Model):
 
         rows = []
         for target in targets:
-            live_visits, live_orders = self._get_live_actuals(
+            live_visits, live_orders, live_order_amount = self._get_live_actuals(
                 target.employee_id, target.period_id)
 
             actual_visits = max(live_visits, target.actual_visits)
             actual_orders = max(live_orders, target.actual_orders)
+            actual_order_amount = max(live_order_amount, target.actual_order_amount)
             actual_new_dealers = target.actual_new_dealers
             actual_payment = target.actual_payment_collected
             actual_complaints = target.actual_complaints_solved
@@ -298,6 +331,7 @@ class KpiTarget(models.Model):
                 },
                 'actuals': {
                     'orders': actual_orders,
+                    'order_amount': actual_order_amount,
                     'visits': actual_visits,
                     'new_dealers': actual_new_dealers,
                     'payment_collected': actual_payment,
@@ -314,7 +348,7 @@ class KpiTarget(models.Model):
             })
 
         team_domain = [('period_id', '=', period_id)] if period_id else []
-        team_targets = self.env['kpi.manager.target'].search(team_domain, order='manager_id')
+        team_targets = self.env['kpi.manager.target'].sudo().search(team_domain, order='manager_id')
         team_rows = []
         for tt in team_targets:
             team_rows.append({
@@ -343,7 +377,7 @@ class KpiTarget(models.Model):
                 'team_achievement': tt.team_overall_achievement,
             })
 
-        periods = self.env['kpi.target.period'].search([], order='date_from desc')
+        periods = self.env['kpi.target.period'].sudo().search([], order='date_from desc')
         return {
             'rows': rows,
             'team_rows': team_rows,
@@ -354,7 +388,7 @@ class KpiTarget(models.Model):
     @api.model
     def save_target_value(self, target_id, kpi_key, value):
         """RPC: save a single target value from the OWL dashboard."""
-        target = self.browse(target_id)
+        target = self.sudo().browse(target_id)
         if not target.exists():
             return {'success': False, 'error': 'Target not found'}
         field_name = f'target_{kpi_key}'

@@ -370,5 +370,46 @@ class EmployeeDashboard(models.Model):
             domain,
             ['name', 'work_email', 'work_phone', 'user_id']
         )
-        
+
         return employees
+
+    @api.model
+    def get_employee_order_stats(self, employee_id, today_start, today_end, period_from=None, period_to=None):
+        """Return today's and period order counts and total amounts for an employee."""
+        employee = self.env['hr.employee'].sudo().browse(employee_id)
+        if not employee.exists():
+            return {'orders_today': 0, 'orders_period': 0, 'amount_today': 0.0, 'amount_period': 0.0}
+
+        SaleOrder = self.env['sale.order'].sudo()
+
+        def _build_domain(date_start, date_end):
+            base = [
+                ('date_order', '>=', date_start),
+                ('date_order', '<=', date_end),
+                ('state', 'in', ['sale', 'done']),
+            ]
+            if employee.user_id:
+                return [
+                    '|',
+                    ('user_id', '=', employee.user_id.id),
+                    ('visit_id.employee_id', '=', employee.id),
+                ] + base
+            return [('visit_id.employee_id', '=', employee.id)] + base
+
+        today_orders = SaleOrder.search(_build_domain(today_start, today_end))
+        orders_today = len(today_orders)
+        amount_today = sum(today_orders.mapped('amount_total'))
+
+        orders_period = 0
+        amount_period = 0.0
+        if period_from and period_to:
+            period_orders = SaleOrder.search(_build_domain(period_from, period_to))
+            orders_period = len(period_orders)
+            amount_period = sum(period_orders.mapped('amount_total'))
+
+        return {
+            'orders_today': orders_today,
+            'orders_period': orders_period,
+            'amount_today': amount_today,
+            'amount_period': amount_period,
+        }

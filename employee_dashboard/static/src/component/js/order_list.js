@@ -38,10 +38,25 @@ export class OrdersList extends Component {
     }
 
     async applyOrderFilters() {
-        const results =  await this.orm.call("hr.employee", "get_account_filtered_data", [this.props.employeeId, this.state.orderFilter]);
-        this.state.orders = results || null;
+        const { customer, from_date, to_date, status } = this.state.orderFilter;
+        const domain = [["user_id", "=", this.props.userId]];
+        if (customer) domain.push(["partner_id.name", "ilike", customer]);
+        if (from_date) domain.push(["date_order", ">=", from_date]);
+        if (to_date) domain.push(["date_order", "<=", to_date + " 23:59:59"]);
+        if (status && status !== "All") domain.push(["state", "=", status]);
+        const orderData = await this.orm.searchRead(
+            "sale.order", domain,
+            ["name", "partner_id", "date_order", "state", "amount_total", "order_line"]
+        );
+        this.state.orders = orderData.map(o => ({ ...o, item_count: o.order_line.length }));
         this.state.expandedOrderId = null;
         this.state.expandedOrderLines = [];
+    }
+
+    get uniqueRetailerCount() {
+        if (!this.state.orders) return 0;
+        const ids = new Set(this.state.orders.map(o => o.partner_id ? o.partner_id[0] : 0));
+        return ids.size;
     }
 
     async toggleOrderDetails(orderId, orderLineIds) {

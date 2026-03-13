@@ -36,9 +36,21 @@ export class InvoiceList extends Component {
     }
 
     async applyInvoiceFilters() {
-        const filters = this.state.invoiceFilter;
-        const results =  await this.orm.call("hr.employee", "get_account_filtered_data", [this.props.employeeId, this.state.invoiceFilter]);
-        this.state.invoices = results || null;
+        const { customer, from_date, to_date, status } = this.state.invoiceFilter;
+        const domain = [
+            ["invoice_user_id", "=", this.props.userId],
+            ["invoice_user_id", "!=", false],
+            ["move_type", "=", "out_invoice"],
+        ];
+        if (customer) domain.push(["partner_id.name", "ilike", customer]);
+        if (from_date) domain.push(["invoice_date", ">=", from_date]);
+        if (to_date) domain.push(["invoice_date", "<=", to_date]);
+        if (status && status !== "All") domain.push(["state", "=", status]);
+        const invoiceData = await this.orm.searchRead(
+            "account.move", domain,
+            ["name", "partner_id", "invoice_date", "state", "amount_total", "invoice_line_ids"]
+        );
+        this.state.invoices = invoiceData.map(inv => ({ ...inv, item_count: inv.invoice_line_ids.length }));
     }
 }
 

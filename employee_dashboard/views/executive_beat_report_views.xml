@@ -259,34 +259,5 @@
         <field name="search_view_id" ref="view_beat_switch_history_search_manager"/>
     </record>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         Menu Items  (parent: Beat Management > menu_beat_root)
-    ═══════════════════════════════════════════════════════════ -->
-    <menuitem id="menu_manager_reports_root"
-              name="Manager Reports"
-              parent="beat_module.menu_beat_root"
-              sequence="90"
-              groups="employee_dashboard.group_employee_dashboard_manager"/>
-
-    <menuitem id="menu_executive_beat_report_generate"
-              name="Generate Beat Report"
-              parent="menu_manager_reports_root"
-              action="action_executive_beat_report_wizard"
-              sequence="5"
-              groups="employee_dashboard.group_employee_dashboard_manager"/>
-
-    <menuitem id="menu_executive_beat_report"
-              name="Executive Beat Report"
-              parent="menu_manager_reports_root"
-              action="action_executive_beat_report_list"
-              sequence="10"
-              groups="employee_dashboard.group_employee_dashboard_manager"/>
-
-    <menuitem id="menu_beat_switch_history"
-              name="Beat Switch History"
-              parent="menu_manager_reports_root"
-              action="action_beat_switch_history_manager"
-              sequence="20"
-              groups="employee_dashboard.group_employee_dashboard_manager"/>
 
 </odoo>

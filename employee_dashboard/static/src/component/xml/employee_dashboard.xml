@@ -1,156 +1,1034 @@
+<?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
+
+    <!-- =========================================================
+         EMPLOYEE 360 — SINGLE-PAGE SIDEBAR SHELL
+         ========================================================= -->
     <t t-name="employee_dashboard.EmployeeComponent">
-        <!-- Root: fill Odoo 18 action manager via flex:1, hide overflow, flex column so header stays fixed -->
-        <div class="o_employee_dashboard_wrap p-3">
+        <div class="emp360-root">
 
-            <div class="mb-3" style="flex-shrink: 0;" t-if="state.isManager">
-                <label>Select Employee:</label>
-                <select t-on-change="selectEmployee" class="form-select" t-model="state.selectedEmployee">
-                    <option value="">-- Select employee --</option>
-                    <t t-foreach="state.employees" t-as="emp" t-key="emp.id">
-                        <option t-att-value="emp.id" t-att-selected="emp.id === state.selectedEmployee">
-                            <t t-esc="emp.name"/>
-                        </option>
+            <!-- ── Sidebar ──────────────────────────────────── -->
+            <div t-attf-class="emp360-sidebar {{!state.isManager ? 'emp360-sidebar-user' : ''}}">
+
+                <!-- Brand -->
+                <div t-attf-class="emp360-sidebar-brand {{!state.isManager ? 'emp360-sidebar-brand-user' : ''}}">
+                    <div class="emp360-brand-icon">
+                        <t t-if="state.isManager">
+                            <i class="fa fa-user-circle"></i>
+                        </t>
+                        <t t-else="">
+                            <i class="fa fa-briefcase"></i>
+                        </t>
+                    </div>
+                    <div class="emp360-brand-text">
+                        <t t-if="state.isManager">
+                            <span class="emp360-brand-title">Employee 360</span>
+                        </t>
+                        <t t-else="">
+                            <span class="emp360-brand-title emp360-brand-title-user">My Workday</span>
+                            <span class="emp360-brand-sub emp360-brand-sub-user">
+                                <i t-attf-class="fa {{greetingIcon()}} me-1"></i>
+                                <t t-esc="greeting()"/>
+                            </span>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Employee selector (managers) / User Profile Card (employees) -->
+                <div class="emp360-emp-select-wrap">
+                    <t t-if="state.isManager">
+                        <div class="emp360-emp-label">Select Employee</div>
+                        <select class="emp360-emp-select" t-on-change="selectEmployee">
+                            <option value="">-- Select --</option>
+                            <t t-foreach="state.employees" t-as="emp" t-key="emp.id">
+                                <option t-att-value="emp.id"
+                                        t-att-selected="emp.id === state.selectedEmployee">
+                                    <t t-esc="emp.name"/>
+                                </option>
+                            </t>
+                        </select>
                     </t>
-                </select>
-            </div>
-            <div class="mb-3" style="flex-shrink: 0;" t-else="">
-                <h5 class="mb-0">
-                    <t t-if="state.details">
-                        <t t-esc="state.details.name"/>
+                    <t t-else="">
+                        <!-- ── Premium user profile card ── -->
+                        <div class="emp360-user-profile-card">
+                            <!-- Greeting line -->
+                            <div class="emp360-user-greeting">
+                                <i t-attf-class="fa {{greetingIcon()}}"></i>
+                                <span><t t-esc="greeting()"/>, <strong><t t-esc="userFirstName()"/></strong>!</span>
+                            </div>
+                            <!-- Avatar + info row -->
+                            <div class="emp360-user-profile-row">
+                                <div class="emp360-user-avatar-lg">
+                                    <t t-if="state.details">
+                                        <t t-esc="state.details.name ? state.details.name[0].toUpperCase() : 'E'"/>
+                                    </t>
+                                    <t t-else="">E</t>
+                                    <!-- Online indicator -->
+                                    <span class="emp360-avatar-online-dot"></span>
+                                </div>
+                                <div class="emp360-user-profile-info">
+                                    <div class="emp360-user-profile-name">
+                                        <t t-if="state.details">
+                                            <t t-esc="state.details.name"/>
+                                        </t>
+                                        <t t-else="">Loading…</t>
+                                    </div>
+                                    <div class="emp360-user-profile-role">
+                                        <i class="fa fa-briefcase me-1"></i>Sales Executive
+                                    </div>
+                                    <div class="emp360-user-status-badge">
+                                        <span class="emp360-status-dot-online"></span> Active Today
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </t>
-                </h5>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="emp360-nav">
+
+                    <!-- ── Full navigation for all users ───────── -->
+                    <div class="emp360-nav-section">
+                        <span class="emp360-nav-section-label">
+                            <t t-if="state.isManager">Main</t>
+                            <t t-else="">My Work</t>
+                        </span>
+                    </div>
+
+                    <!-- Dashboard — managers only -->
+                    <t t-if="state.isManager">
+                        <div class="emp360-nav-item"
+                             t-att-class="state.activeTab === 'overview' ? 'active' : ''"
+                             t-on-click="() => this.changeTab('overview')">
+                            <div class="emp360-nav-icon"><i class="fa fa-home"></i></div>
+                            <span class="emp360-nav-label">Dashboard</span>
+                        </div>
+                    </t>
+
+                    <!-- Today's Plan — always visible for all users -->
+                    <div t-att-class="'emp360-nav-item emp360-nav-today' + (state.activeTab === 'todayvisit' ? ' active' : '')"
+                         t-on-click="() => this.changeTab('todayvisit')">
+                        <div class="emp360-nav-icon"><i class="fa fa-calendar-check-o"></i></div>
+                        <div class="emp360-nav-label-wrap">
+                            <span class="emp360-nav-label">Today's Plan</span>
+                            <t t-if="!state.isManager">
+                                <span class="emp360-nav-sublabel">Start · Visit · Complete</span>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- All remaining nav items — managers only -->
+                    <t t-if="state.isManager">
+
+                        <div class="emp360-nav-item"
+                             t-att-class="state.activeTab === 'visits' ? 'active' : ''"
+                             t-on-click="() => this.changeTab('visits')">
+                            <div class="emp360-nav-icon"><i class="fa fa-history"></i></div>
+                            <span class="emp360-nav-label">Visit History</span>
+                        </div>
+
+                        <div class="emp360-nav-item"
+                             t-att-class="state.activeTab === 'orders' ? 'active' : ''"
+                             t-on-click="() => this.changeTab('orders')">
+                            <div class="emp360-nav-icon"><i class="fa fa-shopping-cart"></i></div>
+                            <span class="emp360-nav-label">Orders</span>
+                        </div>
+
+                        <div class="emp360-nav-item"
+                             t-att-class="state.activeTab === 'retailer' ? 'active' : ''"
+                             t-on-click="() => this.changeTabAndLoad('retailer')">
+                            <div class="emp360-nav-icon"><i class="fa fa-list"></i></div>
+                            <span class="emp360-nav-label">Retailer Orders</span>
+                        </div>
+
+                        <div class="emp360-nav-section">
+                            <span class="emp360-nav-section-label">Planning</span>
+                        </div>
+
+                        <div class="emp360-nav-item"
+                             t-att-class="state.activeTab === 'pjp' ? 'active' : ''"
+                             t-on-click="() => this.changeTab('pjp')">
+                            <div class="emp360-nav-icon"><i class="fa fa-map"></i></div>
+                            <span class="emp360-nav-label">PJP</span>
+                        </div>
+
+                        <div class="emp360-nav-section">
+                            <span class="emp360-nav-section-label">HR &amp; Finance</span>
+                        </div>
+
+                        <div class="emp360-nav-item"
+                             t-att-class="state.activeTab === 'attendance' ? 'active' : ''"
+                             t-on-click="() => this.changeTab('attendance')">
+                            <div class="emp360-nav-icon"><i class="fa fa-clock-o"></i></div>
+                            <span class="emp360-nav-label">Attendance</span>
+                        </div>
+
+                        <div class="emp360-nav-item"
+                             t-att-class="state.activeTab === 'expenses' ? 'active' : ''"
+                             t-on-click="() => this.changeTab('expenses')">
+                            <div class="emp360-nav-icon"><i class="fa fa-money"></i></div>
+                            <span class="emp360-nav-label">Expenses</span>
+                        </div>
+
+                        <div class="emp360-nav-item"
+                             t-att-class="state.activeTab === 'invoices' ? 'active' : ''"
+                             t-on-click="() => this.changeTab('invoices')">
+                            <div class="emp360-nav-icon"><i class="fa fa-file-text"></i></div>
+                            <span class="emp360-nav-label">Invoices</span>
+                        </div>
+
+                        <div class="emp360-nav-item"
+                             t-att-class="state.activeTab === 'incentives' ? 'active' : ''"
+                             t-on-click="() => this.changeTab('incentives')">
+                            <div class="emp360-nav-icon"><i class="fa fa-trophy"></i></div>
+                            <span class="emp360-nav-label">Incentives</span>
+                        </div>
+
+                        <div class="emp360-nav-item"
+                             t-att-class="state.activeTab === 'summary' ? 'active' : ''"
+                             t-on-click="openAnalytics">
+                            <div class="emp360-nav-icon"><i class="fa fa-bar-chart"></i></div>
+                            <span class="emp360-nav-label">Analytics Dashboard</span>
+                        </div>
+
+                    </t>
+                    <!-- /managers-only nav -->
+
+                    <!-- User info strip (only for non-managers) -->
+                    <t t-if="!state.isManager and state.details">
+                        <div class="emp360-user-info-strip">
+                            <t t-if="state.details.work_email">
+                                <div class="emp360-user-strip-row">
+                                    <i class="fa fa-envelope-o"></i>
+                                    <span><t t-esc="state.details.work_email"/></span>
+                                </div>
+                            </t>
+                            <t t-if="state.details.work_phone">
+                                <div class="emp360-user-strip-row">
+                                    <i class="fa fa-phone"></i>
+                                    <span><t t-esc="state.details.work_phone"/></span>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- Motivational quick-stats strip for users -->
+                        <div class="emp360-user-quickstats">
+                            <div class="emp360-user-qs-item">
+                                <div class="emp360-user-qs-num" style="color:#06d6a0;">
+                                    <t t-esc="state.pjpStats.completed || 0"/>
+                                </div>
+                                <div class="emp360-user-qs-lbl">Done</div>
+                            </div>
+                            <div class="emp360-user-qs-divider"></div>
+                            <div class="emp360-user-qs-item">
+                                <div class="emp360-user-qs-num" style="color:#4cc9f0;">
+                                    <t t-esc="state.pjpStats.planned || 0"/>
+                                </div>
+                                <div class="emp360-user-qs-lbl">Planned</div>
+                            </div>
+                            <div class="emp360-user-qs-divider"></div>
+                            <div class="emp360-user-qs-item">
+                                <div class="emp360-user-qs-num" style="color:#ffd166;">
+                                    <t t-esc="state.overviewKpi.total_orders || 0"/>
+                                </div>
+                                <div class="emp360-user-qs-lbl">Orders</div>
+                            </div>
+                        </div>
+                    </t>
+
+                </nav>
+
+                <!-- Sidebar footer -->
+                <div class="emp360-sidebar-footer">
+                    <div class="emp360-nav-item"
+                         style="margin:0;padding:8px 6px;"
+                         t-on-click="refreshData">
+                        <div class="emp360-nav-icon"><i class="fa fa-refresh"></i></div>
+                        <span class="emp360-nav-label">Refresh</span>
+                    </div>
+                </div>
             </div>
+            <!-- /Sidebar -->
 
-            <ul class="nav nav-tabs" style="flex-shrink: 0;">
-                <li class="nav-item">
-                    <a class="nav-link" t-att-class="{active: state.activeTab === 'details'}" t-on-click="() => this.changeTab('details')">Details</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" t-att-class="{active: state.activeTab === 'summary'}" t-on-click="() => this.changeTab('summary')">Summary</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" t-att-class="{active: state.activeTab === 'pjp'}" t-on-click="() => this.changeTab('pjp')">PJP</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" t-att-class="{active: state.activeTab === 'visits'}" t-on-click="() => this.changeTab('visits')">Visits</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" t-att-class="{active: state.activeTab === 'todayvisit'}" t-on-click="() => this.changeTab('todayvisit')">Today Visit</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" t-att-class="{active: state.activeTab === 'orders'}" t-on-click="() => this.changeTab('orders')">Orders</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" t-att-class="{active: state.activeTab === 'invoices'}" t-on-click="() => this.changeTab('invoices')">Invoices</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" t-att-class="{active: state.activeTab === 'incentives'}" t-on-click="() => this.changeTab('incentives')">Incentives</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" t-att-class="{active: state.activeTab === 'expenses'}" t-on-click="() => this.changeTab('expenses')">Expenses</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" t-att-class="{active: state.activeTab === 'attendance'}" t-on-click="() => this.changeTab('attendance')">Attendance</a>
-                </li>
-            </ul>
+            <!-- ── Main area ──────────────────────────────── -->
+            <div class="emp360-main">
 
-            <!-- Tab content area: flex:1 fills remaining space, min-height:0 allows shrink, overflow-y:auto scrolls -->
-            <t t-if="state.activeTab === 'details'">
-                <div class="mt-3" style="flex: 1; min-height: 0; overflow-y: auto;" t-if="state.details">
-                    <p>
-                        <b>Name:</b>
-                        <t t-esc="state.details.name"/>
-                    </p>
-                    <p>
-                        <b>Email:</b>
-                        <t t-esc="state.details.work_email"/>
-                    </p>
-                    <p>
-                        <b>Phone:</b>
-                        <t t-esc="state.details.work_phone"/>
-                    </p>
+                <!-- Top bar -->
+                <div t-attf-class="emp360-topbar {{!state.isManager ? 'emp360-topbar-user' : ''}}">
+                    <h5 class="emp360-topbar-title">
+                        <div class="emp360-topbar-icon"
+                             t-attf-style="background: {{topbarGradient()}}">
+                            <i t-attf-class="fa {{topbarIcon()}}"></i>
+                        </div>
+                        <t t-esc="topbarTitle()"/>
+                        <!-- User role badge shown next to title -->
+                        <t t-if="!state.isManager">
+                            <span class="emp360-topbar-user-badge">
+                                <i class="fa fa-user me-1"></i>Field View
+                            </span>
+                        </t>
+                    </h5>
+                    <div class="emp360-topbar-right">
+                        <!-- Check-in chip -->
+                        <t t-if="state.checkinTime">
+                            <div class="emp360-checkin-chip">
+                                <span class="emp360-pulse"></span>
+                                CheckIn: <t t-esc="state.checkinTime"/>
+                            </div>
+                        </t>
+                        <!-- Today's date -->
+                        <div class="emp360-topbar-date">
+                            <i class="fa fa-calendar me-1"></i>
+                            <t t-esc="state.todayLabel"/>
+                        </div>
+                    </div>
                 </div>
-                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
-                    Select an employee to view details.
-                </div>
-            </t>
 
-            <t t-if="state.activeTab === 'visits'">
-                <div class="mt-3" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;" t-if="state.selectedEmployee">
-                    <VisitList t-props="{ employeeId: state.selectedEmployee }" t-key="state.selectedEmployee"/>
-                </div>
-                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
-                    Please select an employee to view visits.
-                </div>
-            </t>
+                <!-- Content -->
+                <div class="emp360-content">
 
-            <t t-if="state.activeTab === 'todayvisit'">
-                <div class="mt-3" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;" t-if="state.selectedEmployee">
-                    <TodayVisit t-props="{ employeeId: state.selectedEmployee }" t-key="state.selectedEmployee"/>
-                </div>
-                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
-                    Please select an employee to view today's visits.
-                </div>
-            </t>
+                    <!-- ═══════════════════════════════════════
+                         OVERVIEW / ANALYTICS BOARD
+                         ═══════════════════════════════════════ -->
+                    <t t-if="state.activeTab === 'overview'">
 
-            <t t-if="state.activeTab === 'invoices'">
-                <div class="mt-3" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column;" t-if="state.selectedEmployee">
-                    <InvoiceList t-props="{ employeeId: state.selectedEmployee }" t-key="state.selectedEmployee"/>
-                </div>
-                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
-                    Please select an employee to view invoices.
-                </div>
-            </t>
+                        <!-- ── Analytics Board Hero Header ── -->
+                        <div class="ab-hero">
+                            <div class="ab-hero-left">
+                                <div class="ab-hero-title">Analytics Board</div>
+                                <div class="ab-hero-sub">
+                                    Sales Performance Dashboard ·
+                                    <t t-esc="state.todayLabel"/>
+                                </div>
+                            </div>
+                            <div class="ab-hero-right">
+                                <t t-if="state.checkinTime">
+                                    <div class="emp360-checkin-chip" style="background:rgba(255,255,255,.15);color:#6ee7b7;border-color:rgba(110,231,183,.3);">
+                                        <span class="emp360-pulse"></span>
+                                        CheckIn: <t t-esc="state.checkinTime"/>
+                                    </div>
+                                </t>
+                                <!-- Period filter chips -->
+                                <div class="ab-period-chips">
+                                    <button t-att-class="'ab-chip ' + (state.dashPeriod === 'today'   ? 'ab-chip-active' : '')"
+                                            t-on-click="() => this.setDashPeriod('today')">Today</button>
+                                    <button t-att-class="'ab-chip ' + (state.dashPeriod === 'week'    ? 'ab-chip-active' : '')"
+                                            t-on-click="() => this.setDashPeriod('week')">Week</button>
+                                    <button t-att-class="'ab-chip ' + (state.dashPeriod === 'month'   ? 'ab-chip-active' : '')"
+                                            t-on-click="() => this.setDashPeriod('month')">Month</button>
+                                    <button t-att-class="'ab-chip ' + (state.dashPeriod === 'quarter' ? 'ab-chip-active' : '')"
+                                            t-on-click="() => this.setDashPeriod('quarter')">Quarter</button>
+                                </div>
+                                <button class="ab-refresh-btn" t-on-click="refreshData" title="Refresh">
+                                    <i class="fa fa-refresh"></i>
+                                </button>
+                            </div>
+                        </div>
 
-            <t t-if="state.activeTab === 'orders'">
-                <div class="mt-3" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column;" t-if="state.selectedEmployee">
-                    <OrdersList t-props="{ employeeId: state.selectedEmployee }" t-key="state.selectedEmployee"/>
-                </div>
-                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
-                    Please select an employee to view orders.
-                </div>
-            </t>
+                        <!-- No employee message -->
+                        <t t-if="!state.selectedEmployee">
+                            <div class="emp360-section" style="padding-top:24px;">
+                                <div class="emp360-empty">
+                                    <div class="emp360-empty-icon"><i class="fa fa-user-circle"></i></div>
+                                    <div class="emp360-empty-title">No Employee Selected</div>
+                                    <div class="emp360-empty-desc">
+                                        <t t-if="state.isManager">Use the sidebar to select an employee.</t>
+                                        <t t-else="">Loading your profile…</t>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
 
-            <t t-if="state.activeTab === 'pjp'">
-                <div class="mt-3" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;" t-if="state.selectedEmployee">
-                    <PJPList t-props="{ employeeId: state.selectedEmployee }" t-key="state.selectedEmployee"/>
-                </div>
-                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
-                    Please select an employee to view PJP.
-                </div>
-            </t>
+                        <!-- ══════════ Full Dashboard (employee selected) ══════════ -->
+                        <t t-if="state.selectedEmployee">
 
-            <t t-if="state.activeTab === 'expenses'">
-                <div class="mt-3" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;" t-if="state.selectedEmployee">
-                    <ExpenseList t-props="{ employeeId: state.selectedEmployee }" t-key="state.selectedEmployee"/>
-                </div>
-                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
-                    Please select an employee to view expenses.
-                </div>
-            </t>
+                        <!-- ── Row 1: 4 Main Sales KPI Cards ── -->
+                        <div class="ab-kpi-row">
+                            <!-- Total Revenue -->
+                            <div class="ab-kpi-card ab-kpi-green">
+                                <div class="ab-kpi-icon-wrap ab-icon-green">
+                                    <i class="fa fa-rupee"></i>
+                                </div>
+                                <div class="ab-kpi-body">
+                                    <div class="ab-kpi-value">
+                                        ₹<t t-esc="formatLargeNumber(state.overviewKpi.total_sales)"/>
+                                    </div>
+                                    <div class="ab-kpi-label">TOTAL REVENUE</div>
+                                    <div class="ab-kpi-sub">
+                                        <t t-esc="state.overviewKpi.total_orders"/> orders placed
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Total Orders -->
+                            <div class="ab-kpi-card ab-kpi-blue">
+                                <div class="ab-kpi-icon-wrap ab-icon-blue">
+                                    <i class="fa fa-shopping-cart"></i>
+                                </div>
+                                <div class="ab-kpi-body">
+                                    <div class="ab-kpi-value">
+                                        <t t-esc="state.overviewKpi.total_orders || 0"/>
+                                    </div>
+                                    <div class="ab-kpi-label">TOTAL ORDERS</div>
+                                    <div class="ab-kpi-sub">
+                                        Avg ₹<t t-esc="formatLargeNumber(state.overviewKpi.avg_sales)"/>/order
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Collections -->
+                            <div class="ab-kpi-card ab-kpi-purple">
+                                <div class="ab-kpi-icon-wrap ab-icon-purple">
+                                    <i class="fa fa-money"></i>
+                                </div>
+                                <div class="ab-kpi-body">
+                                    <div class="ab-kpi-value">
+                                        ₹<t t-esc="formatLargeNumber(state.overviewKpi.collections)"/>
+                                    </div>
+                                    <div class="ab-kpi-label">COLLECTIONS</div>
+                                    <div class="ab-kpi-sub">50% collection ratio</div>
+                                </div>
+                            </div>
+                            <!-- Overall Achievement -->
+                            <div class="ab-kpi-card ab-kpi-orange">
+                                <div class="ab-kpi-icon-wrap ab-icon-orange">
+                                    <i class="fa fa-trophy"></i>
+                                </div>
+                                <div class="ab-kpi-body">
+                                    <div class="ab-kpi-value">
+                                        <t t-esc="state.overviewKpi.achievement"/>%
+                                    </div>
+                                    <div class="ab-kpi-label">OVERALL ACHIEVEMENT</div>
+                                    <div class="ab-kpi-sub">of target achieved</div>
+                                </div>
+                            </div>
+                        </div>
 
-            <t t-if="state.activeTab === 'attendance'">
-                <div class="mt-3" style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;" t-if="state.selectedEmployee">
-                    <AttendanceList t-props="{ employeeId: state.selectedEmployee }" t-key="state.selectedEmployee"/>
-                </div>
-                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;" t-else="">
-                    Please select an employee to view attendance.
-                </div>
-            </t>
+                        <!-- ── Row 2: Day Status + PJP Stats ── -->
+                        <div class="ab-stats-row">
+                            <!-- Day Status banner -->
+                            <div class="ab-day-banner">
+                                <div class="ab-day-icon">
+                                    <i class="fa fa-check-circle"></i>
+                                </div>
+                                <div>
+                                    <div class="ab-day-title">Day Active</div>
+                                    <div class="ab-day-sub"><t t-esc="state.checkinTime || '--:--'"/></div>
+                                </div>
+                                <button class="ab-action-btn ms-auto"
+                                        t-on-click="() => this.changeTab('todayvisit')">
+                                    Manage Day <i class="fa fa-arrow-right ms-1"></i>
+                                </button>
+                            </div>
 
-            <t t-if="state.activeTab === 'summary'">
-                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;">
-                    Summary content coming soon.
-                </div>
-            </t>
+                            <!-- PJP Visit Statistics -->
+                            <div class="ab-visit-stats">
+                                <div class="ab-vs-label">
+                                    <i class="fa fa-bar-chart me-1"></i> STATISTICS
+                                    <span class="ab-vs-toggle"
+                                          t-on-click="() => this.toggleAccordion('pjpStats')">
+                                        <i t-att-class="'fa fa-chevron-' + (state.accordion.pjpStats ? 'up' : 'down')"></i>
+                                    </span>
+                                </div>
+                                <t t-if="state.accordion.pjpStats">
+                                <div class="ab-vs-cards">
+                                    <div class="ab-vs-card ab-vs-total">
+                                        <div class="ab-vs-num"><t t-esc="state.pjpStats.total"/></div>
+                                        <div class="ab-vs-txt">TOTAL</div>
+                                        <div class="ab-vs-bar" style="background:#4361ee;"></div>
+                                    </div>
+                                    <div class="ab-vs-card ab-vs-done">
+                                        <div class="ab-vs-num"><t t-esc="state.pjpStats.completed"/></div>
+                                        <div class="ab-vs-txt">DONE</div>
+                                        <div class="ab-vs-bar" style="background:#06d6a0;"></div>
+                                    </div>
+                                    <div class="ab-vs-card ab-vs-planned">
+                                        <div class="ab-vs-num"><t t-esc="state.pjpStats.planned"/></div>
+                                        <div class="ab-vs-txt">PLANNED</div>
+                                        <div class="ab-vs-bar" style="background:#4cc9f0;"></div>
+                                    </div>
+                                    <div class="ab-vs-card ab-vs-missed">
+                                        <div class="ab-vs-num"><t t-esc="state.pjpStats.missed"/></div>
+                                        <div class="ab-vs-txt">MISSED</div>
+                                        <div class="ab-vs-bar" style="background:#ef476f;"></div>
+                                    </div>
+                                </div>
+                                <!-- Mini metrics row -->
+                                <div class="ab-mini-metrics">
+                                    <div class="ab-mini-m">
+                                        <i class="fa fa-clock-o"></i>
+                                        <span><t t-esc="state.pjpStats.working_hours"/></span>
+                                        <span class="ab-mini-label">WORKING</span>
+                                    </div>
+                                    <div class="ab-mini-m">
+                                        <i class="fa fa-percent"></i>
+                                        <span><t t-esc="state.pjpStats.visit_pct"/>%</span>
+                                        <span class="ab-mini-label">VISIT %</span>
+                                    </div>
+                                    <div class="ab-mini-m">
+                                        <i class="fa fa-shopping-cart"></i>
+                                        <span><t t-esc="state.overviewKpi.total_orders"/></span>
+                                        <span class="ab-mini-label">ORDERS</span>
+                                    </div>
+                                    <div class="ab-mini-m">
+                                        <i class="fa fa-map-marker"></i>
+                                        <span><t t-esc="state.beatStats.today_total"/></span>
+                                        <span class="ab-mini-label">BEATS TODAY</span>
+                                    </div>
+                                </div>
+                                </t>
+                            </div>
+                        </div>
 
-            <t t-if="state.activeTab === 'incentives'">
-                <div class="mt-3 alert alert-info" style="flex: 1; min-height: 0;">
-                    Incentives content coming soon.
+                        <!-- ── Row 3: Target vs Achievement + Beat Coverage ── -->
+                        <div class="ab-middle-row">
+                            <!-- Target vs Achievement -->
+                            <div class="ab-target-card">
+                                <div class="ab-section-header">
+                                    <i class="fa fa-line-chart me-1"></i> Target vs Actual
+                                    <span class="ab-pct-badge">
+                                        <t t-esc="state.targetAchievement.pct"/>%
+                                    </span>
+                                </div>
+                                <div class="ab-target-row">
+                                    <span class="ab-target-label">Target</span>
+                                    <span class="ab-target-val">₹<t t-esc="formatLargeNumber(state.targetAchievement.target)"/></span>
+                                </div>
+                                <div class="ab-progress-bar-wrap">
+                                    <div class="ab-progress-bar"
+                                         t-attf-style="width:100%;background:#e5e7eb;border-radius:8px;height:8px;overflow:hidden;">
+                                        <div t-attf-style="width:{{state.targetAchievement.pct}}%;background:linear-gradient(90deg,#4361ee,#7209b7);height:100%;border-radius:8px;transition:width .5s;"></div>
+                                    </div>
+                                </div>
+                                <div class="ab-target-row" style="margin-top:6px;">
+                                    <span class="ab-target-label">Actual</span>
+                                    <span class="ab-target-val" style="color:#4361ee;">₹<t t-esc="formatLargeNumber(state.targetAchievement.actual)"/></span>
+                                </div>
+                                <div class="ab-legend-row">
+                                    <span class="ab-legend-dot" style="background:#4361ee;"></span> Monthly Target
+                                    <span class="ab-legend-dot ms-2" style="background:#06d6a0;"></span> Achieved
+                                </div>
+                            </div>
+
+                            <!-- Beat Coverage Summary -->
+                            <div class="ab-beat-card">
+                                <div class="ab-section-header">
+                                    <i class="fa fa-map me-1"></i> Beat Coverage
+                                    <button class="ab-link-btn" t-on-click="() => this.changeTab('todayvisit')">
+                                        Manage <i class="fa fa-arrow-right ms-1"></i>
+                                    </button>
+                                </div>
+                                <div class="ab-beat-stats">
+                                    <div class="ab-beat-stat">
+                                        <div class="ab-beat-num" style="color:#4361ee;"><t t-esc="state.beatStats.total"/></div>
+                                        <div class="ab-beat-lbl">Total</div>
+                                    </div>
+                                    <div class="ab-beat-stat">
+                                        <div class="ab-beat-num" style="color:#f77f00;"><t t-esc="state.beatStats.in_progress"/></div>
+                                        <div class="ab-beat-lbl">Active</div>
+                                    </div>
+                                    <div class="ab-beat-stat">
+                                        <div class="ab-beat-num" style="color:#06d6a0;"><t t-esc="state.beatStats.completed"/></div>
+                                        <div class="ab-beat-lbl">Done</div>
+                                    </div>
+                                    <div class="ab-beat-stat">
+                                        <div class="ab-beat-num" style="color:#9ca3af;"><t t-esc="state.beatStats.pending"/></div>
+                                        <div class="ab-beat-lbl">Pending</div>
+                                    </div>
+                                </div>
+                                <!-- Coverage meter -->
+                                <div class="ab-coverage-wrap">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                                        <span style="font-size:11px;color:#6b7280;font-weight:600;">Coverage</span>
+                                        <span style="font-size:13px;font-weight:800;color:#4361ee;"><t t-esc="state.beatStats.coverage"/>%</span>
+                                    </div>
+                                    <div style="background:#e5e7eb;border-radius:8px;height:10px;overflow:hidden;">
+                                        <div t-attf-style="width:{{state.beatStats.coverage}}%;background:linear-gradient(90deg,#06d6a0,#019b72);height:100%;border-radius:8px;transition:width .5s;"></div>
+                                    </div>
+                                </div>
+                                <!-- PJP quick link -->
+                                <div class="ab-pjp-quick" t-on-click="() => this.changeTab('pjp')">
+                                    <i class="fa fa-road me-1"></i>
+                                    View PJP Plan
+                                    <i class="fa fa-arrow-right ms-auto"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── Row 4: Store-wise Performance + Top Accounts ── -->
+                        <div class="ab-bottom-row">
+                            <!-- Store-wise Performance -->
+                            <div class="ab-store-panel">
+                                <div class="ab-section-header">
+                                    <i class="fa fa-building me-1"></i> Store-wise Performance
+                                    <span class="ab-badge-label">CARDS</span>
+                                </div>
+                                <t t-if="state.storePerformance.length > 0">
+                                <div class="ab-store-grid">
+                                    <t t-foreach="state.storePerformance" t-as="store" t-key="store.id">
+                                        <div class="ab-store-card">
+                                            <div class="ab-store-top">
+                                                <div>
+                                                    <div class="ab-store-name"><t t-esc="store.name"/></div>
+                                                    <div class="ab-store-city" style="font-size:11px;color:#9ca3af;">Retailer</div>
+                                                </div>
+                                                <span class="ab-store-badge">RETAILER</span>
+                                            </div>
+                                            <div class="ab-store-kpis">
+                                                <div class="ab-store-kpi">
+                                                    <div class="ab-store-kpi-lbl">REVENUE</div>
+                                                    <div class="ab-store-kpi-val">₹<t t-esc="formatLargeNumber(store.revenue)"/></div>
+                                                </div>
+                                                <div class="ab-store-kpi">
+                                                    <div class="ab-store-kpi-lbl">ORDERS</div>
+                                                    <div class="ab-store-kpi-val"><t t-esc="store.orders"/></div>
+                                                </div>
+                                                <div class="ab-store-kpi">
+                                                    <div class="ab-store-kpi-lbl">ACHIEVEMENT</div>
+                                                    <div class="ab-store-kpi-val" style="color:#059669;"><t t-esc="store.achievement"/>%</div>
+                                                </div>
+                                            </div>
+                                            <div style="background:#e5e7eb;border-radius:4px;height:5px;overflow:hidden;margin-top:8px;">
+                                                <div t-attf-style="width:{{store.achievement}}%;background:linear-gradient(90deg,#4361ee,#06d6a0);height:100%;border-radius:4px;"></div>
+                                            </div>
+                                            <div style="font-size:10px;color:#9ca3af;margin-top:4px;">
+                                                Target: ₹<t t-esc="formatLargeNumber(store.target)"/>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="emp360-alert emp360-alert-info" style="margin:16px;">
+                                        <i class="fa fa-info-circle"></i> No store performance data for this period.
+                                    </div>
+                                </t>
+                            </div>
+
+                            <!-- Top Accounts -->
+                            <div class="ab-top-accounts">
+                                <div class="ab-section-header">
+                                    <i class="fa fa-star me-1"></i> Top Accounts
+                                    <span class="ab-badge-label">RANKED</span>
+                                </div>
+                                <t t-if="state.topAccounts.length > 0">
+                                <div class="ab-top-list">
+                                    <t t-foreach="state.topAccounts" t-as="acc" t-key="acc.rank">
+                                        <div class="ab-top-item">
+                                            <div class="ab-top-rank" t-attf-style="background:{{acc.rank === 1 ? '#ffd166' : acc.rank === 2 ? '#e5e7eb' : '#f77f00'}};">
+                                                <t t-esc="acc.rank"/>
+                                            </div>
+                                            <div class="ab-top-info">
+                                                <div class="ab-top-name"><t t-esc="acc.name"/></div>
+                                                <div class="ab-top-sub"><t t-esc="acc.orders"/> orders</div>
+                                            </div>
+                                            <div class="ab-top-rev">
+                                                ₹<t t-esc="formatLargeNumber(acc.revenue)"/>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                                </t>
+                                <t t-else="">
+                                    <div class="emp360-alert emp360-alert-info" style="margin:16px;">
+                                        <i class="fa fa-info-circle"></i> No account data available.
+                                    </div>
+                                </t>
+
+                                <!-- Visit Summary accordion -->
+                                <div class="ab-visit-summary">
+                                    <div class="ab-section-header" style="margin-top:16px;cursor:pointer;"
+                                         t-on-click="() => this.toggleAccordion('lastVisit')">
+                                        <i class="fa fa-history me-1"></i> Last Visit
+                                        <i t-att-class="'fa fa-chevron-' + (state.accordion.lastVisit ? 'up' : 'down') + ' ms-auto'"></i>
+                                    </div>
+                                    <t t-if="state.accordion.lastVisit and state.lastVisit">
+                                        <div style="padding:8px 0;">
+                                            <div class="emp360-info-row">
+                                                <span class="emp360-info-row-label"><i class="fa fa-building-o me-1"></i>Customer</span>
+                                                <span class="emp360-info-row-value"><t t-esc="state.lastVisit.partner_id ? state.lastVisit.partner_id[1] : '-'"/></span>
+                                            </div>
+                                            <div class="emp360-info-row">
+                                                <span class="emp360-info-row-label"><i class="fa fa-map-marker me-1"></i>Beat</span>
+                                                <span class="emp360-info-row-value"><t t-esc="state.lastVisit.beat_id ? state.lastVisit.beat_id[1] : '-'"/></span>
+                                            </div>
+                                            <div class="emp360-info-row">
+                                                <span class="emp360-info-row-label"><i class="fa fa-calendar me-1"></i>Date</span>
+                                                <span class="emp360-info-row-value"><t t-esc="formatDate(state.lastVisit.actual_start_time)"/></span>
+                                            </div>
+                                            <div class="emp360-info-row">
+                                                <span class="emp360-info-row-label"><i class="fa fa-info-circle me-1"></i>Status</span>
+                                                <span t-attf-class="emp360-badge {{statusBadgeClass(state.lastVisit.status)}}">
+                                                    <t t-esc="state.lastVisit.status"/>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.accordion.lastVisit and !state.lastVisit">
+                                        <div class="emp360-alert emp360-alert-info"><i class="fa fa-info-circle"></i> No visits found.</div>
+                                    </t>
+                                </div>
+
+                                <!-- Checklist quick view -->
+                                <div class="ab-visit-summary" style="margin-top:8px;">
+                                    <div class="ab-section-header" style="cursor:pointer;"
+                                         t-on-click="() => this.toggleAccordion('checklist')">
+                                        <i class="fa fa-list-ul me-1"></i>
+                                        Checklist (<t t-esc="state.checklistDone"/>/<t t-esc="state.checklistTotal"/>)
+                                        <i t-att-class="'fa fa-chevron-' + (state.accordion.checklist ? 'up' : 'down') + ' ms-auto'"></i>
+                                    </div>
+                                    <t t-if="state.accordion.checklist">
+                                        <div style="max-height:200px;overflow-y:auto;padding:4px 0;">
+                                            <t t-foreach="state.checklistItems" t-as="item" t-key="item.id">
+                                                <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f3f4f6;">
+                                                    <input type="checkbox"
+                                                           t-att-checked="item.done"
+                                                           t-on-change="(ev) => this.toggleChecklistItem(item.id, ev.target.checked)"
+                                                           style="width:15px;height:15px;accent-color:#4361ee;flex-shrink:0;cursor:pointer;"/>
+                                                    <span t-attf-style="font-size:12px;color:#374151;{{item.done ? 'text-decoration:line-through;color:#9ca3af;' : ''}}">
+                                                        <t t-esc="item.question"/>
+                                                    </span>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── Row 5: Location View (full-width) ── -->
+                        <div class="ab-location-row">
+                            <LocationMapCard
+                                t-props="{ employeeId: state.selectedEmployee }"
+                                t-key="'lm_' + state.selectedEmployee"/>
+                        </div>
+
+                        </t>
+                        <!-- /employee selected -->
+
+                    </t>
+                    <!-- /overview -->
+
+                    <!-- ═══════════════════════════════════════
+                         TODAY VISIT
+                         ═══════════════════════════════════════ -->
+                    <t t-if="state.activeTab === 'todayvisit'">
+                        <t t-if="state.selectedEmployee">
+                            <TodayVisit
+                                t-props="{
+                                    employeeId: state.selectedEmployee,
+                                    employeeName: state.details ? state.details.name : '',
+                                    isManager: state.isManager
+                                }"
+                                t-key="'tv_' + state.selectedEmployee"/>
+                        </t>
+                        <t t-else="">
+                            <div class="emp360-section" style="padding-top:24px;">
+                                <div class="emp360-empty">
+                                    <div class="emp360-empty-icon"><i class="fa fa-calendar-check-o"></i></div>
+                                    <div class="emp360-empty-title">Select an Employee</div>
+                                    <div class="emp360-empty-desc">Choose an employee to view today's visit plan.</div>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+
+                    <!-- ═══════════════════════════════════════
+                         VISIT HISTORY
+                         ═══════════════════════════════════════ -->
+                    <t t-if="state.activeTab === 'visits'">
+                        <t t-if="state.selectedEmployee">
+                            <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;">
+                                <VisitList
+                                    t-props="{ employeeId: state.selectedEmployee }"
+                                    t-key="'vl_' + state.selectedEmployee"/>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="emp360-section" style="padding-top:24px;">
+                                <div class="emp360-empty">
+                                    <div class="emp360-empty-icon"><i class="fa fa-history"></i></div>
+                                    <div class="emp360-empty-title">Select an Employee</div>
+                                    <div class="emp360-empty-desc">Visit history will appear here.</div>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+
+                    <!-- ═══════════════════════════════════════
+                         ORDERS
+                         ═══════════════════════════════════════ -->
+                    <t t-if="state.activeTab === 'orders'">
+                        <t t-if="state.selectedEmployee">
+                            <div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;">
+                                <OrdersList
+                                    t-props="{ employeeId: state.selectedEmployee, userId: state.userId }"
+                                    t-key="'ol_' + state.selectedEmployee"/>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="emp360-section" style="padding-top:24px;">
+                                <div class="emp360-empty">
+                                    <div class="emp360-empty-icon"><i class="fa fa-shopping-cart"></i></div>
+                                    <div class="emp360-empty-title">Select an Employee</div>
+                                    <div class="emp360-empty-desc">Order data will appear here.</div>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+
+                    <!-- ═══════════════════════════════════════
+                         RETAILER-WISE ORDERS
+                         ═══════════════════════════════════════ -->
+                    <t t-if="state.activeTab === 'retailer'">
+                        <div class="emp360-retailer-page">
+
+                            <!-- Stats bar -->
+                            <div class="emp360-retailer-stats-bar">
+                                <div class="emp360-rstat-card">
+                                    <div class="emp360-rstat-icon" style="background:rgba(67,97,238,.12);color:#4361ee;">
+                                        <i class="fa fa-building"></i>
+                                    </div>
+                                    <div>
+                                        <div class="emp360-rstat-val"><t t-esc="state.retailerOrderStats.retailers"/></div>
+                                        <div class="emp360-rstat-lbl">RETAILERS</div>
+                                    </div>
+                                </div>
+                                <div class="emp360-rstat-card">
+                                    <div class="emp360-rstat-icon" style="background:rgba(114,9,183,.12);color:#7209b7;">
+                                        <i class="fa fa-file-text-o"></i>
+                                    </div>
+                                    <div>
+                                        <div class="emp360-rstat-val"><t t-esc="state.retailerOrderStats.orders"/></div>
+                                        <div class="emp360-rstat-lbl">ORDERS</div>
+                                    </div>
+                                </div>
+                                <div class="emp360-rstat-card">
+                                    <div class="emp360-rstat-icon" style="background:rgba(5,150,105,.12);color:#059669;">
+                                        <i class="fa fa-money"></i>
+                                    </div>
+                                    <div>
+                                        <div class="emp360-rstat-val" style="color:#059669;">
+                                            Rs. <t t-esc="(state.retailerOrderStats.totalValue || 0).toFixed(2)"/>
+                                        </div>
+                                        <div class="emp360-rstat-lbl">TOTAL VALUE</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tabs -->
+                            <div class="emp360-rtabs">
+                                <span t-att-class="'emp360-rtab ' + (state.retailerTab === 'retailers' ? 'active' : '')"
+                                      t-on-click="() => state.retailerTab = 'retailers'">Retailers</span>
+                                <span t-att-class="'emp360-rtab ' + (state.retailerTab === 'subdist' ? 'active' : '')"
+                                      t-on-click="() => state.retailerTab = 'subdist'">Sub Distributors</span>
+                                <span t-att-class="'emp360-rtab ' + (state.retailerTab === 'other' ? 'active' : '')"
+                                      t-on-click="() => state.retailerTab = 'other'">Other</span>
+                            </div>
+
+                            <!-- Section title -->
+                            <div class="emp360-retailer-section-title">RETAILER-WISE ORDERS</div>
+
+                            <!-- Retailer list -->
+                            <div class="emp360-retailer-list">
+                                <t t-foreach="state.retailerOrders" t-as="retailer" t-key="retailer.id">
+                                    <div class="emp360-retailer-item">
+                                        <div class="emp360-retailer-item-header"
+                                             t-on-click="() => this.toggleRetailerExpand(retailer.id)">
+                                            <div style="display:flex;align-items:center;gap:14px;">
+                                                <div class="emp360-retailer-avatar-lg">
+                                                    <t t-esc="retailer.name ? retailer.name[0].toUpperCase() : 'R'"/>
+                                                </div>
+                                                <div>
+                                                    <div class="emp360-retailer-item-name">
+                                                        <t t-esc="retailer.name"/>*
+                                                    </div>
+                                                    <div class="emp360-retailer-item-sub">
+                                                        <t t-esc="retailer.orders.length"/> order(s)
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div style="display:flex;align-items:center;gap:12px;">
+                                                <span style="font-size:16px;font-weight:800;color:#059669;">
+                                                    Rs. <t t-esc="retailer.total.toFixed(2)"/>
+                                                </span>
+                                                <i t-attf-class="fa fa-chevron-{{retailer.expanded ? 'up' : 'down'}}"
+                                                   style="color:#9ca3af;font-size:14px;"></i>
+                                            </div>
+                                        </div>
+                                        <t t-if="retailer.expanded">
+                                            <div class="emp360-retailer-orders-body">
+                                                <t t-foreach="retailer.orders" t-as="order" t-key="order.id">
+                                                    <div class="emp360-order-item">
+                                                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                                                            <div>
+                                                                <div style="font-weight:700;color:#4361ee;font-size:14px;"><t t-esc="order.name"/></div>
+                                                                <div style="font-size:11px;color:#9ca3af;">
+                                                                    <t t-esc="order.order_line ? order.order_line.length : 0"/> items
+                                                                </div>
+                                                            </div>
+                                                            <div style="display:flex;align-items:center;gap:10px;">
+                                                                <span style="font-size:15px;font-weight:800;color:#059669;">
+                                                                    Rs. <t t-esc="(order.amount_total || 0).toFixed(2)"/>
+                                                                </span>
+                                                                <span t-attf-class="emp360-badge {{order.state === 'sale' ? 'emp360-badge-success' : order.state === 'draft' ? 'emp360-badge-warning' : 'emp360-badge-secondary'}}" style="font-size:10px;">
+                                                                    <t t-esc="order.state === 'draft' ? 'NEW' : order.state === 'sale' ? 'CONFIRMED' : order.state"/>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                                <t t-if="state.retailerOrders.length === 0">
+                                    <div class="emp360-empty" style="padding:40px 0;">
+                                        <div class="emp360-empty-icon"><i class="fa fa-file-text-o"></i></div>
+                                        <div class="emp360-empty-title">No retailer orders this month</div>
+                                        <div class="emp360-empty-desc">Orders linked to visits will appear here.</div>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <!-- Bottom actions -->
+                            <div class="emp360-retailer-actions">
+                                <button class="emp360-btn emp360-btn-outline emp360-btn-lg" style="flex:1;justify-content:center;"
+                                        t-on-click="downloadRetailerPdf">
+                                    <i class="fa fa-download me-2"></i> Download PDF
+                                </button>
+                                <button class="emp360-btn emp360-btn-success emp360-btn-lg" style="flex:1;justify-content:center;"
+                                        t-on-click="shareRetailerOnWhatsApp">
+                                    <i class="fa fa-whatsapp me-2"></i> Share on WhatsApp
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- ═══════════════════════════════════════
+                         PJP
+                         ═══════════════════════════════════════ -->
+                    <t t-if="state.activeTab === 'pjp'">
+                        <t t-if="state.selectedEmployee">
+                            <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;">
+                                <PJPList
+                                    t-props="{ employeeId: state.selectedEmployee }"
+                                    t-key="'pjp_' + state.selectedEmployee"/>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="emp360-section" style="padding-top:24px;">
+                                <div class="emp360-empty">
+                                    <div class="emp360-empty-icon"><i class="fa fa-map"></i></div>
+                                    <div class="emp360-empty-title">Select an Employee</div>
+                                    <div class="emp360-empty-desc">PJP data will appear here.</div>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+
+                    <!-- ═══════════════════════════════════════
+                         ATTENDANCE
+                         ═══════════════════════════════════════ -->
+                    <t t-if="state.activeTab === 'attendance'">
+                        <t t-if="state.selectedEmployee">
+                            <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;">
+                                <AttendanceList
+                                    t-props="{ employeeId: state.selectedEmployee }"
+                                    t-key="'att_' + state.selectedEmployee"/>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="emp360-section" style="padding-top:24px;">
+                                <div class="emp360-empty">
+                                    <div class="emp360-empty-icon"><i class="fa fa-clock-o"></i></div>
+                                    <div class="emp360-empty-title">Select an Employee</div>
+                                    <div class="emp360-empty-desc">Attendance records will appear here.</div>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+
+                    <!-- ═══════════════════════════════════════
+                         EXPENSES
+                         ═══════════════════════════════════════ -->
+                    <t t-if="state.activeTab === 'expenses'">
+                        <t t-if="state.selectedEmployee">
+                            <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;">
+                                <ExpenseList
+                                    t-props="{ employeeId: state.selectedEmployee }"
+                                    t-key="'exp_' + state.selectedEmployee"/>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="emp360-section" style="padding-top:24px;">
+                                <div class="emp360-empty">
+                                    <div class="emp360-empty-icon"><i class="fa fa-money"></i></div>
+                                    <div class="emp360-empty-title">Select an Employee</div>
+                                    <div class="emp360-empty-desc">Expense records will appear here.</div>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+
+                    <!-- ═══════════════════════════════════════
+                         INVOICES
+                         ═══════════════════════════════════════ -->
+                    <t t-if="state.activeTab === 'invoices'">
+                        <t t-if="state.selectedEmployee">
+                            <div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;">
+                                <InvoiceList
+                                    t-props="{ employeeId: state.selectedEmployee }"
+                                    t-key="'inv_' + state.selectedEmployee"/>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="emp360-section" style="padding-top:24px;">
+                                <div class="emp360-empty">
+                                    <div class="emp360-empty-icon"><i class="fa fa-file-text"></i></div>
+                                    <div class="emp360-empty-title">Select an Employee</div>
+                                    <div class="emp360-empty-desc">Invoice data will appear here.</div>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+
+                    <!-- ═══════════════════════════════════════
+                         INCENTIVES
+                         ═══════════════════════════════════════ -->
+                    <t t-if="state.activeTab === 'incentives'">
+                        <div class="emp360-section" style="padding-top:24px;">
+                            <div class="emp360-card">
+                                <div class="emp360-card-header">
+                                    <div class="emp360-card-title">
+                                        <div class="emp360-card-badge emp360-badge-orange">
+                                            <i class="fa fa-trophy"></i>
+                                        </div>
+                                        Incentives &amp; Achievements
+                                    </div>
+                                </div>
+                                <div class="emp360-empty" style="padding:48px;">
+                                    <div class="emp360-empty-icon"><i class="fa fa-trophy"></i></div>
+                                    <div class="emp360-empty-title">Coming Soon</div>
+                                    <div class="emp360-empty-desc">Incentive tracking will be available here.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- ═══════════════════════════════════════
+                         ANALYTICS / SUMMARY
+                         ═══════════════════════════════════════ -->
+                    <t t-if="state.activeTab === 'summary'">
+                        <DashboardReport/>
+                    </t>
+
                 </div>
-            </t>
+                <!-- /content -->
+
+            </div>
+            <!-- /main -->
 
         </div>
     </t>
+
 </templates>

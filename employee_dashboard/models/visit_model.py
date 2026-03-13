@@ -66,12 +66,70 @@ class VisitModel(models.Model):
     
     order_ids = fields.One2many('sale.order', 'visit_id', string='Orders')
     order_line_ids = fields.One2many('sale.order.line', 'visit_id', string='Order Lines')
-    order_count = fields.Integer(string='Order Count', compute='_compute_order_count')
-    total_order_amount = fields.Monetary(string='Total Order Amount', compute='_compute_total_order_amount', currency_field='currency_id')
+    order_count = fields.Integer(string='Order Count', compute='_compute_order_count', store=True)
+    total_order_amount = fields.Monetary(string='Total Order Amount', compute='_compute_total_order_amount', store=True, currency_field='currency_id')
     currency_id = fields.Many2one('res.currency', string='Currency', default=lambda self: self.env.company.currency_id)
+
+    # Related records
+    stock_ledger_ids = fields.One2many('visit.stock.ledger', 'visit_id', string='Stock Updates')
+    collection_ids = fields.One2many('visit.collection', 'visit_id', string='Collections')
+    ticket_ids = fields.One2many('visit.ticket', 'visit_id', string='Tickets')
+    competitor_ids = fields.One2many('visit.competitor', 'visit_id', string='Competitor Info')
+    checklist_ids = fields.One2many('visit.checklist', 'visit_id', string='Checklist')
+
+    # Geo-fence validation result
+    geofence_valid = fields.Boolean(string='Geo-fence Validated', default=False)
+    geofence_distance = fields.Float(string='Distance from Store (m)', digits=(10, 1))
+
+    # GPS at visit start
+    checkin_latitude = fields.Float(string='Check-in Latitude', digits=(10, 7))
+    checkin_longitude = fields.Float(string='Check-in Longitude', digits=(10, 7))
+    checkin_accuracy = fields.Float(string='Check-in Accuracy (m)', digits=(10, 2))
+    # GPS at visit end
+    checkout_latitude = fields.Float(string='Check-out Latitude', digits=(10, 7))
+    checkout_longitude = fields.Float(string='Check-out Longitude', digits=(10, 7))
+
+    # Collection totals (computed)
+    total_collected = fields.Monetary(
+        string='Total Collected', compute='_compute_totals', store=True,
+        currency_field='currency_id')
+    stock_lines_count = fields.Integer(
+        string='Stock Lines', compute='_compute_totals', store=True)
+    checklist_done = fields.Integer(
+        string='Checklist Done', compute='_compute_totals', store=True)
+    checklist_total = fields.Integer(
+        string='Checklist Total', compute='_compute_totals', store=True)
     
 
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
+
+    @api.depends('collection_ids', 'collection_ids.amount', 'collection_ids.state',
+                 'stock_ledger_ids', 'checklist_ids', 'checklist_ids.answer')
+    def _compute_totals(self):
+        for rec in self:
+            confirmed = rec.collection_ids.filtered(lambda c: c.state == 'confirmed')
+            rec.total_collected = sum(confirmed.mapped('amount'))
+            rec.stock_lines_count = len(rec.stock_ledger_ids)
+            rec.checklist_done = len(rec.checklist_ids.filtered(lambda c: c.answer))
+            rec.checklist_total = len(rec.checklist_ids)
+
+    @api.constrains('employee_id', 'actual_start_time', 'actual_end_time', 'status')
+    def _check_no_multiple_open_visits(self):
+        """Prevent more than one open (in_progress) visit per employee at a time."""
+        for rec in self:
+            if rec.status == 'in_progress':
+                open_visits = self.search([
+                    ('id', '!=', rec.id),
+                    ('employee_id', '=', rec.employee_id.id),
+                    ('status', '=', 'in_progress'),
+                    ('actual_end_time', '=', False),
+                ])
+                if open_visits:
+                    raise ValidationError(
+                        _('Employee %s already has an open visit (%s). '
+                          'Please close it before starting a new one.')
+                        % (rec.employee_id.name, open_visits[0].name)
+                    )
 
     @api.constrains('status', 'store_image')
     def _check_store_image_required(self):
@@ -103,12 +161,21 @@ class VisitModel(models.Model):
         for record in self:
             if not record.employee_id:
                 continue
-            kpi_targets = self.env['kpi.target'].search([
+            kpi_targets = self.env['kpi.target'].sudo().search([
                 ('employee_id', '=', record.employee_id.id),
             ])
             if kpi_targets:
                 kpi_targets._compute_actuals()
+                kpi_targets.flush_recordset([
+                    'actual_orders', 'actual_order_amount', 'actual_visits',
+                    'actual_new_dealers', 'actual_payment_collected', 'actual_complaints_solved',
+                ])
                 kpi_targets._compute_achievements()
+                kpi_targets.flush_recordset([
+                    'achievement_orders', 'achievement_visits', 'achievement_new_dealers',
+                    'achievement_payment_collected', 'achievement_complaints_solved',
+                    'overall_achievement',
+                ])
 
     @api.depends('actual_start_time', 'actual_end_time')
     def _compute_duration(self):
@@ -134,10 +201,12 @@ class VisitModel(models.Model):
         for record in self:
             record.order_count = len(record.order_ids)
 
-    @api.depends('order_line_ids', 'order_line_ids.price_subtotal')
+    @api.depends('order_ids', 'order_ids.amount_total', 'order_ids.state')
     def _compute_total_order_amount(self):
         for record in self:
-            record.total_order_amount = sum(record.order_line_ids.mapped('price_subtotal'))
+            confirmed = record.order_ids.filtered(
+                lambda o: o.state in ('sale', 'done'))
+            record.total_order_amount = sum(confirmed.mapped('amount_total'))
 
     def action_view_orders(self):
         self.ensure_one()
