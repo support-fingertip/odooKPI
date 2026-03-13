@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         EMPLOYEE 360  —  UNIFIED MAIN MENU  (Odoo 18)
+
+         MENU STRATEGY (Role-based):
+         ┌─────────────────────────────────────────────────────────────┐
+         │  MANAGER view  → sees "Employee 360" (full feature app)     │
+         │  USER view     → sees "My Workday"  (field executive view)  │
+         │                                                              │
+         │  Note: managers imply users, so managers see BOTH menus.    │
+         │  Regular field users ONLY see "My Workday" — never          │
+         │  "Employee 360" — giving them a cleaner, role-appropriate   │
+         │  experience.                                                 │
+         └─────────────────────────────────────────────────────────────┘
+         ================================================================ -->
+
+    <!-- ══════════════════════════════════════════════════════════════
+         ROOT A — "Employee 360"  (Managers only)
+         Full analytics, beat management, PJP, reports & configuration
+         ══════════════════════════════════════════════════════════════ -->
+    <menuitem id="menu_emp360_root"
+              name="Employee 360"
+              sequence="5"
+              groups="employee_dashboard.group_employee_dashboard_manager"/>
+
+    <!-- ── 1. Manager Dashboard (Full analytics) ─────────────────── -->
+    <menuitem id="menu_emp360_manager_dashboard"
+              name="Dashboard"
+              parent="menu_emp360_root"
+              action="action_employee_component"
+              sequence="10"
+              groups="employee_dashboard.group_employee_dashboard_manager"/>
+
+    <!-- ── 2. Today (Manager quick-access to Today Visit) ────────── -->
+    <menuitem id="menu_emp360_dashboard"
+              name="Today"
+              parent="menu_emp360_root"
+              action="action_employee_component"
+              sequence="12"
+              groups="employee_dashboard.group_employee_dashboard_manager"/>
+
+    <!-- ── 3. Beat Management ─────────────────────────────────────── -->
+    <menuitem id="menu_emp360_beat_root"
+              name="Beat Management"
+              parent="menu_emp360_root"
+              sequence="20"
+              groups="employee_dashboard.group_employee_dashboard_manager"/>
+
+    <menuitem id="menu_emp360_beats"
+              name="Beats"
+              parent="menu_emp360_beat_root"
+              action="beat_module.action_beat_module"
+              sequence="10"
+              groups="employee_dashboard.group_employee_dashboard_manager"/>
+
+    <!-- ── 4. Analytics Dashboard ────────────────────────────────── -->
+    <menuitem id="menu_emp360_analytics_dashboard"
+              name="Analytics Dashboard"
+              parent="menu_emp360_root"
+              action="employee_dashboard.action_dashboard_report"
+              sequence="25"
+              active="False"
+              groups="employee_dashboard.group_employee_dashboard_manager"/>
+
+    <!-- ── 5. PJP ─────────────────────────────────────────────────── -->
+    <menuitem id="menu_emp360_pjp_root"
+              name="PJP"
+              parent="menu_emp360_root"
+              sequence="30"
+              groups="employee_dashboard.group_employee_dashboard_manager"/>
+
+    <menuitem id="menu_emp360_pjp_list"
+              name="Journey Plans"
+              parent="menu_emp360_pjp_root"
+              action="employee_dashboard.action_pjp_model"
+              sequence="10"
+              groups="employee_dashboard.group_employee_dashboard_manager"/>
+
+    <menuitem id="menu_emp360_pjp_visits"
+              name="Visits"
+              parent="menu_emp360_pjp_root"
+              action="employee_dashboard.action_visit_model"
+              sequence="20"
+              groups="employee_dashboard.group_employee_dashboard_manager"/>
+
+    <!-- ── 6. Reports ─────────────────────────────────────────────── -->
+    <menuitem id="menu_employee_dashboard_reports"
+              name="Reports"
+              parent="menu_emp360_root"
+              sequence="40"
+              groups="employee_dashboard.group_employee_dashboard_manager"/>
+
+    <!-- ── 7. Configuration ───────────────────────────────────────── -->
+    <menuitem id="menu_employee_dashboard_config"
+              name="Configuration"
+              parent="menu_emp360_root"
+              sequence="50"
+              groups="employee_dashboard.group_employee_dashboard_manager"/>
+
+
+    <!-- ══════════════════════════════════════════════════════════════
+         ROOT B — "My Workday"  (Field Users)
+         Clean, focused entry point for field sales executives.
+         Regular users ONLY see this menu — never "Employee 360".
+         (Managers also see it as a quick shortcut to Today Visit,
+          since manager group implies user group in Odoo's security.)
+         ══════════════════════════════════════════════════════════════ -->
+    <menuitem id="menu_emp360_user_root"
+              name="My Workday"
+              sequence="6"
+              groups="employee_dashboard.group_employee_dashboard_user"/>
+
+    <!-- ── Today Visit — the ONLY screen field users access ─────── -->
+    <menuitem id="menu_emp360_user_today"
+              name="Today"
+              parent="menu_emp360_user_root"
+              action="action_employee_component"
+              sequence="10"
+              groups="employee_dashboard.group_employee_dashboard_user"/>
+
+</odoo>

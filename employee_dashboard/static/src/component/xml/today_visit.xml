@@ -1,258 +1,413 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
-    
-    <t t-name="employee_dashboard.TodayVisit">
-        <div class="o_today_visit_wrap">
 
-            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style="flex-shrink: 0;">
-                <h4 class="mb-0">
-                    <i class="fa fa-calendar-check-o me-2"></i>
-                    Today's Visit Plan
-                </h4>
-                
-                <div class="d-flex gap-2">
-                    <t t-if="!state.dayStarted &amp;&amp; !state.dayEnded">
-                        <button class="btn btn-primary" t-on-click="() => this.openStartDayModal()">
-                            <i class="fa fa-play me-1"></i> Start Day
+    <!-- ============================================================
+         TODAY VISIT — Premium UI (Odoo 18)
+         All functionality preserved; full UI redesign applied.
+         ============================================================ -->
+    <t t-name="employee_dashboard.TodayVisit">
+        <div class="emp360-tv-root">
+
+            <!-- ══════════════════════════════════════════════════
+                 HERO HEADER — replaces plain banner
+                 ══════════════════════════════════════════════════ -->
+            <div t-if="!state.loading"
+                 t-attf-class="tv-hero {{state.dayStarted ? 'tv-hero-active' : state.dayEnded ? 'tv-hero-ended' : 'tv-hero-idle'}} {{!props.isManager ? 'tv-hero-user' : ''}}">
+                <!-- Decorative blobs -->
+                <div class="tv-hero-blob tv-hero-blob1"></div>
+                <div class="tv-hero-blob tv-hero-blob2"></div>
+
+                <!-- Left: status + greeting -->
+                <div class="tv-hero-left">
+
+                    <!-- Personalized greeting — shown only for field users (non-managers) -->
+                    <t t-if="!props.isManager and props.employeeName">
+                        <div class="tv-hero-personal-greeting">
+                            <i t-attf-class="fa {{greetingIcon()}} tv-greeting-icon"></i>
+                            <span><t t-esc="greeting()"/>, <strong><t t-esc="userFirstName()"/></strong>!</span>
+                        </div>
+                    </t>
+
+                    <div class="tv-hero-status-badge">
+                        <t t-if="state.dayStarted">
+                            <span class="tv-status-pulse"></span>
+                            <i class="fa fa-check-circle me-1"></i> Day In Progress
+                            <t t-if="state.checkinTime">
+                                · <strong><t t-esc="state.checkinTime"/></strong>
+                            </t>
+                        </t>
+                        <t t-elif="state.dayEnded">
+                            <i class="fa fa-moon-o me-1"></i> Day Completed
+                        </t>
+                        <t t-else="">
+                            <i t-attf-class="fa {{greetingIcon()}} me-1"></i> Ready to Start
+                        </t>
+                    </div>
+                    <div class="tv-hero-title">
+                        <t t-if="state.dayStarted">Field Visit Dashboard</t>
+                        <t t-elif="state.dayEnded">Great Work Today!</t>
+                        <t t-else="">
+                            <t t-if="!props.isManager">Start Your Day</t>
+                            <t t-else="">Start Your Day</t>
+                        </t>
+                    </div>
+                    <div class="tv-hero-sub">
+                        <t t-if="state.dayStarted">Manage your beats, visits &amp; collections</t>
+                        <t t-elif="state.dayEnded">All beats covered · Day successfully closed</t>
+                        <t t-else="">
+                            <t t-if="!props.isManager">
+                                Tap <strong>Start My Day</strong> to begin your field activities
+                            </t>
+                            <t t-else="">Begin field activities by starting your day below</t>
+                        </t>
+                    </div>
+
+                    <!-- Employee name chip — shown to managers so they know whose view this is -->
+                    <t t-if="props.isManager and props.employeeName">
+                        <div class="tv-hero-emp-chip">
+                            <i class="fa fa-user-circle me-1"></i>
+                            <t t-esc="props.employeeName"/>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- Right: Action buttons -->
+                <div class="tv-hero-right">
+                    <!-- Start Day -->
+                    <t t-if="!state.dayStarted and !state.dayEnded">
+                        <button class="tv-hero-btn tv-hero-btn-start"
+                                t-on-click="() => this.openStartDayModal()">
+                            <i class="fa fa-play-circle me-2"></i> Start My Day
                         </button>
                     </t>
-                    <t t-if="state.dayEnded">
-                        <span class="badge bg-secondary fs-6 px-3 py-2">
-                            <i class="fa fa-check-circle me-1"></i> Day Ended
-                        </span>
-                    </t>
-                    
+                    <!-- Active day controls -->
                     <t t-if="state.dayStarted">
-                        <button class="btn btn-primary" 
+                        <button class="tv-hero-btn tv-hero-btn-end"
                                 t-on-click="() => this.openEndDayModal()"
                                 t-att-disabled="state.isProcessing || state.activeVisit || state.beatStarted">
-                            <i t-if="!state.isProcessing" class="fa fa-stop me-1"></i>
-                            <i t-else="" class="fa fa-spinner fa-spin me-1"></i>
+                            <i t-if="!state.isProcessing" class="fa fa-stop-circle me-2"></i>
+                            <i t-else="" class="fa fa-spinner fa-spin me-2"></i>
                             <t t-if="!state.isProcessing">End Day</t>
-                            <t t-else="">Ending Day...</t>
+                            <t t-else="">Ending…</t>
                         </button>
-                        
                         <t t-if="state.beatStarted">
-                            <button class="btn btn-primary"
+                            <button class="tv-hero-btn tv-hero-btn-switch"
                                     t-on-click="() => this.openSwitchBeatSelection()"
                                     t-att-disabled="state.activeVisit">
-                                <i class="fa fa-exchange me-1"></i> Switch Beat
+                                <i class="fa fa-exchange me-2"></i> Switch Beat
                             </button>
-                            <button class="btn btn-primary" t-on-click="() => this.openEndBeatModal()">
-                                <i class="fa fa-stop-circle me-1"></i> End Beat
-                            </button>
-                        </t>
-                        <t t-if="state.beatSwitchHistory &amp;&amp; state.beatSwitchHistory.length > 0">
-                            <button class="btn btn-outline-secondary btn-sm"
-                                    t-on-click="() => this.openSwitchHistoryModal()"
-                                    title="View beat switch history">
-                                <i class="fa fa-history me-1"></i> Switch History
-                                <span class="badge bg-warning text-dark ms-1">
-                                    <t t-esc="state.beatSwitchHistory.length"/>
-                                </span>
+                            <button class="tv-hero-btn tv-hero-btn-outline"
+                                    t-on-click="() => this.openEndBeatModal()">
+                                <i class="fa fa-stop-circle me-2"></i> End Beat
                             </button>
                         </t>
+                        <t t-if="state.beatSwitchHistory and state.beatSwitchHistory.length > 0">
+                            <button class="tv-hero-btn tv-hero-btn-outline"
+                                    t-on-click="() => this.openSwitchHistoryModal()">
+                                <i class="fa fa-history me-1"></i> History
+                                <span class="tv-badge-count"><t t-esc="state.beatSwitchHistory.length"/></span>
+                            </button>
+                        </t>
+                    </t>
+                    <!-- Day Ended badge -->
+                    <t t-if="state.dayEnded">
+                        <span class="tv-hero-completed-badge">
+                            <i class="fa fa-check-circle me-1"></i> Day Completed
+                        </span>
                     </t>
                 </div>
             </div>
+            <!-- /Hero Header -->
 
+            <!-- ══════════════════════════════════════════════════
+                 KPI STATS ROW — shown after day starts
+                 ══════════════════════════════════════════════════ -->
+            <t t-if="state.dayStarted and state.todayStats">
+                <div class="tv-kpi-row">
+                    <!-- Total Visits -->
+                    <div class="tv-kpi-card tv-kpi-blue">
+                        <div class="tv-kpi-icon"><i class="fa fa-list-ol"></i></div>
+                        <div class="tv-kpi-num"><t t-esc="state.todayStats.total || 0"/></div>
+                        <div class="tv-kpi-lbl">Total Visits</div>
+                        <div class="tv-kpi-bar" style="background:linear-gradient(90deg,#4361ee,#7209b7);"></div>
+                    </div>
+                    <!-- Completed -->
+                    <div class="tv-kpi-card tv-kpi-green">
+                        <div class="tv-kpi-icon"><i class="fa fa-check-circle"></i></div>
+                        <div class="tv-kpi-num"><t t-esc="state.todayStats.done || 0"/></div>
+                        <div class="tv-kpi-lbl">Completed</div>
+                        <div class="tv-kpi-bar" style="background:linear-gradient(90deg,#06d6a0,#019b72);"></div>
+                    </div>
+                    <!-- Planned -->
+                    <div class="tv-kpi-card tv-kpi-amber">
+                        <div class="tv-kpi-icon"><i class="fa fa-clock-o"></i></div>
+                        <div class="tv-kpi-num"><t t-esc="state.todayStats.planned || 0"/></div>
+                        <div class="tv-kpi-lbl">Planned</div>
+                        <div class="tv-kpi-bar" style="background:linear-gradient(90deg,#f59e0b,#d97706);"></div>
+                    </div>
+                    <!-- Missed -->
+                    <div class="tv-kpi-card tv-kpi-red">
+                        <div class="tv-kpi-icon"><i class="fa fa-times-circle"></i></div>
+                        <div class="tv-kpi-num"><t t-esc="state.todayStats.missed || 0"/></div>
+                        <div class="tv-kpi-lbl">Missed</div>
+                        <div class="tv-kpi-bar" style="background:linear-gradient(90deg,#ef476f,#b5179e);"></div>
+                    </div>
+                    <!-- Orders Today -->
+                    <div class="tv-kpi-card tv-kpi-purple">
+                        <div class="tv-kpi-icon"><i class="fa fa-shopping-cart"></i></div>
+                        <div class="tv-kpi-num"><t t-esc="state.todayStats.ordersCount || 0"/></div>
+                        <div class="tv-kpi-lbl">Orders</div>
+                        <div class="tv-kpi-bar" style="background:linear-gradient(90deg,#7209b7,#3a0ca3);"></div>
+                    </div>
+                    <!-- Sales Value -->
+                    <div class="tv-kpi-card tv-kpi-teal">
+                        <div class="tv-kpi-icon"><i class="fa fa-rupee"></i></div>
+                        <div class="tv-kpi-num"><t t-esc="formatAmount(state.todayStats.totalValue || 0)"/></div>
+                        <div class="tv-kpi-lbl">Sales Value</div>
+                        <div class="tv-kpi-bar" style="background:linear-gradient(90deg,#0077b6,#023e8a);"></div>
+                    </div>
+                </div>
 
-            <div t-if="state.activeVisit &amp;&amp; state.customerSummary" class="mb-2" style="flex-shrink: 0;">
-                <div class="card shadow-sm border-primary">
-                    <div class="card-header bg-primary text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fa fa-user me-2"></i>
-                                <strong><t t-esc="state.customerSummary.name"/></strong>
-                                <div class="mt-1" style="font-size: 0.82rem; opacity: 0.9;">
-                                    <t t-if="state.customerSummary.phone">
-                                        <span class="me-3"><i class="fa fa-phone me-1"></i><t t-esc="state.customerSummary.phone"/></span>
-                                    </t>
-                                    <t t-if="state.customerSummary.mobile">
-                                        <span class="me-3"><i class="fa fa-mobile me-1"></i><t t-esc="state.customerSummary.mobile"/></span>
-                                    </t>
-                                    <t t-if="state.customerSummary.email">
-                                        <span class="me-3"><i class="fa fa-envelope me-1"></i><t t-esc="state.customerSummary.email"/></span>
-                                    </t>
-                                    <t t-if="state.customerSummary.address">
-                                        <span><i class="fa fa-map-marker me-1"></i><t t-esc="state.customerSummary.address"/></span>
-                                    </t>
+                <!-- Mini metrics strip -->
+                <div class="tv-metrics-strip">
+                    <span class="tv-metric-chip">
+                        <i class="fa fa-clock-o"></i>
+                        <t t-esc="state.todayStats.workingTime || '0m'"/> Working
+                    </span>
+                    <span class="tv-metric-chip">
+                        <i class="fa fa-percent"></i>
+                        <t t-esc="state.todayStats.visitPct || 0"/>% Visit
+                    </span>
+                    <span class="tv-metric-chip">
+                        <i class="fa fa-map-marker"></i>
+                        <t t-esc="state.todayStats.avgVisitTime || '0m'"/> Avg Visit
+                    </span>
+                </div>
+            </t>
+
+            <!-- ── Target vs Actual ──────────────────────────── -->
+            <t t-if="state.todayKpi">
+                <div class="emp360-tva-section">
+                    <div class="emp360-tva-card">
+                        <div class="emp360-tva-header">
+                            <div class="emp360-tva-title">
+                                <i class="fa fa-line-chart" style="color:#4361ee;"></i>
+                                Target vs Actual
+                            </div>
+                            <span class="emp360-tva-pct">
+                                <t t-esc="state.todayKpi.orderPct || 1"/>%
+                            </span>
+                        </div>
+                        <div class="emp360-tva-rows">
+                            <!-- Target row -->
+                            <div class="emp360-tva-row">
+                                <div class="emp360-tva-row-hdr">
+                                    <span>Target</span>
+                                    <span style="color:#4361ee;font-weight:700;">
+                                        <t t-esc="formatAmountLarge(state.todayKpi.targetAmount || 0)"/>
+                                    </span>
+                                </div>
+                                <div class="emp360-tva-bar">
+                                    <div class="emp360-tva-fill target" style="width:100%;"></div>
+                                </div>
+                            </div>
+                            <!-- Actual row -->
+                            <div class="emp360-tva-row">
+                                <div class="emp360-tva-row-hdr">
+                                    <span>Actual</span>
+                                    <span style="color:#06d6a0;font-weight:700;">
+                                        <t t-esc="formatAmountLarge(state.todayKpi.amountPeriod || 0)"/>
+                                    </span>
+                                </div>
+                                <div class="emp360-tva-bar">
+                                    <div class="emp360-tva-fill actual"
+                                         t-att-style="'width:' + Math.min(state.todayKpi.orderPct || 1, 100) + '%'">
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        
-                    </div>
-                    <div class="card-body py-3">
-                        <div class="d-flex justify-content-center gap-3 flex-wrap">
-                            <button class="btn btn-outline-primary btn-lg px-4" t-on-click="() => this.openQuickOrder()">
-                                <i class="fa fa-shopping-cart me-2"></i> Quick Order
-                            </button>
-                            <button class="btn btn-outline-primary btn-lg px-4" t-on-click="() => this.openVisitListView()">
-                                <i class="fa fa-calendar-check-o me-2"></i> Visit List
-                            </button>
-                            <button class="btn btn-outline-primary btn-lg px-4" t-on-click="() => this.openSalesOrderList()">
-                                <i class="fa fa-file-text-o me-2"></i> Sales Orders
-                            </button>
-                            <button class="btn btn-outline-primary btn-lg px-4" t-on-click="() => this.openEndVisitModal()">
-                                <i class="fa fa-stop me-2"></i>  End Visit
-                            </button>
+                        <div class="emp360-tva-legend">
+                            <div class="emp360-tva-legend-item">
+                                <div class="emp360-tva-dot" style="background:#4361ee;"></div>
+                                Monthly Target
+                            </div>
+                            <div class="emp360-tva-legend-item">
+                                <div class="emp360-tva-dot" style="background:#06d6a0;"></div>
+                                Achieved
+                            </div>
+                            <div class="emp360-tva-legend-item">
+                                <div class="emp360-tva-dot" style="background:#f59e0b;"></div>
+                                Today,
+                                <t t-esc="state.todayKpi.actualOrdersToday || 0"/> order(s)
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-         
-            <div t-if="state.activeVisit &amp;&amp; state.customerSummary" class="row g-3 mb-3" style="flex-shrink: 0;">
+            </t>
 
-                <div class="col-6 col-md-3">
-                    <div class="card bg-light h-100">
-                        <div class="card-body text-center py-2">
-                            <i class="fa fa-money fa-2x text-primary mb-1"></i>
-                            <h6 class="mb-1">Outstanding</h6>
-                            <h4 class="mb-0 text-primary">
-                                ₹<t t-esc="state.customerSummary.outstanding.toFixed(2)"/>
-                            </h4>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-6 col-md-3">
-                    <div class="card bg-light h-100">
-                        <div class="card-body text-center py-2">
-                            <i class="fa fa-line-chart fa-2x text-primary mb-1"></i>
-                            <h6 class="mb-1">Total Sales</h6>
-                            <h4 class="mb-0 text-primary">
-                                ₹<t t-esc="state.customerSummary.totalSales.toFixed(2)"/>
-                            </h4>
-                            <small class="text-muted">
-                                <t t-esc="state.customerSummary.orderCount"/> Orders
-                            </small>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-6 col-md-3">
-                    <div class="card bg-light h-100">
-                        <div class="card-body text-center py-2">
-                            <i class="fa fa-calendar-check-o fa-2x text-info mb-1"></i>
-                            <h6 class="mb-1">Total Visits</h6>
-                            <h4 class="mb-0 text-info">
-                                <t t-esc="state.customerSummary.visitCount"/>
-                            </h4>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-6 col-md-3">
-                    <div class="card bg-light h-100">
-                        <div class="card-body text-center py-2">
-                            <i class="fa fa-clock-o fa-2x text-warning mb-1"></i>
-                            <h6 class="mb-1">Last Order Date</h6>
-                            <h5 class="mb-0 text-warning">
-                                <t t-if="state.customerSummary.lastOrderDate">
-                                    <t t-esc="formatDateOnly(state.customerSummary.lastOrderDate)"/>
-                                </t>
-                                <t t-else="">No orders yet</t>
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <t t-if="state.todayKpi">
-                <div class="mb-3" style="flex-shrink: 0;">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
-                            <h6 class="mb-0 text-muted">
-                                <i class="fa fa-bar-chart me-1 text-primary"></i>
-                                <strong>Today's Performance (Period Target)</strong>
-                            </h6>
-                        </div>
-                        <div class="card-body py-2">
-                            <div class="row g-2">
-                                <div class="col-6 col-md-3">
-                                    <div class="card bg-light border-0 h-100">
-                                        <div class="card-body text-center py-2">
-                                            <i class="fa fa-calendar-check-o text-info mb-1"></i>
-                                            <div class="small text-muted mb-1">Visits Today</div>
-                                            <h5 class="mb-0 text-info">
-                                                <t t-esc="state.todayKpi.actualVisitsToday"/>
-                                            </h5>
-                                        </div>
+            <!-- ── Active customer summary ───────────────────── -->
+            <t t-if="state.activeVisit and state.customerSummary">
+                <div style="padding:8px 24px;">
+                    <div class="emp360-card">
+                        <div style="background:linear-gradient(135deg,#1a1a3e,#0f3460);padding:14px 18px;border-radius:14px 14px 0 0;color:#fff;">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                                <div>
+                                    <div style="font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;">
+                                        <i class="fa fa-store"></i>
+                                        <t t-esc="state.customerSummary.name"/>
+                                        <span style="font-size:12px;font-weight:500;opacity:.7;margin-left:4px;">*</span>
+                                    </div>
+                                    <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;display:flex;gap:14px;flex-wrap:wrap;">
+                                        <t t-if="state.customerSummary.phone">
+                                            <span><i class="fa fa-phone me-1"></i><t t-esc="state.customerSummary.phone"/></span>
+                                        </t>
+                                        <t t-if="state.customerSummary.address">
+                                            <span><i class="fa fa-map-marker me-1"></i><t t-esc="state.customerSummary.address"/></span>
+                                        </t>
                                     </div>
                                 </div>
-                                <div class="col-6 col-md-3">
-                                    <div class="card bg-light border-0 h-100">
-                                        <div class="card-body text-center py-2">
-                                            <i class="fa fa-shopping-cart text-success mb-1"></i>
-                                            <div class="small text-muted mb-1">Orders Today</div>
-                                            <h5 class="mb-0 text-success">
-                                                <t t-esc="state.todayKpi.actualOrdersToday"/>
-                                            </h5>
-                                        </div>
+                            </div>
+                        </div>
+                        <!-- Customer KPIs -->
+                        <div style="display:flex;gap:12px;padding:14px 18px;flex-wrap:wrap;border-bottom:1px solid #f0f0f0;">
+                            <div class="emp360-outstanding-stat" style="flex:1;min-width:100px;">
+                                <div class="emp360-outstanding-stat-val" style="color:#ef476f;">
+                                    ₹<t t-esc="(state.customerSummary.outstanding || 0).toFixed(0)"/>
+                                </div>
+                                <div class="emp360-outstanding-stat-lbl">Outstanding</div>
+                            </div>
+                            <div class="emp360-outstanding-stat" style="flex:1;min-width:100px;">
+                                <div class="emp360-outstanding-stat-val" style="color:#059669;">
+                                    ₹<t t-esc="(state.customerSummary.totalSales || 0).toFixed(0)"/>
+                                </div>
+                                <div class="emp360-outstanding-stat-lbl">Total Sales</div>
+                            </div>
+                            <div class="emp360-outstanding-stat" style="flex:1;min-width:100px;">
+                                <div class="emp360-outstanding-stat-val" style="color:#4361ee;">
+                                    <t t-esc="state.customerSummary.visitCount || 0"/>
+                                </div>
+                                <div class="emp360-outstanding-stat-lbl">Visits</div>
+                            </div>
+                            <div class="emp360-outstanding-stat" style="flex:1;min-width:100px;">
+                                <div class="emp360-outstanding-stat-val" style="color:#7209b7;font-size:14px;">
+                                    <t t-if="state.customerSummary.lastOrderDate">
+                                        <t t-esc="formatDateOnly(state.customerSummary.lastOrderDate)"/>
+                                    </t>
+                                    <t t-else="">-</t>
+                                </div>
+                                <div class="emp360-outstanding-stat-lbl">Last Order</div>
+                            </div>
+                        </div>
+                        <!-- Action buttons -->
+                        <div style="display:flex;gap:10px;padding:12px 18px;flex-wrap:wrap;">
+                            <button class="emp360-btn emp360-btn-primary emp360-btn-sm"
+                                    t-on-click="() => this.openQuickOrder()">
+                                <i class="fa fa-shopping-cart me-1"></i> Quick Order
+                            </button>
+                            <button class="emp360-btn emp360-btn-ghost emp360-btn-sm"
+                                    t-on-click="() => this.openVisitListView()">
+                                <i class="fa fa-calendar-check-o me-1"></i> Visit List
+                            </button>
+                            <button class="emp360-btn emp360-btn-ghost emp360-btn-sm"
+                                    t-on-click="() => this.openSalesOrderList()">
+                                <i class="fa fa-file-text-o me-1"></i> Sales Orders
+                            </button>
+                            <button class="emp360-btn emp360-btn-danger emp360-btn-sm" style="margin-left:auto;"
+                                    t-on-click="() => this.openEndVisitModal()">
+                                <i class="fa fa-stop me-1"></i> End Visit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- ── Period KPI (today performance) ───────────── -->
+            <t t-if="state.todayKpi and !state.activeVisit">
+                <div style="padding:8px 24px;">
+                    <div class="emp360-card">
+                        <div class="emp360-card-header">
+                            <div class="emp360-card-title">
+                                <div class="emp360-card-badge emp360-badge-blue">
+                                    <i class="fa fa-bar-chart"></i>
+                                </div>
+                                Today's Performance (Period Target)
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:12px;padding:14px 18px;flex-wrap:wrap;">
+                            <!-- Visits today -->
+                            <div style="flex:1;min-width:120px;background:#f8fafc;border-radius:12px;padding:12px;border-left:3px solid #4cc9f0;">
+                                <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;margin-bottom:6px;">Visits Today</div>
+                                <div style="font-size:22px;font-weight:800;color:#0077b6;">
+                                    <t t-esc="state.todayKpi.actualVisitsToday || 0"/>
+                                </div>
+                            </div>
+                            <!-- Orders today -->
+                            <div style="flex:1;min-width:120px;background:#f8fafc;border-radius:12px;padding:12px;border-left:3px solid #06d6a0;">
+                                <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;margin-bottom:6px;">Orders Today</div>
+                                <div style="font-size:22px;font-weight:800;color:#059669;">
+                                    <t t-esc="state.todayKpi.actualOrdersToday || 0"/>
+                                </div>
+                                <div style="font-size:11px;color:#9ca3af;margin-top:3px;">
+                                    ₹<t t-esc="(state.todayKpi.amountToday || 0).toFixed(0)"/>
+                                </div>
+                            </div>
+                            <!-- Visit target progress -->
+                            <div style="flex:2;min-width:200px;background:#f8fafc;border-radius:12px;padding:12px;">
+                                <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                                    <span style="font-size:11px;font-weight:700;color:#374151;">Visit Target</span>
+                                    <span class="emp360-badge emp360-badge-info" style="font-size:10px;">
+                                        <t t-esc="state.todayKpi.visitPct || 0"/>%
+                                    </span>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;text-align:center;margin-bottom:8px;">
+                                    <div>
+                                        <div style="font-size:9px;color:#9ca3af;">Target</div>
+                                        <div style="font-size:14px;font-weight:800;color:#111827;"><t t-esc="state.todayKpi.targetVisits || 0"/></div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:9px;color:#9ca3af;">Actual</div>
+                                        <div style="font-size:14px;font-weight:800;color:#059669;"><t t-esc="state.todayKpi.periodActualVisits || 0"/></div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:9px;color:#9ca3af;">Remaining</div>
+                                        <div style="font-size:14px;font-weight:800;color:#f59e0b;"><t t-esc="state.todayKpi.remainingVisits || 0"/></div>
                                     </div>
                                 </div>
-                                <div class="col-6 col-md-3">
-                                    <div class="card bg-light border-0 h-100">
-                                        <div class="card-body py-2">
-                                            <div class="d-flex justify-content-between align-items-start mb-1">
-                                                <small class="text-muted">Visit Target</small>
-                                                <span class="badge bg-primary" style="font-size:0.7rem;">
-                                                    <t t-esc="state.todayKpi.visitPct"/>%
-                                                </span>
-                                            </div>
-                                            <div class="d-flex gap-2 text-center">
-                                                <div class="flex-fill">
-                                                    <div class="small text-muted">Target</div>
-                                                    <strong class="text-dark"><t t-esc="state.todayKpi.targetVisits"/></strong>
-                                                </div>
-                                                <div class="flex-fill">
-                                                    <div class="small text-muted">Actual</div>
-                                                    <strong class="text-success"><t t-esc="state.todayKpi.periodActualVisits"/></strong>
-                                                </div>
-                                                <div class="flex-fill">
-                                                    <div class="small text-muted">Remaining</div>
-                                                    <strong class="text-warning"><t t-esc="state.todayKpi.remainingVisits"/></strong>
-                                                </div>
-                                            </div>
-                                            <div class="progress mt-1" style="height: 4px;">
-                                                <div class="progress-bar bg-primary"
-                                                     t-att-style="'width:' + state.todayKpi.visitPct + '%'">
-                                                </div>
-                                            </div>
-                                        </div>
+                                <div style="height:5px;background:#f3f4f6;border-radius:5px;overflow:hidden;">
+                                    <div style="height:100%;border-radius:5px;background:linear-gradient(90deg,#4cc9f0,#4361ee);transition:width .8s;"
+                                         t-att-style="'width:' + (state.todayKpi.visitPct || 0) + '%'">
                                     </div>
                                 </div>
-                                <div class="col-6 col-md-3">
-                                    <div class="card bg-light border-0 h-100">
-                                        <div class="card-body py-2">
-                                            <div class="d-flex justify-content-between align-items-start mb-1">
-                                                <small class="text-muted">Order Target</small>
-                                                <span class="badge bg-success" style="font-size:0.7rem;">
-                                                    <t t-esc="state.todayKpi.orderPct"/>%
-                                                </span>
-                                            </div>
-                                            <div class="d-flex gap-2 text-center">
-                                                <div class="flex-fill">
-                                                    <div class="small text-muted">Target</div>
-                                                    <strong class="text-dark"><t t-esc="state.todayKpi.targetOrders"/></strong>
-                                                </div>
-                                                <div class="flex-fill">
-                                                    <div class="small text-muted">Actual</div>
-                                                    <strong class="text-success"><t t-esc="state.todayKpi.periodActualOrders"/></strong>
-                                                </div>
-                                                <div class="flex-fill">
-                                                    <div class="small text-muted">Remaining</div>
-                                                    <strong class="text-warning"><t t-esc="state.todayKpi.remainingOrders"/></strong>
-                                                </div>
-                                            </div>
-                                            <div class="progress mt-1" style="height: 4px;">
-                                                <div class="progress-bar bg-success"
-                                                     t-att-style="'width:' + state.todayKpi.orderPct + '%'">
-                                                </div>
-                                            </div>
-                                        </div>
+                            </div>
+                            <!-- Order target progress -->
+                            <div style="flex:2;min-width:200px;background:#f8fafc;border-radius:12px;padding:12px;">
+                                <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                                    <span style="font-size:11px;font-weight:700;color:#374151;">Order Target</span>
+                                    <span class="emp360-badge emp360-badge-success" style="font-size:10px;">
+                                        <t t-esc="state.todayKpi.orderPct || 0"/>%
+                                    </span>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;text-align:center;margin-bottom:8px;">
+                                    <div>
+                                        <div style="font-size:9px;color:#9ca3af;">Target</div>
+                                        <div style="font-size:14px;font-weight:800;color:#111827;"><t t-esc="state.todayKpi.targetOrders || 0"/></div>
                                     </div>
+                                    <div>
+                                        <div style="font-size:9px;color:#9ca3af;">Actual</div>
+                                        <div style="font-size:14px;font-weight:800;color:#059669;"><t t-esc="state.todayKpi.periodActualOrders || 0"/></div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:9px;color:#9ca3af;">Remaining</div>
+                                        <div style="font-size:14px;font-weight:800;color:#f59e0b;"><t t-esc="state.todayKpi.remainingOrders || 0"/></div>
+                                    </div>
+                                </div>
+                                <div style="height:5px;background:#f3f4f6;border-radius:5px;overflow:hidden;">
+                                    <div style="height:100%;border-radius:5px;background:linear-gradient(90deg,#6ee7b7,#06d6a0);transition:width .8s;"
+                                         t-att-style="'width:' + (state.todayKpi.orderPct || 0) + '%'">
+                                    </div>
+                                </div>
+                                <div style="font-size:10px;color:#9ca3af;text-align:center;margin-top:6px;">
+                                    Period Sales: ₹<t t-esc="(state.todayKpi.amountPeriod || 0).toFixed(0)"/>
                                 </div>
                             </div>
                         </div>
@@ -260,145 +415,1122 @@
                 </div>
             </t>
 
-            <div t-if="!getEmployeeId()" class="alert alert-warning">
-                <i class="fa fa-info-circle me-2"></i>
-                Please select an employee to view today's visits.
+            <!-- ── Loading state ─────────────────────────────── -->
+            <div t-if="!getEmployeeId()" class="tv-notice-wrap">
+                <div class="tv-notice tv-notice-warn">
+                    <i class="fa fa-info-circle fa-2x"></i>
+                    <div>
+                        <div class="tv-notice-title">No Employee Linked</div>
+                        <div class="tv-notice-sub">Please link a user account to an employee record.</div>
+                    </div>
+                </div>
             </div>
-            <div t-elif="state.loading" class="text-center py-5">
-                <i class="fa fa-spinner fa-spin fa-3x text-primary"></i>
-                <p class="mt-3 text-muted">Loading today's beats...</p>
+            <div t-elif="state.loading" class="tv-loading-wrap">
+                <div class="tv-spinner"></div>
+                <div class="tv-loading-text">Loading today's beats…</div>
             </div>
-            <div t-elif="state.beats.length === 0" class="alert alert-primary text-center">
-                <i class="fa fa-check-circle me-2 fa-2x"></i>
-                <h5 class="mb-2">All beats completed for today!</h5>
-                <p class="mb-0">Great job! All customer visits have been finished.</p>
+            <div t-elif="state.beats.length === 0" class="tv-empty-wrap">
+                <div class="tv-empty-card">
+                    <div class="tv-empty-icon"><i class="fa fa-check-circle"></i></div>
+                    <div class="tv-empty-title">All Done for Today! 🎉</div>
+                    <div class="tv-empty-sub">Great job! All customer visits have been completed.</div>
+                </div>
             </div>
-            <div t-else="" style="flex-shrink: 0; padding-bottom: 16px;">
-                <div class="row g-3">
-                    <t t-foreach="state.beats" t-as="beat" t-key="beat.id">
-                        <t t-if="!state.beatStarted || state.selectedBeat?.id === beat.id">
-                            <div class="col-md-12">
-                                <div class="card shadow-sm" t-att-class="state.selectedBeat?.id === beat.id ? 'border-primary border-3' : ''">
-                                    <div class="card-header d-flex justify-content-between align-items-center" t-att-class="state.selectedBeat?.id === beat.id ? 'bg-primary text-white' : 'bg-light'">
-                                        <div>
-                                            <i class="fa fa-map-marker me-2"></i>
-                                            <strong><t t-esc="beat.beat_number"/> - <t t-esc="beat.name"/></strong>
-                                            <t t-if="beat.beat_date">
-                                                <span class="ms-2 badge bg-secondary" style="font-size:0.72rem;">
-                                                    <i class="fa fa-calendar me-1"></i>
-                                                    <t t-esc="beat.beat_date"/>
-                                                </span>
-                                            </t>
+
+            <!-- ══════════════════════════════════════════════════
+                 BEAT CARDS — Premium redesign
+                 ══════════════════════════════════════════════════ -->
+            <div t-elif="state.beats.length > 0" class="tv-beats-wrapper">
+                <div class="tv-beats-header">
+                    <span class="tv-beats-section-title">
+                        <i class="fa fa-map-marker me-2"></i> Today's Beats
+                    </span>
+                    <span class="tv-beats-count-badge">
+                        <t t-esc="state.beats.length"/> Beat(s)
+                    </span>
+                </div>
+
+                <t t-foreach="state.beats" t-as="beat" t-key="beat.id">
+                    <t t-if="!state.beatStarted or state.selectedBeat?.id === beat.id">
+                        <div t-attf-class="tv-beat-card {{state.selectedBeat?.id === beat.id ? 'tv-beat-card-active' : ''}}">
+                            <!-- Beat header bar -->
+                            <div class="tv-beat-header">
+                                <div class="tv-beat-header-left">
+                                    <div class="tv-beat-icon">
+                                        <i class="fa fa-map-marker"></i>
+                                    </div>
+                                    <div class="tv-beat-title-block">
+                                        <div class="tv-beat-name">
+                                            <t t-esc="beat.beat_number"/> — <t t-esc="beat.name"/>
                                             <t t-if="beat.swapped_from_beat_id">
-                                                <span class="ms-1 badge bg-warning text-dark" style="font-size:0.72rem;">
+                                                <span class="tv-beat-tag tv-beat-tag-switched">
                                                     <i class="fa fa-exchange me-1"></i> Switched
                                                 </span>
                                             </t>
                                         </div>
-                                        <div class="d-flex gap-2 align-items-center">
-                                            <span class="badge bg-primary">
-                                                <t t-esc="beat.customerCount || 0"/> Customers
-                                            </span>
-                                            <span class="badge bg-primary">
-                                                Progress: <t t-esc="getBeatProgress(beat)"/>
-                                            </span>
-                                            <t t-if="!state.beatStarted || state.selectedBeat?.id !== beat.id">
-                                                <button class="btn btn-sm btn-primary"
-                                                        t-on-click="() => this.openStartBeatModal(beat)"
-                                                        t-att-disabled="!state.dayStarted || state.beatStarted">
-                                                    <i class="fa fa-play me-1"></i> Start Beat
-                                                </button>
+                                        <div class="tv-beat-meta">
+                                            <i class="fa fa-users me-1"></i><t t-esc="beat.customerCount || 0"/> customers
+                                            <t t-if="beat.beat_date">
+                                                · <i class="fa fa-calendar me-1"></i><t t-esc="beat.beat_date"/>
                                             </t>
-                                            <t t-else="">
-                                                <span class="badge bg-primary">
-                                                    <i class="fa fa-check"></i> Active
-                                                </span>
-                                            </t>
+                                            · Progress: <strong><t t-esc="getBeatProgress(beat)"/></strong>
                                         </div>
                                     </div>
+                                </div>
+                                <div class="tv-beat-header-right">
+                                    <span class="tv-beat-customers-badge">
+                                        <i class="fa fa-users me-1"></i><t t-esc="beat.customerCount || 0"/>
+                                    </span>
+                                    <t t-if="!state.beatStarted or state.selectedBeat?.id !== beat.id">
+                                        <button class="tv-btn tv-btn-start-beat"
+                                                t-on-click="() => this.openStartBeatModal(beat)"
+                                                t-att-disabled="!state.dayStarted or state.beatStarted">
+                                            <i class="fa fa-play me-1"></i> Start Beat
+                                        </button>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="tv-beat-active-pill">
+                                            <span class="tv-status-pulse tv-pulse-sm"></span> Active
+                                        </span>
+                                    </t>
+                                </div>
+                            </div>
+                            <!-- Beat progress bar -->
+                            <div class="tv-beat-progress-wrap">
+                                <div class="tv-beat-progress-bar">
+                                    <div class="tv-beat-progress-fill"
+                                         t-att-style="'width:' + getBeatProgressPct(beat) + '%;'"></div>
+                                </div>
+                                <span class="tv-beat-progress-label"><t t-esc="getBeatProgress(beat)"/></span>
+                            </div>
 
-                                    <div t-if="state.selectedBeat?.id === beat.id &amp;&amp; state.beatStarted" class="card-body p-0">
-                                        <t t-if="state.activeVisit">
-                                        </t>
-                                        <t t-else="">
-                                            <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
-                                                <table class="table table-hover mb-0">
-                                                    <thead class="table-light sticky-top" style="top: 0; z-index: 5;">
-                                                        <tr>
-                                                            <th style="width: 50px;">#</th>
-                                                            <th>Customer Name</th>
-                                                            <th>Phone</th>
-                                                            <th>Email</th>
-                                                            <th>Address</th>
-                                                            <th>Status</th>
-                                                            <th style="width: 150px;">Action</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <t t-foreach="beat.beatLines" t-as="line" t-key="line.id">
-                                                            <tr t-att-class="state.activeVisit &amp;&amp; state.currentBeatLine?.id === line.id ? 'table-warning' : ''">
-                                                                <td><t t-esc="line_index + 1"/></td>
-                                                                <td>
-                                                                    <i class="fa fa-user me-2"></i>
-                                                                    <strong><t t-esc="line.partner_id[1]"/></strong>
-                                                                </td>
-                                                                <td>
-                                                                    <i class="fa fa-phone me-1"></i>
-                                                                    <t t-esc="line.partner_phone || line.partner_mobile || '-'"/>
-                                                                </td>
-                                                                <td>
-                                                                    <t t-if="line.partner_email">
-                                                                        <i class="fa fa-envelope me-1 text-muted"></i>
-                                                                        <t t-esc="line.partner_email"/>
-                                                                    </t>
-                                                                    <t t-else=""><span class="text-muted">-</span></t>
-                                                                </td>
-                                                                <td>
-                                                                    <t t-if="line.partner_street">
-                                                                        <i class="fa fa-map-marker me-1 text-muted"></i>
-                                                                        <t t-esc="line.partner_street"/>
-                                                                    </t>
-                                                                    <t t-else=""><span class="text-muted">-</span></t>
-                                                                </td>
-                                                                <td>
-                                                                    <t t-set="visitStatus" t-value="getCustomerVisitStatus(line)"/>
-                                                                    <span t-attf-class="badge {{visitStatus.badge}}">
-                                                                        <i t-attf-class="fa {{visitStatus.icon}}"></i>
-                                                                        <t t-esc="visitStatus.text"/>
-                                                                    </span>
-                                                                </td>
-                                                                <td>
-                                                                    <t t-if="state.activeVisit &amp;&amp; state.currentBeatLine?.id === line.id">
-                                                                        <span class="badge bg-primary w-100">
-                                                                            <i class="fa fa-clock-o me-1"></i> In Progress
-                                                                        </span>
-                                                                    </t>
-                                                                    <t t-elif="!state.activeVisit &amp;&amp; (!line.visitStatus || line.visitStatus.status !== 'completed')">
-                                                                        <button class="btn btn-sm btn-primary w-100" 
-                                                                                t-on-click="() => this.openStartVisitModal(line, line_index)">
-                                                                            <i class="fa fa-play me-1"></i> Start Visit
-                                                                        </button>
-                                                                    </t>
-                                                                    <t t-elif="line.visitStatus &amp;&amp; line.visitStatus.status === 'completed'">
-                                                                        <span class="badge bg-primary w-100">
-                                                                            <i class="fa fa-check me-1"></i> Completed
-                                                                        </span>
-                                                                    </t>
-                                                                </td>
-                                                            </tr>
-                                                        </t>
-                                                    </tbody>
-                                                </table>
+                            <!-- Beat customers grid (shown when beat is active) -->
+                            <t t-if="state.selectedBeat?.id === beat.id and state.beatStarted">
+                                <t t-if="!state.activeVisit">
+                                    <div class="tv-customers-grid">
+                                        <t t-foreach="beat.beatLines" t-as="line" t-key="line.id">
+                                            <t t-set="visitStatus" t-value="getCustomerVisitStatus(line)"/>
+                                            <div t-attf-class="tv-customer-card {{visitStatus.status === 'completed' ? 'tv-customer-done' : state.activeVisit and state.currentBeatLine?.id === line.id ? 'tv-customer-inprogress' : ''}}">
+                                                <!-- Customer avatar + name -->
+                                                <div class="tv-customer-top">
+                                                    <div class="tv-customer-avatar">
+                                                        <t t-esc="line.partner_id[1] ? line.partner_id[1][0].toUpperCase() : 'C'"/>
+                                                    </div>
+                                                    <div class="tv-customer-info">
+                                                        <div class="tv-customer-name">
+                                                            <t t-esc="line.partner_id[1]"/>
+                                                        </div>
+                                                        <div class="tv-customer-phone">
+                                                            <i class="fa fa-phone me-1"></i>
+                                                            <t t-esc="line.partner_phone or line.partner_mobile or '—'"/>
+                                                        </div>
+                                                        <div class="tv-customer-addr">
+                                                            <i class="fa fa-map-marker me-1"></i>
+                                                            <t t-esc="line.partner_street or '—'"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- Status + Action -->
+                                                <div class="tv-customer-footer">
+                                                    <t t-if="state.activeVisit and state.currentBeatLine?.id === line.id">
+                                                        <span class="tv-cust-status tv-cust-inprogress">
+                                                            <i class="fa fa-clock-o me-1"></i> In Progress
+                                                        </span>
+                                                    </t>
+                                                    <t t-elif="visitStatus.status === 'completed'">
+                                                        <span class="tv-cust-status tv-cust-done">
+                                                            <i class="fa fa-check me-1"></i> Done
+                                                        </span>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span t-attf-class="tv-cust-status {{visitStatus.badge === 'bg-success' ? 'tv-cust-done' : visitStatus.badge === 'bg-warning' ? 'tv-cust-inprogress' : 'tv-cust-pending'}}">
+                                                            <i t-attf-class="fa {{visitStatus.icon}} me-1"></i>
+                                                            <t t-esc="visitStatus.text"/>
+                                                        </span>
+                                                    </t>
+
+                                                    <t t-if="!state.activeVisit and (!line.visitStatus or line.visitStatus.status !== 'completed')">
+                                                        <button class="tv-btn tv-btn-visit"
+                                                                t-on-click="() => this.openStartVisitModal(line, line_index)">
+                                                            <i class="fa fa-play me-1"></i> Visit
+                                                        </button>
+                                                    </t>
+                                                </div>
                                             </div>
                                         </t>
                                     </div>
+                                </t>
+                            </t>
+                        </div>
+                    </t>
+                </t>
+            </div>
+
+            <!-- ── Visit Locations Map ───────────────────────── -->
+            <t t-if="state.visitLocations and state.visitLocations.length > 0">
+                <div class="emp360-map-section">
+                    <div class="emp360-map-card">
+                        <div class="emp360-map-header">
+                            <div class="emp360-card-title">
+                                <div class="emp360-card-badge emp360-badge-teal">
+                                    <i class="fa fa-map-marker"></i>
+                                </div>
+                                Visit Locations
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <span class="emp360-badge emp360-badge-info">
+                                    <t t-esc="state.visitLocations.length"/> locations
+                                </span>
+                                <div style="display:flex;gap:2px;">
+                                    <button class="emp360-btn emp360-btn-ghost emp360-btn-sm" style="padding:0 8px;" id="emp360-map-tab-map">Map</button>
+                                    <button class="emp360-btn emp360-btn-ghost emp360-btn-sm" style="padding:0 8px;" id="emp360-map-tab-satellite">Satellite</button>
                                 </div>
                             </div>
-                        </t>
+                        </div>
+                        <div class="emp360-map-wrap" t-ref="visitMapContainer">
+                            <div id="emp360-visit-map" style="width:100%;height:280px;"></div>
+                        </div>
+                        <!-- Today's visits sidebar -->
+                        <div style="padding:14px 18px;border-top:1px solid #f0f0f0;">
+                            <div style="font-size:12px;font-weight:800;color:#374151;margin-bottom:10px;">
+                                Today's Visits (<t t-esc="state.visitLocations.length"/>)
+                            </div>
+                            <t t-foreach="state.visitLocations" t-as="loc" t-key="loc.id">
+                                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f9f9f9;">
+                                    <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#06d6a0,#019b72);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <i class="fa fa-map-marker" style="color:#fff;font-size:12px;"></i>
+                                    </div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:12px;font-weight:700;color:#111827;">
+                                            <t t-esc="loc.partner_name"/>
+                                            <t t-if="loc.is_active">
+                                                <span style="color:#f59e0b;font-size:10px;margin-left:4px;">*</span>
+                                            </t>
+                                        </div>
+                                        <div style="font-size:10px;color:#9ca3af;">
+                                            <t t-esc="loc.latitude"/>, <t t-esc="loc.longitude"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- ── Location Map (attendance-based) ──────────── -->
+            <t t-elif="state.attendanceLocation">
+                <div class="emp360-map-section">
+                    <div class="emp360-map-card">
+                        <div class="emp360-map-header">
+                            <div class="emp360-card-title">
+                                <div class="emp360-card-badge emp360-badge-teal">
+                                    <i class="fa fa-map-marker"></i>
+                                </div>
+                                Visit Locations
+                            </div>
+                        </div>
+                        <div t-ref="mapContainer" style="height:280px;width:100%;"></div>
+                    </div>
+                </div>
+            </t>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             VISIT DETAIL ACCORDION SECTIONS (shown when visit active)
+             ═══════════════════════════════════════════════════════════ -->
+        <t t-if="state.activeVisit and state.customerSummary and !state.activePanel">
+            <div style="padding:4px 24px 80px;">
+
+                <!-- Overall Summary -->
+                <div class="emp360-visit-summary-card">
+                    <div class="emp360-vsc-header">
+                        <i class="fa fa-line-chart" style="color:#4361ee;"></i>
+                        Overall Summary
+                    </div>
+                    <div class="emp360-vsc-kpis">
+                        <div class="emp360-vsc-kpi">
+                            <div class="emp360-vsc-val" style="color:#1a1a3e;">
+                                ₹<t t-esc="formatAmount(state.customerSummary.totalSales || 0)"/>
+                            </div>
+                            <div class="emp360-vsc-lbl">Tot. Sales</div>
+                        </div>
+                        <div class="emp360-vsc-kpi">
+                            <div class="emp360-vsc-val" style="color:#059669;">
+                                ₹<t t-esc="formatAmount(state.customerSummary.avgSales || 0)"/>
+                            </div>
+                            <div class="emp360-vsc-lbl">Avg Sales</div>
+                        </div>
+                        <div class="emp360-vsc-kpi">
+                            <div class="emp360-vsc-val" style="color:#ef476f;">
+                                ₹<t t-esc="formatAmount(state.customerSummary.outstanding || 0)"/>
+                            </div>
+                            <div class="emp360-vsc-lbl">Outstanding</div>
+                        </div>
+                        <div class="emp360-vsc-kpi">
+                            <div class="emp360-vsc-val" style="color:#7209b7;">
+                                <t t-esc="state.customerSummary.visitCount || 0"/>
+                            </div>
+                            <div class="emp360-vsc-lbl">Visits</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Last Visit Summary (accordion) -->
+                <div class="emp360-acc-card">
+                    <div class="emp360-acc-header" t-on-click="() => this.toggleAccordion('lastVisit')">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <i class="fa fa-calendar-check-o" style="color:#4361ee;"></i>
+                            Last Visit Summary
+                        </div>
+                        <i t-attf-class="fa fa-chevron-{{state.accordionOpen.lastVisit ? 'up' : 'down'}}" style="color:#9ca3af;font-size:13px;"></i>
+                    </div>
+                    <t t-if="state.accordionOpen.lastVisit">
+                        <div class="emp360-acc-body">
+                            <t t-if="state.customerSummary.lastVisitDate">
+                                <div class="emp360-acc-row">
+                                    <span class="emp360-acc-label">Date</span>
+                                    <span><t t-esc="formatDateOnly(state.customerSummary.lastVisitDate)"/></span>
+                                </div>
+                                <div class="emp360-acc-row">
+                                    <span class="emp360-acc-label">Orders</span>
+                                    <span><t t-esc="state.customerSummary.lastVisitOrders || 0"/></span>
+                                </div>
+                                <div class="emp360-acc-row">
+                                    <span class="emp360-acc-label">Amount</span>
+                                    <span style="color:#059669;">₹<t t-esc="formatAmount(state.customerSummary.lastVisitAmount || 0)"/></span>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div style="text-align:center;color:#9ca3af;padding:12px 0;">No previous visit found</div>
+                            </t>
+                        </div>
                     </t>
                 </div>
+
+                <!-- Assets Summary (accordion) -->
+                <div class="emp360-acc-card">
+                    <div class="emp360-acc-header" t-on-click="() => this.toggleAccordion('assets')">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <i class="fa fa-archive" style="color:#7209b7;"></i>
+                            Assets Summary
+                        </div>
+                        <i t-attf-class="fa fa-chevron-{{state.accordionOpen.assets ? 'up' : 'down'}}" style="color:#9ca3af;font-size:13px;"></i>
+                    </div>
+                    <t t-if="state.accordionOpen.assets">
+                        <div class="emp360-acc-body">
+                            <div class="emp360-assets-grid">
+                                <div class="emp360-asset-item">
+                                    <div class="emp360-asset-icon" style="background:linear-gradient(135deg,#4cc9f0,#0077b6);">
+                                        <i class="fa fa-snowflake-o"></i>
+                                    </div>
+                                    <div class="emp360-asset-info">
+                                        <div class="emp360-asset-name">Visi-Cooler</div>
+                                        <div class="emp360-asset-status emp360-asset-ok">Functional</div>
+                                    </div>
+                                </div>
+                                <div class="emp360-asset-item">
+                                    <div class="emp360-asset-icon" style="background:linear-gradient(135deg,#f77f00,#d62828);">
+                                        <i class="fa fa-image"></i>
+                                    </div>
+                                    <div class="emp360-asset-info">
+                                        <div class="emp360-asset-name">Display Stand</div>
+                                        <div class="emp360-asset-status emp360-asset-ok">Present</div>
+                                    </div>
+                                </div>
+                                <div class="emp360-asset-item">
+                                    <div class="emp360-asset-icon" style="background:linear-gradient(135deg,#06d6a0,#019b72);">
+                                        <i class="fa fa-sign"></i>
+                                    </div>
+                                    <div class="emp360-asset-info">
+                                        <div class="emp360-asset-name">POSM Material</div>
+                                        <div class="emp360-asset-status emp360-asset-warn">Partial</div>
+                                    </div>
+                                </div>
+                                <div class="emp360-asset-item">
+                                    <div class="emp360-asset-icon" style="background:linear-gradient(135deg,#7209b7,#560bad);">
+                                        <i class="fa fa-tags"></i>
+                                    </div>
+                                    <div class="emp360-asset-info">
+                                        <div class="emp360-asset-name">Price Tags</div>
+                                        <div class="emp360-asset-status emp360-asset-ok">Updated</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- Current Visit Summary (accordion) -->
+                <div class="emp360-acc-card">
+                    <div class="emp360-acc-header" t-on-click="() => this.toggleAccordion('currentVisit')">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="width:8px;height:8px;border-radius:50%;background:#06d6a0;display:inline-block;box-shadow:0 0 0 3px rgba(6,214,160,.2);"></span>
+                            Current Visit Summary
+                        </div>
+                        <i t-attf-class="fa fa-chevron-{{state.accordionOpen.currentVisit ? 'up' : 'down'}}" style="color:#9ca3af;font-size:13px;"></i>
+                    </div>
+                    <t t-if="state.accordionOpen.currentVisit">
+                        <div class="emp360-acc-body">
+                            <div class="emp360-acc-row">
+                                <span class="emp360-acc-label">Started At</span>
+                                <span><t t-esc="formatTime(state.activeVisit.actual_start_time)"/></span>
+                            </div>
+                            <div class="emp360-acc-row">
+                                <span class="emp360-acc-label">Customer</span>
+                                <span><t t-esc="state.activeVisit.partner_id[1]"/></span>
+                            </div>
+                            <div class="emp360-acc-row">
+                                <span class="emp360-acc-label">Orders</span>
+                                <span><t t-esc="state.activeVisit.order_count || 0"/></span>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- Checklist (accordion) -->
+                <div class="emp360-acc-card">
+                    <div class="emp360-acc-header" t-on-click="() => this.toggleAccordion('checklist')">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <i class="fa fa-list-ul" style="color:#f59e0b;"></i>
+                            Checklist (<t t-esc="checklistDone"/>/<t t-esc="state.visitChecklist.length"/>)
+                        </div>
+                        <i t-attf-class="fa fa-chevron-{{state.accordionOpen.checklist ? 'up' : 'down'}}" style="color:#9ca3af;font-size:13px;"></i>
+                    </div>
+                    <t t-if="state.accordionOpen.checklist">
+                        <div class="emp360-acc-body" style="padding:0;">
+                            <t t-foreach="state.visitChecklist" t-as="item" t-key="item.id">
+                                <div class="emp360-checklist-row" t-on-click="() => this.toggleChecklistItem(item.id)">
+                                    <div t-attf-class="emp360-checklist-check {{item.done ? 'done' : ''}}">
+                                        <i t-if="item.done" class="fa fa-check" style="font-size:10px;color:#fff;"></i>
+                                    </div>
+                                    <span t-attf-style="color:{{item.done ? '#9ca3af' : '#111827'}};text-decoration:{{item.done ? 'line-through' : 'none'}};">
+                                        <t t-esc="item.question"/>
+                                    </span>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- Brochures (accordion) -->
+                <div class="emp360-acc-card">
+                    <div class="emp360-acc-header" t-on-click="() => this.toggleAccordion('brochures')">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <i class="fa fa-file-pdf-o" style="color:#ef476f;"></i>
+                            Brochures
+                            <span class="emp360-badge emp360-badge-danger" style="font-size:10px;">
+                                <t t-esc="state.brochures.length"/>
+                            </span>
+                        </div>
+                        <i t-attf-class="fa fa-chevron-{{state.accordionOpen.brochures ? 'up' : 'down'}}" style="color:#9ca3af;font-size:13px;"></i>
+                    </div>
+                    <t t-if="state.accordionOpen.brochures">
+                        <div class="emp360-acc-body" style="padding-bottom:8px;">
+                            <!-- Share All button at top -->
+                            <t t-if="state.brochures.length > 0">
+                                <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+                                    <button class="emp360-btn emp360-btn-success emp360-btn-sm"
+                                            t-on-click="shareAllBrochures"
+                                            style="gap:6px;">
+                                        <i class="fa fa-whatsapp me-1"></i> Share All
+                                    </button>
+                                </div>
+                            </t>
+                            <t t-foreach="state.brochures" t-as="brochure" t-key="brochure.id">
+                                <div class="emp360-brochure-row" style="background:#fff;border:1px solid #f0f0f0;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);">
+                                    <div style="width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#ef476f,#b5179e);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <i class="fa fa-file-pdf-o" style="color:#fff;font-size:14px;"></i>
+                                    </div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:13px;font-weight:700;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><t t-esc="brochure.name"/></div>
+                                        <div style="display:flex;gap:6px;margin-top:3px;align-items:center;">
+                                            <span t-attf-class="emp360-badge {{getBrochureTypeClass(brochure.type)}}">
+                                                <t t-esc="brochure.type"/>
+                                            </span>
+                                            <span style="font-size:11px;color:#9ca3af;"><t t-esc="brochure.fileSize"/></span>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex;gap:6px;flex-shrink:0;">
+                                        <button class="emp360-btn emp360-btn-ghost emp360-btn-sm"
+                                                t-on-click="() => this.downloadBrochure(brochure)"
+                                                style="padding:4px 8px;" title="Download">
+                                            <i class="fa fa-download"></i>
+                                        </button>
+                                        <button class="emp360-btn emp360-btn-success emp360-btn-sm"
+                                                t-on-click="() => this.shareBrochure(brochure)"
+                                                style="padding:4px 8px;" title="Share on WhatsApp">
+                                            <i class="fa fa-whatsapp me-1"></i> Share
+                                        </button>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-if="state.brochures.length === 0">
+                                <div style="text-align:center;padding:16px 0;color:#9ca3af;">
+                                    <i class="fa fa-file-pdf-o" style="font-size:28px;margin-bottom:8px;display:block;opacity:.4;"></i>
+                                    No brochures yet. Add your first brochure.
+                                </div>
+                            </t>
+                            <div style="margin-top:8px;text-align:center;">
+                                <button class="emp360-btn emp360-btn-primary emp360-btn-sm"
+                                        t-on-click="openAddBrochure">
+                                    <i class="fa fa-plus me-1"></i> Add Brochure
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
             </div>
-        </div>
+
+            <!-- ── Bottom Navigation Bar ──────────────────────── -->
+            <div class="emp360-bottom-nav">
+                <div class="emp360-bottom-nav-item" t-on-click="() => this.openQuickOrder()">
+                    <i class="fa fa-shopping-cart"></i>
+                    <span>Order</span>
+                </div>
+                <div class="emp360-bottom-nav-item" t-on-click="() => this.openPanel('stock')">
+                    <i class="fa fa-cubes"></i>
+                    <span>Stock</span>
+                </div>
+                <div class="emp360-bottom-nav-item" t-on-click="() => this.openPanel('outstanding')">
+                    <i class="fa fa-bank"></i>
+                    <span>Outstd.</span>
+                </div>
+                <div class="emp360-bottom-nav-item" t-on-click="() => this.openPanel('collect')">
+                    <i class="fa fa-money"></i>
+                    <span>Collect</span>
+                </div>
+                <div class="emp360-bottom-nav-item" t-on-click="() => this.openPanel('ticket')">
+                    <i class="fa fa-ticket"></i>
+                    <span>Ticket</span>
+                </div>
+                <div class="emp360-bottom-nav-item" t-on-click="() => this.openPanel('competitor')">
+                    <i class="fa fa-users"></i>
+                    <span>Compet.</span>
+                </div>
+            </div>
+        </t>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             PANEL OVERLAYS
+             ═══════════════════════════════════════════════════════════ -->
+
+        <!-- Stock Update Panel — Redesigned -->
+        <t t-if="state.activePanel === 'stock'">
+            <div class="emp360-panel-overlay">
+                <!-- Header with gradient -->
+                <div class="emp360-panel-header emp360-stock-header">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <button class="emp360-panel-back" t-on-click="closePanel">
+                            <i class="fa fa-chevron-left"></i>
+                        </button>
+                        <div class="emp360-panel-header-icon" style="background:rgba(255,255,255,.2);">
+                            <i class="fa fa-cubes"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:15px;font-weight:800;color:#fff;">Stock Update</div>
+                            <div style="font-size:11px;color:rgba(255,255,255,.7);">Update product stock levels</div>
+                        </div>
+                    </div>
+                    <div class="emp360-panel-store-chip">
+                        <i class="fa fa-store me-1" style="font-size:11px;"></i>
+                        <t t-if="state.customerSummary"><t t-esc="state.customerSummary.name"/></t>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="emp360-panel-body">
+                    <!-- Section label -->
+                    <div class="emp360-panel-section-title">
+                        <i class="fa fa-cubes me-2" style="color:#4361ee;"></i>
+                        Update Stock Levels
+                        <span class="emp360-badge emp360-badge-info" style="margin-left:auto;font-size:10px;">
+                            <t t-esc="state.stockItems.length"/> product(s)
+                        </span>
+                    </div>
+
+                    <!-- Product cards -->
+                    <t t-foreach="state.stockItems" t-as="row" t-key="row.id">
+                        <div class="emp360-stock-card">
+                            <!-- Product search row -->
+                            <div class="emp360-stock-product-row" style="position:relative;margin-bottom:10px;">
+                                <div class="emp360-stock-product-icon">
+                                    <i class="fa fa-cube" style="color:#4361ee;font-size:14px;"></i>
+                                </div>
+                                <input class="emp360-stock-product-input" type="text"
+                                       placeholder="Search product name..."
+                                       t-att-value="row.productName"
+                                       t-on-input="(ev) => this.onStockProductChange(ev, row.id)"
+                                       autocomplete="off"/>
+                                <button class="emp360-stock-remove" t-on-click="() => this.removeStockRow(row.id)" title="Remove product">
+                                    <i class="fa fa-times"></i>
+                                </button>
+                                <!-- Product suggestions dropdown -->
+                                <t t-if="row.showSuggestions and row.suggestions.length > 0">
+                                    <div class="emp360-stock-suggestions">
+                                        <t t-foreach="row.suggestions" t-as="prod" t-key="prod.id">
+                                            <div class="emp360-stock-suggestion-item"
+                                                 t-on-click="() => this.selectStockProduct(row.id, prod)">
+                                                <div style="display:flex;align-items:center;gap:8px;">
+                                                    <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#4361ee22,#7209b722);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                                        <i class="fa fa-cube" style="color:#4361ee;font-size:11px;"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div style="font-size:13px;font-weight:600;color:#111827;"><t t-esc="prod.name"/></div>
+                                                        <div style="font-size:10px;color:#9ca3af;"><t t-esc="prod.categ_id ? prod.categ_id[1] : ''"/></div>
+                                                    </div>
+                                                </div>
+                                                <div style="font-size:13px;font-weight:700;color:#059669;">
+                                                    ₹<t t-esc="(prod.list_price || 0).toFixed(2)"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                            <!-- Price chip when product selected -->
+                            <t t-if="row.productId and row.price">
+                                <div class="emp360-stock-price-chip">
+                                    <div style="display:flex;align-items:center;gap:6px;">
+                                        <i class="fa fa-tag" style="color:#059669;font-size:11px;"></i>
+                                        <span style="font-size:12px;font-weight:600;color:#374151;">Unit Price</span>
+                                        <span class="emp360-stock-price-val">₹<t t-esc="(row.price || 0).toFixed(2)"/></span>
+                                    </div>
+                                    <div style="font-size:11px;color:#9ca3af;">
+                                        Total: <span style="font-weight:700;color:#374151;">₹<t t-esc="((row.closing || 0) * (row.price || 0)).toFixed(2)"/></span>
+                                    </div>
+                                </div>
+                            </t>
+
+                            <!-- Stock fields — opening / closing / damaged -->
+                            <div class="emp360-stock-fields">
+                                <div class="emp360-stock-field emp360-stock-field-open">
+                                    <div class="emp360-stock-field-label">
+                                        <i class="fa fa-unlock-alt me-1"></i>OPENING
+                                    </div>
+                                    <input type="number" min="0" t-att-value="row.opening"
+                                           t-on-change="(ev) => this.onStockFieldChange(ev, row.id, 'opening')"/>
+                                </div>
+                                <div class="emp360-stock-field emp360-stock-field-close">
+                                    <div class="emp360-stock-field-label">
+                                        <i class="fa fa-lock me-1"></i>CLOSING
+                                    </div>
+                                    <input type="number" min="0" t-att-value="row.closing"
+                                           t-on-change="(ev) => this.onStockFieldChange(ev, row.id, 'closing')"/>
+                                </div>
+                                <div class="emp360-stock-field emp360-stock-field-dmg">
+                                    <div class="emp360-stock-field-label">
+                                        <i class="fa fa-exclamation-triangle me-1"></i>DAMAGED
+                                    </div>
+                                    <input type="number" min="0" t-att-value="row.damaged"
+                                           t-on-change="(ev) => this.onStockFieldChange(ev, row.id, 'damaged')"/>
+                                </div>
+                            </div>
+
+                            <!-- Computed metrics bar -->
+                            <t t-if="row.productId or row.productName">
+                                <div class="emp360-stock-metrics">
+                                    <div class="emp360-stock-metric sold">
+                                        <div class="emp360-stock-metric-icon"><i class="fa fa-arrow-down"></i></div>
+                                        <div>
+                                            <div class="emp360-stock-metric-val"><t t-esc="Math.max(0, (row.opening || 0) - (row.closing || 0))"/></div>
+                                            <div class="emp360-stock-metric-lbl">Sold</div>
+                                        </div>
+                                    </div>
+                                    <div class="emp360-stock-metric damaged">
+                                        <div class="emp360-stock-metric-icon"><i class="fa fa-exclamation-triangle"></i></div>
+                                        <div>
+                                            <div class="emp360-stock-metric-val"><t t-esc="row.damaged || 0"/></div>
+                                            <div class="emp360-stock-metric-lbl">Damaged</div>
+                                        </div>
+                                    </div>
+                                    <t t-if="row.price">
+                                        <div class="emp360-stock-metric revenue">
+                                            <div class="emp360-stock-metric-icon"><i class="fa fa-money"></i></div>
+                                            <div>
+                                                <div class="emp360-stock-metric-val" style="font-size:11px;">
+                                                    ₹<t t-esc="(Math.max(0, (row.opening || 0) - (row.closing || 0)) * (row.price || 0)).toFixed(0)"/>
+                                                </div>
+                                                <div class="emp360-stock-metric-lbl">Sales Value</div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+
+                    <!-- Add product button -->
+                    <button class="emp360-add-product-btn" t-on-click="addStockRow">
+                        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#4361ee,#7209b7);display:flex;align-items:center;justify-content:center;">
+                            <i class="fa fa-plus" style="color:#fff;font-size:12px;"></i>
+                        </div>
+                        <span>Add Another Product</span>
+                    </button>
+                </div>
+
+                <!-- Footer -->
+                <div class="emp360-panel-footer">
+                    <button class="emp360-btn emp360-btn-outline" t-on-click="closePanel"
+                            t-att-disabled="state.isProcessing">
+                        <i class="fa fa-times me-1"></i> Cancel
+                    </button>
+                    <button class="emp360-btn emp360-btn-primary emp360-save-btn"
+                            t-on-click="saveStockUpdate"
+                            t-att-disabled="state.isProcessing">
+                        <i t-if="!state.isProcessing" class="fa fa-save me-1"></i>
+                        <i t-else="" class="fa fa-spinner fa-spin me-1"></i>
+                        <t t-if="!state.isProcessing">Save Stock</t>
+                        <t t-else="">Saving...</t>
+                    </button>
+                </div>
+            </div>
+        </t>
+
+        <!-- Outstanding Panel -->
+        <t t-if="state.activePanel === 'outstanding'">
+            <div class="emp360-panel-overlay">
+                <div class="emp360-panel-header">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <button class="emp360-panel-back" t-on-click="closePanel">
+                            <i class="fa fa-chevron-left"></i>
+                        </button>
+                        <i class="fa fa-bank" style="color:#fff;font-size:18px;"></i>
+                        <span>Outstanding</span>
+                    </div>
+                    <span class="emp360-panel-store-name">
+                        <t t-if="state.customerSummary"><t t-esc="state.customerSummary.name"/>*</t>
+                    </span>
+                </div>
+                <div class="emp360-panel-body">
+                    <div class="emp360-panel-section-title">
+                        <i class="fa fa-bank me-2"></i> Outstanding Summary
+                    </div>
+                    <t t-if="state.outstandingData">
+                        <div class="emp360-outstanding-summary">
+                            <div class="emp360-outstd-kpi">
+                                <div class="emp360-outstd-val" style="color:#1a1a3e;">
+                                    <t t-esc="state.outstandingData.total || 0"/>
+                                </div>
+                                <div class="emp360-outstd-lbl">Total Outstanding</div>
+                            </div>
+                            <div class="emp360-outstd-kpi">
+                                <div class="emp360-outstd-val" style="color:#4361ee;">
+                                    <t t-esc="(state.outstandingData.totalSales || 0).toFixed(0)"/>
+                                </div>
+                                <div class="emp360-outstd-lbl">Total Sales</div>
+                            </div>
+                        </div>
+                        <div class="emp360-outstd-detail-row">
+                            <span>Credit Limit</span>
+                            <span style="color:#9ca3af;font-style:italic;"><t t-esc="state.outstandingData.creditLimit"/></span>
+                        </div>
+                        <div class="emp360-outstd-detail-row">
+                            <span>Last Payment</span>
+                            <span style="color:#9ca3af;"><t t-esc="state.outstandingData.lastPayment"/></span>
+                        </div>
+                        <div class="emp360-outstd-detail-row">
+                            <span>Overdue Days</span>
+                            <span style="color:#9ca3af;"><t t-esc="state.outstandingData.overdueDays"/></span>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div class="emp360-loading"><div class="emp360-spinner"></div></div>
+                    </t>
+                </div>
+                <div class="emp360-panel-footer">
+                    <button class="emp360-btn emp360-btn-primary" t-on-click="closePanel">Close</button>
+                </div>
+            </div>
+        </t>
+
+        <!-- Collection Panel — Redesigned -->
+        <t t-if="state.activePanel === 'collect'">
+            <div class="emp360-panel-overlay">
+                <!-- Header -->
+                <div class="emp360-panel-header emp360-collect-header">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <button class="emp360-panel-back" t-on-click="closePanel">
+                            <i class="fa fa-chevron-left"></i>
+                        </button>
+                        <div class="emp360-panel-header-icon" style="background:rgba(255,255,255,.2);">
+                            <i class="fa fa-money"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:15px;font-weight:800;color:#fff;">Collection</div>
+                            <div style="font-size:11px;color:rgba(255,255,255,.7);">Record payment received</div>
+                        </div>
+                    </div>
+                    <div class="emp360-panel-store-chip">
+                        <i class="fa fa-store me-1" style="font-size:11px;"></i>
+                        <t t-if="state.customerSummary"><t t-esc="state.customerSummary.name"/></t>
+                    </div>
+                </div>
+
+                <!-- Outstanding quick view -->
+                <t t-if="state.outstandingData">
+                    <div class="emp360-collect-outstd-bar">
+                        <div class="emp360-collect-outstd-item">
+                            <div class="emp360-collect-outstd-val" style="color:#ef476f;">
+                                ₹<t t-esc="(state.outstandingData.total || 0).toFixed(0)"/>
+                            </div>
+                            <div class="emp360-collect-outstd-lbl">Outstanding</div>
+                        </div>
+                        <div class="emp360-collect-outstd-divider"></div>
+                        <div class="emp360-collect-outstd-item">
+                            <div class="emp360-collect-outstd-val" style="color:#f59e0b;">
+                                ₹<t t-esc="(state.outstandingData.overdue || 0).toFixed(0)"/>
+                            </div>
+                            <div class="emp360-collect-outstd-lbl">Overdue</div>
+                        </div>
+                        <div class="emp360-collect-outstd-divider"></div>
+                        <div class="emp360-collect-outstd-item">
+                            <div class="emp360-collect-outstd-val" style="color:#059669;font-size:12px;">
+                                <t t-esc="state.outstandingData.lastPayment || '--'"/>
+                            </div>
+                            <div class="emp360-collect-outstd-lbl">Last Payment</div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Form body -->
+                <div class="emp360-panel-body">
+                    <div class="emp360-panel-section-title">
+                        <i class="fa fa-money me-2" style="color:#059669;"></i>
+                        Record Payment Collection
+                    </div>
+
+                    <!-- Amount — prominent -->
+                    <div class="emp360-collect-amount-group">
+                        <label class="emp360-collect-amount-label">
+                            <span class="emp360-required-star">*</span> Amount Received
+                        </label>
+                        <div class="emp360-collect-amount-wrap">
+                            <span class="emp360-collect-currency">₹</span>
+                            <input class="emp360-collect-amount-input" type="number"
+                                   placeholder="0.00" min="0" step="0.01"
+                                   t-att-value="state.collectForm.amount"
+                                   t-on-change="(ev) => this.onCollectFieldChange('amount', ev)"/>
+                        </div>
+                    </div>
+
+                    <!-- Payment Mode — pill selector -->
+                    <div class="emp360-form-group" style="margin-bottom:14px;">
+                        <label class="emp360-form-label" style="font-weight:700;color:#374151;">Payment Mode</label>
+                        <div class="emp360-payment-modes">
+                            <t t-foreach="[{val:'Cash',icon:'fa-money',color:'#059669'},{val:'UPI',icon:'fa-mobile',color:'#7209b7'},{val:'Cheque',icon:'fa-file-text-o',color:'#4361ee'},{val:'NEFT',icon:'fa-bank',color:'#f59e0b'}]" t-as="mode" t-key="mode.val">
+                                <div t-attf-class="emp360-payment-mode-pill {{state.collectForm.paymentMode === mode.val ? 'active' : ''}}"
+                                     t-on-click="() => { this.state.collectForm.paymentMode = mode.val; }"
+                                     t-att-style="state.collectForm.paymentMode === mode.val ? 'border-color:' + mode.color + ';background:' + mode.color + '18;color:' + mode.color : ''">
+                                    <i t-attf-class="fa {{mode.icon}}" style="font-size:16px;"></i>
+                                    <span><t t-esc="mode.val"/></span>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Reference -->
+                    <div class="emp360-form-group">
+                        <label class="emp360-form-label">Reference / Cheque No.</label>
+                        <div class="emp360-form-input-wrap">
+                            <i class="fa fa-hashtag emp360-form-input-icon"></i>
+                            <input class="emp360-form-input emp360-form-input-padded" type="text"
+                                   placeholder="Enter reference or cheque number"
+                                   t-att-value="state.collectForm.reference"
+                                   t-on-change="(ev) => this.onCollectFieldChange('reference', ev)"/>
+                        </div>
+                    </div>
+
+                    <!-- Remarks -->
+                    <div class="emp360-form-group">
+                        <label class="emp360-form-label">Remarks</label>
+                        <div class="emp360-form-input-wrap">
+                            <textarea class="emp360-form-textarea" rows="3"
+                                      placeholder="Add any notes or remarks..."
+                                      t-on-change="(ev) => this.onCollectFieldChange('remarks', ev)"><t t-esc="state.collectForm.remarks"/></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="emp360-panel-footer">
+                    <button class="emp360-btn emp360-btn-outline" t-on-click="closePanel"
+                            t-att-disabled="state.isProcessing">
+                        <i class="fa fa-times me-1"></i> Cancel
+                    </button>
+                    <button class="emp360-btn emp360-btn-success emp360-save-btn"
+                            t-on-click="saveCollection"
+                            t-att-disabled="state.isProcessing">
+                        <i t-if="!state.isProcessing" class="fa fa-check me-1"></i>
+                        <i t-else="" class="fa fa-spinner fa-spin me-1"></i>
+                        <t t-if="!state.isProcessing">Submit Payment</t>
+                        <t t-else="">Submitting...</t>
+                    </button>
+                </div>
+            </div>
+        </t>
+
+        <!-- Raise Ticket Panel -->
+        <t t-if="state.activePanel === 'ticket'">
+            <div class="emp360-panel-overlay">
+                <div class="emp360-panel-header">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <button class="emp360-panel-back" t-on-click="closePanel">
+                            <i class="fa fa-chevron-left"></i>
+                        </button>
+                        <i class="fa fa-ticket" style="color:#fff;font-size:18px;"></i>
+                        <span>Raise Ticket</span>
+                    </div>
+                    <span class="emp360-panel-store-name">
+                        <t t-if="state.customerSummary"><t t-esc="state.customerSummary.name"/>*</t>
+                    </span>
+                </div>
+                <div class="emp360-panel-body">
+                    <div class="emp360-panel-section-title">
+                        <i class="fa fa-ticket me-2"></i> Raise Support Ticket
+                    </div>
+                    <div class="emp360-form-group">
+                        <label class="emp360-form-label">* Subject</label>
+                        <input class="emp360-form-input" type="text" placeholder="Enter ticket subject"
+                               t-att-value="state.ticketForm.subject"
+                               t-on-change="(ev) => this.onTicketFieldChange('subject', ev)"/>
+                    </div>
+                    <div class="emp360-form-group">
+                        <label class="emp360-form-label">Category</label>
+                        <select class="emp360-form-select"
+                                t-on-change="(ev) => this.onTicketFieldChange('category', ev)">
+                            <option value="Product Quality">Product Quality</option>
+                            <option value="Delivery Issue">Delivery Issue</option>
+                            <option value="Billing">Billing</option>
+                            <option value="Display">Display</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="emp360-form-group">
+                        <label class="emp360-form-label">Priority</label>
+                        <select class="emp360-form-select"
+                                t-on-change="(ev) => this.onTicketFieldChange('priority', ev)">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    <div class="emp360-form-group">
+                        <label class="emp360-form-label">Description</label>
+                        <textarea class="emp360-form-textarea" placeholder="Describe the issue..."
+                                  t-on-change="(ev) => this.onTicketFieldChange('description', ev)">
+                            <t t-esc="state.ticketForm.description"/>
+                        </textarea>
+                    </div>
+                </div>
+                <div class="emp360-panel-footer">
+                    <button class="emp360-btn emp360-btn-outline" t-on-click="closePanel">Cancel</button>
+                    <button class="emp360-btn emp360-btn-primary" t-on-click="saveTicket">
+                        <i class="fa fa-paper-plane me-1"></i> Submit
+                    </button>
+                </div>
+            </div>
+        </t>
+
+        <!-- Competitor Info Panel -->
+        <t t-if="state.activePanel === 'competitor'">
+            <div class="emp360-panel-overlay">
+                <div class="emp360-panel-header">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <button class="emp360-panel-back" t-on-click="closePanel">
+                            <i class="fa fa-chevron-left"></i>
+                        </button>
+                        <i class="fa fa-users" style="color:#fff;font-size:18px;"></i>
+                        <span>Competitor Info</span>
+                    </div>
+                    <span class="emp360-panel-store-name">
+                        <t t-if="state.customerSummary"><t t-esc="state.customerSummary.name"/>*</t>
+                    </span>
+                </div>
+                <div class="emp360-panel-body">
+                    <div class="emp360-panel-section-title">
+                        <i class="fa fa-users me-2"></i> Competitor Information
+                    </div>
+                    <t t-foreach="state.competitors" t-as="comp" t-key="comp.id">
+                        <div class="emp360-competitor-card">
+                            <div class="emp360-competitor-header">
+                                <span>Competitor <t t-esc="comp_index + 1"/></span>
+                                <button class="emp360-stock-remove" t-on-click="() => this.removeCompetitor(comp.id)">
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="emp360-form-group">
+                                <input class="emp360-form-input" type="text" placeholder="Brand name"
+                                       t-att-value="comp.brand"
+                                       t-on-change="(ev) => this.onCompetitorFieldChange(ev, comp.id, 'brand')"/>
+                            </div>
+                            <div class="emp360-form-group">
+                                <input class="emp360-form-input" type="text" placeholder="-- Select Product --"
+                                       t-att-value="comp.product"
+                                       t-on-change="(ev) => this.onCompetitorFieldChange(ev, comp.id, 'product')"/>
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                                <div class="emp360-form-group">
+                                    <label class="emp360-form-label" style="font-size:10px;">SHELF %</label>
+                                    <input class="emp360-form-input" type="number" placeholder="0"
+                                           t-att-value="comp.shelfPct"
+                                           t-on-change="(ev) => this.onCompetitorFieldChange(ev, comp.id, 'shelfPct')"/>
+                                </div>
+                                <div class="emp360-form-group">
+                                    <label class="emp360-form-label" style="font-size:10px;">PRICE</label>
+                                    <input class="emp360-form-input" type="number" placeholder="0"
+                                           t-att-value="comp.price"
+                                           t-on-change="(ev) => this.onCompetitorFieldChange(ev, comp.id, 'price')"/>
+                                </div>
+                            </div>
+                            <div class="emp360-form-group">
+                                <textarea class="emp360-form-textarea" placeholder="Remarks..."
+                                          t-on-change="(ev) => this.onCompetitorFieldChange(ev, comp.id, 'remarks')">
+                                    <t t-esc="comp.remarks"/>
+                                </textarea>
+                            </div>
+                        </div>
+                    </t>
+                    <button class="emp360-btn emp360-btn-outline" style="width:100%;margin-top:8px;" t-on-click="addCompetitor">
+                        <i class="fa fa-plus me-1"></i> Add Competitor
+                    </button>
+                </div>
+                <div class="emp360-panel-footer">
+                    <button class="emp360-btn emp360-btn-outline" t-on-click="closePanel">Cancel</button>
+                    <button class="emp360-btn emp360-btn-primary" t-on-click="saveCompetitorInfo">
+                        <i class="fa fa-save me-1"></i> Save
+                    </button>
+                </div>
+            </div>
+        </t>
+
+        <!-- Retailer-wise Orders Panel -->
+        <t t-if="state.activePanel === 'retailer'">
+            <div class="emp360-panel-overlay">
+                <div class="emp360-panel-header">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <button class="emp360-panel-back" t-on-click="closePanel">
+                            <i class="fa fa-chevron-left"></i>
+                        </button>
+                        <i class="fa fa-list" style="color:#fff;font-size:18px;"></i>
+                        <span>Retailer-wise Orders</span>
+                    </div>
+                    <span class="emp360-panel-store-name">This Month</span>
+                </div>
+                <div class="emp360-panel-body" style="padding:0;">
+                    <!-- Stats -->
+                    <div class="emp360-retailer-stats">
+                        <div class="emp360-retailer-stat">
+                            <i class="fa fa-building" style="color:#4361ee;"></i>
+                            <div>
+                                <div class="emp360-retailer-stat-val"><t t-esc="state.retailerOrderStats.retailers"/></div>
+                                <div class="emp360-retailer-stat-lbl">RETAILERS</div>
+                            </div>
+                        </div>
+                        <div class="emp360-retailer-stat">
+                            <i class="fa fa-file-text-o" style="color:#7209b7;"></i>
+                            <div>
+                                <div class="emp360-retailer-stat-val"><t t-esc="state.retailerOrderStats.orders"/></div>
+                                <div class="emp360-retailer-stat-lbl">ORDERS</div>
+                            </div>
+                        </div>
+                        <div class="emp360-retailer-stat">
+                            <i class="fa fa-money" style="color:#059669;"></i>
+                            <div>
+                                <div class="emp360-retailer-stat-val" style="color:#059669;">
+                                    Rs. <t t-esc="(state.retailerOrderStats.totalValue || 0).toFixed(2)"/>
+                                </div>
+                                <div class="emp360-retailer-stat-lbl">TOTAL VALUE</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="emp360-retailer-tabs">
+                        <span t-att-class="'emp360-retailer-tab ' + (state.retailerTab === 'retailers' ? 'active' : '')"
+                              t-on-click="() => state.retailerTab = 'retailers'">
+                            Retailers
+                        </span>
+                        <span t-att-class="'emp360-retailer-tab ' + (state.retailerTab === 'subdist' ? 'active' : '')"
+                              t-on-click="() => state.retailerTab = 'subdist'">
+                            Sub Distributors
+                        </span>
+                        <span t-att-class="'emp360-retailer-tab ' + (state.retailerTab === 'other' ? 'active' : '')"
+                              t-on-click="() => state.retailerTab = 'other'">
+                            Other
+                        </span>
+                    </div>
+
+                    <!-- Section heading -->
+                    <div style="padding:12px 16px 4px;font-size:12px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px;">
+                        RETAILER-WISE ORDERS
+                    </div>
+
+                    <!-- Retailer list -->
+                    <div style="padding:0 16px 16px;">
+                        <t t-foreach="state.retailerOrders" t-as="retailer" t-key="retailer.id">
+                            <div class="emp360-retailer-row">
+                                <div class="emp360-retailer-row-header" t-on-click="() => this.toggleRetailerExpand(retailer.id)">
+                                    <div style="display:flex;align-items:center;gap:12px;">
+                                        <div class="emp360-retailer-avatar">
+                                            <t t-esc="retailer.name ? retailer.name[0].toUpperCase() : 'R'"/>
+                                        </div>
+                                        <div>
+                                            <div style="font-weight:700;color:#1a1a3e;font-size:14px;">
+                                                <t t-esc="retailer.name"/>*
+                                            </div>
+                                            <div style="font-size:12px;color:#9ca3af;">
+                                                <t t-esc="retailer.orders.length"/> order(s)
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:10px;">
+                                        <span style="font-weight:800;color:#059669;">
+                                            Rs. <t t-esc="retailer.total.toFixed(2)"/>
+                                        </span>
+                                        <i t-attf-class="fa fa-chevron-{{retailer.expanded ? 'up' : 'down'}}" style="color:#9ca3af;"></i>
+                                    </div>
+                                </div>
+                                <t t-if="retailer.expanded">
+                                    <div class="emp360-retailer-orders">
+                                        <t t-foreach="retailer.orders" t-as="order" t-key="order.id">
+                                            <div class="emp360-order-card">
+                                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                                    <div>
+                                                        <div style="font-weight:700;color:#4361ee;font-size:13px;"><t t-esc="order.name"/></div>
+                                                        <div style="font-size:11px;color:#9ca3af;"><t t-esc="order.order_line ? order.order_line.length : 0"/> items</div>
+                                                    </div>
+                                                    <div style="display:flex;align-items:center;gap:8px;">
+                                                        <span style="font-weight:700;color:#059669;">Rs. <t t-esc="(order.amount_total || 0).toFixed(2)"/></span>
+                                                        <span t-attf-class="emp360-badge {{order.state === 'sale' ? 'emp360-badge-success' : order.state === 'draft' ? 'emp360-badge-warning' : 'emp360-badge-secondary'}}" style="font-size:10px;">
+                                                            <t t-esc="order.state === 'draft' ? 'NEW' : order.state === 'sale' ? 'CONFIRMED' : order.state"/>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                        <t t-if="state.retailerOrders.length === 0">
+                            <div class="emp360-empty" style="padding:24px 0;">
+                                <div class="emp360-empty-icon"><i class="fa fa-file-text-o"></i></div>
+                                <div class="emp360-empty-title">No orders found</div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+                <div class="emp360-panel-footer" style="display:flex;gap:12px;">
+                    <button class="emp360-btn emp360-btn-outline" style="flex:1;justify-content:center;">
+                        <i class="fa fa-download me-1"></i> Download PDF
+                    </button>
+                    <button class="emp360-btn emp360-btn-success" style="flex:1;justify-content:center;">
+                        <i class="fa fa-whatsapp me-1"></i> Share on WhatsApp
+                    </button>
+                </div>
+            </div>
+        </t>
 
         <t t-if="state.showSwitchBeatModal">
             <div class="modal-backdrop fade show"></div>
@@ -1384,5 +2516,6 @@
             </div>
         </t>
 
+        </div>
     </t>
 </templates>

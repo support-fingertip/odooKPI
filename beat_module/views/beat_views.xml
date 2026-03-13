@@ -205,6 +205,7 @@
     <!-- Menu Items -->
     <menuitem id="menu_beat_root" 
               name="Beat Management" 
+              active="False"
               sequence="50"/>
     
     <menuitem id="menu_beat_module" 

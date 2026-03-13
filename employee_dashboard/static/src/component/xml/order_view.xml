@@ -1,45 +1,99 @@
-
 <templates xml:space="preserve">
 
+    <!-- ============================================================
+         ORDERS LIST — redesigned (Odoo 18)
+         Matches image (1.png): Retailer tabs, order cards, download
+         ============================================================ -->
     <t t-name="employee_dashboard.OrdersList">
+        <div style="flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;">
 
-        <div style="flex: 1; display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden;">
+            <!-- Page header -->
+            <div class="emp360-page-header">
+                <div class="emp360-ph-top">
+                    <div>
+                        <h3 class="emp360-ph-name">
+                            <i class="fa fa-shopping-cart me-2"></i> Orders
+                        </h3>
+                        <p class="emp360-ph-role">Retailer-wise order management</p>
+                    </div>
+                </div>
+            </div>
 
-            <div class="d-flex gap-3 mb-3 align-items-end" style="flex-shrink: 0; align-items: flex-end;">
-                <div style="flex: 1 1 150px;">
-                    <label>Customer</label>
+            <!-- Summary KPI row -->
+            <div style="background:#fff;padding:14px 24px;border-bottom:1px solid #f0f0f0;display:flex;gap:16px;flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:10px;background:#f0f3ff;border-radius:12px;padding:10px 16px;">
+                    <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#4361ee,#3a0ca3);display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;">
+                        <i class="fa fa-users"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:18px;font-weight:800;color:#4361ee;">
+                            <t t-esc="uniqueRetailerCount"/>
+                        </div>
+                        <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;">Retailers</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;background:#f0fdf4;border-radius:12px;padding:10px 16px;">
+                    <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#06d6a0,#019b72);display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;">
+                        <i class="fa fa-list-alt"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:18px;font-weight:800;color:#059669;">
+                            <t t-esc="state.orders ? state.orders.length : 0"/>
+                        </div>
+                        <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;">Orders</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;background:#f0fdf4;border-radius:12px;padding:10px 16px;">
+                    <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#7209b7,#3a0ca3);display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;">
+                        <i class="fa fa-rupee"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:18px;font-weight:800;color:#059669;">
+                            Rs. <t t-esc="state.orders ? state.orders.reduce((s,o) => s + (o.amount_total || 0), 0).toLocaleString('en-IN', {maximumFractionDigits:0}) : '0'"/>
+                        </div>
+                        <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;">Total Value</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer type tabs -->
+            <div class="emp360-retailer-tabs" style="background:#fff;padding:0 24px;border-bottom:2px solid #f0f0f0;">
+                <div class="emp360-retailer-tab active"
+                     style="font-weight:700;padding:12px 20px;">Retailers</div>
+                <div class="emp360-retailer-tab"
+                     style="padding:12px 20px;">Sub Distributors</div>
+                <div class="emp360-retailer-tab"
+                     style="padding:12px 20px;">Other</div>
+            </div>
+
+            <!-- Filters -->
+            <div class="emp360-filter-bar">
+                <div class="emp360-filter-group">
+                    <label class="emp360-filter-label">Customer</label>
                     <input type="text"
                            t-model="state.orderFilter.customer"
-                           style="height: 38px;"
-                           class="form-control"
-                           placeholder="Search Customer..."
-                           t-on-input="applyOrderFilters" />
+                           class="emp360-filter-input"
+                           placeholder="Search customer…"
+                           t-on-input="applyOrderFilters"/>
                 </div>
-
-                <div style="flex: 1 1 150px;">
-                    <label>From Date</label>
+                <div class="emp360-filter-group">
+                    <label class="emp360-filter-label">From Date</label>
                     <input type="date"
                            t-model="state.orderFilter.from_date"
-                           style="height: 38px;"
-                           class="form-control"
-                           t-on-change="applyOrderFilters" />
+                           class="emp360-filter-input"
+                           t-on-change="applyOrderFilters"/>
                 </div>
-
-                <div style="flex: 1 1 150px;">
-                    <label>End Date</label>
+                <div class="emp360-filter-group">
+                    <label class="emp360-filter-label">To Date</label>
                     <input type="date"
                            t-model="state.orderFilter.to_date"
-                           style="height: 38px;"
-                           class="form-control"
-                           t-on-change="applyOrderFilters" />
+                           class="emp360-filter-input"
+                           t-on-change="applyOrderFilters"/>
                 </div>
-
-                <div style="flex: 1 1 150px;">
-                    <label>Status</label>
-                    <select
-                            t-model="state.orderFilter.status"
-                            style="height: 38px;"
-                            class="form-control"
+                <div class="emp360-filter-group">
+                    <label class="emp360-filter-label">Status</label>
+                    <select t-model="state.orderFilter.status"
+                            class="emp360-filter-input emp360-form-select"
                             t-on-change="applyOrderFilters">
                         <option value="">All</option>
                         <option value="draft">Draft</option>
@@ -50,86 +104,118 @@
                 </div>
             </div>
 
-            <div class="table-responsive" style="flex: 1; min-height: 0; overflow-y: auto; overflow-x: auto;">
-                <table class="table table-responsive table-sm" id="orderTable">
-                    <thead style="background-color: #007bff; color: #fff; position: sticky; top: 0; z-index: 10;">
-                        <tr><th>Order ID</th><th>Outlet</th><th>Date</th><th>Status</th><th>Amount</th><th>Items</th><th style="width: 80px;">Details</th></tr>
-                    </thead>
-                    <t t-if="state.orders">
-                        <tbody>
-                            <t t-foreach="state.orders" t-as="l" t-key="l.id">
-                                <tr style="cursor: pointer;" t-on-click="() => this.toggleOrderDetails(l.id, l.order_line)"
-                                    t-att-class="state.expandedOrderId === l.id ? 'table-primary' : ''">
-                                    <td><t t-esc="l.name"/></td>
-                                    <td><t t-esc="l.partner_id and l.partner_id[1]"/></td>
-                                    <td><t t-esc="l.date_order"/></td>
-                                    <td><t t-esc="l.state"/></td>
-                                    <td><t t-esc="l.amount_total"/></td>
-                                    <td><t t-esc="l.item_count"/></td>
-                                    <td class="text-center">
-                                        <i t-attf-class="fa {{state.expandedOrderId === l.id ? 'fa-chevron-up' : 'fa-chevron-down'}}"></i>
-                                    </td>
-                                </tr>
-                                <t t-if="state.expandedOrderId === l.id">
-                                    <tr>
-                                        <td colspan="7" class="p-0">
-                                            <div class="bg-light p-3">
-                                                <h6 class="mb-2"><i class="fa fa-list me-1"></i> Order Items - <t t-esc="l.name"/></h6>
-                                                <t t-if="state.expandedOrderLines.length > 0">
-                                                    <table class="table table-sm table-bordered mb-0">
-                                                        <thead class="table-secondary">
-                                                            <tr>
-                                                                <th style="width: 40px;">#</th>
-                                                                <th>Product</th>
-                                                                <th class="text-center" style="width: 80px;">Qty</th>
-                                                                <th class="text-end" style="width: 100px;">Unit Price</th>
-                                                                <th class="text-end" style="width: 100px;">Subtotal</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <t t-foreach="state.expandedOrderLines" t-as="line" t-key="line.id">
-                                                                <tr>
-                                                                    <td><t t-esc="line_index + 1"/></td>
-                                                                    <td><t t-esc="line.product_id ? line.product_id[1] : line.name"/></td>
-                                                                    <td class="text-center"><t t-esc="line.product_uom_qty"/></td>
-                                                                    <td class="text-end"><t t-esc="line.price_unit.toFixed(2)"/></td>
-                                                                    <td class="text-end"><strong><t t-esc="line.price_subtotal.toFixed(2)"/></strong></td>
-                                                                </tr>
-                                                            </t>
-                                                        </tbody>
-                                                        <tfoot class="table-secondary">
-                                                            <tr>
-                                                                <td colspan="4" class="text-end"><strong>Total:</strong></td>
-                                                                <td class="text-end"><strong><t t-esc="l.amount_total.toFixed(2)"/></strong></td>
-                                                            </tr>
-                                                        </tfoot>
-                                                    </table>
-                                                </t>
-                                                <t t-else="">
-                                                    <div class="text-muted text-center py-2">
-                                                        <i class="fa fa-inbox me-1"></i> No items in this order
-                                                    </div>
-                                                </t>
+            <!-- Order list content -->
+            <div style="flex:1;overflow-y:auto;overflow-x:hidden;background:#f0f4f8;padding:16px 24px;">
+
+                <!-- Loading -->
+                <t t-if="state.loading">
+                    <div class="emp360-loading">
+                        <div class="emp360-spinner"></div>
+                        <div class="emp360-loading-text">Loading orders…</div>
+                    </div>
+                </t>
+
+                <!-- Empty -->
+                <t t-elif="!state.orders or state.orders.length === 0">
+                    <div class="emp360-empty">
+                        <div class="emp360-empty-icon"><i class="fa fa-shopping-cart"></i></div>
+                        <div class="emp360-empty-title">No orders found</div>
+                        <div class="emp360-empty-desc">No orders match the current filters.</div>
+                    </div>
+                </t>
+
+                <!-- Retailer-wise orders section -->
+                <t t-else="">
+                    <div style="font-size:11px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;">
+                        RETAILER-WISE ORDERS
+                    </div>
+
+                    <t t-foreach="state.orders" t-as="order" t-key="order.id">
+                        <div class="emp360-card" style="margin-bottom:12px;overflow:hidden;">
+                            <!-- Customer row -->
+                            <div class="emp360-order-customer-row" style="padding:14px 18px 10px;"
+                                 t-on-click="() => this.toggleOrderDetails(order.id, order.order_line)">
+                                <div class="emp360-order-customer-avatar">
+                                    <t t-esc="order.partner_id ? order.partner_id[1][0].toUpperCase() : 'C'"/>
+                                </div>
+                                <div>
+                                    <div class="emp360-order-customer-name">
+                                        <t t-esc="order.partner_id ? order.partner_id[1] : 'Unknown'"/>
+                                        <t t-if="state.expandedOrderId === order.id">
+                                            <span style="font-size:10px;font-weight:500;color:#9ca3af;margin-left:4px;">*</span>
+                                        </t>
+                                    </div>
+                                    <div class="emp360-order-customer-sub">
+                                        <t t-esc="order.item_count"/> item(s)
+                                    </div>
+                                </div>
+                                <div class="emp360-order-customer-amt">
+                                    Rs. <t t-esc="(order.amount_total || 0).toLocaleString('en-IN', {maximumFractionDigits:2})"/>
+                                    <i t-attf-class="fa fa-chevron-{{state.expandedOrderId === order.id ? 'up' : 'down'}} ms-2" style="font-size:11px;color:#9ca3af;"></i>
+                                </div>
+                            </div>
+
+                            <!-- Order detail (expanded) -->
+                            <t t-if="state.expandedOrderId === order.id">
+                                <div style="background:#f8fafc;padding:12px 18px;border-top:1px solid #f0f0f0;">
+                                    <!-- Order header -->
+                                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+                                        <div>
+                                            <div class="emp360-order-detail-id">
+                                                <t t-esc="order.name"/>
                                             </div>
-                                        </td>
-                                    </tr>
-                                </t>
+                                            <div class="emp360-order-detail-meta">
+                                                <t t-esc="order.item_count"/> items
+                                            </div>
+                                        </div>
+                                        <div style="text-align:right;">
+                                            <div class="emp360-order-detail-amt">
+                                                Rs. <t t-esc="(order.amount_total || 0).toLocaleString('en-IN', {maximumFractionDigits:2})"/>
+                                            </div>
+                                            <span t-attf-class="emp360-badge {{order.state === 'sale' ? 'emp360-badge-success' : order.state === 'cancel' ? 'emp360-badge-danger' : order.state === 'draft' ? 'emp360-badge-secondary' : 'emp360-badge-info'}}" style="font-size:10px;margin-top:4px;display:inline-flex;">
+                                                <t t-esc="order.state ? order.state.toUpperCase() : 'DRAFT'"/>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Order lines -->
+                                    <t t-if="state.expandedOrderLines.length > 0">
+                                        <t t-foreach="state.expandedOrderLines" t-as="line" t-key="line.id">
+                                            <div class="emp360-order-line">
+                                                <div class="emp360-order-line-num">
+                                                    <t t-esc="line_index + 1"/>
+                                                </div>
+                                                <div class="emp360-order-line-name">
+                                                    <t t-esc="line.product_id ? line.product_id[1] : line.name"/>
+                                                </div>
+                                                <div class="emp360-order-line-qty">
+                                                    x<t t-esc="line.product_uom_qty"/>
+                                                </div>
+                                                <div class="emp360-order-line-amt">
+                                                    Rs.<t t-esc="(line.price_subtotal || 0).toFixed(2)"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        <!-- Total row -->
+                                        <div style="display:flex;justify-content:flex-end;padding:8px 0 0;border-top:1px solid #e5e7eb;margin-top:4px;">
+                                            <span style="font-size:13px;font-weight:800;color:#059669;">
+                                                Total: Rs. <t t-esc="(order.amount_total || 0).toFixed(2)"/>
+                                            </span>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="emp360-empty" style="padding:20px;">
+                                            <div class="emp360-empty-title">No items in this order</div>
+                                        </div>
+                                    </t>
+                                </div>
                             </t>
-                        </tbody>
+                        </div>
                     </t>
-                    <t t-else="">
-                        <tbody>
-                            <tr>
-                                <td class="text-center" colspan="7">No active Orders</td>
-                            </tr>
-                        </tbody>
-                    </t>
-                </table>
+                </t>
             </div>
 
         </div>
-
     </t>
 
 </templates>
-

@@ -196,6 +196,11 @@
                                                     (<t t-esc="formatPct(row.achievements[kpi.key])"/>)
                                                 </span>
                                             </div>
+                                            <t t-if="kpi.key === 'orders' and row.actuals.order_amount">
+                                                <div class="text-primary" style="font-size:0.75rem; margin-top:2px;">
+                                                    ₹<t t-esc="formatNumber(row.actuals.order_amount, 0)"/>
+                                                </div>
+                                            </t>
                                         </td>
                                     </t>
 

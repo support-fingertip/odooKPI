@@ -72,6 +72,84 @@
                                 <field name="store_image_filename" invisible="1"/>
                             </group>
                         </page>
+                        <page string="Stock Update" name="stock_update">
+                            <field name="stock_ledger_ids">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="date"/>
+                                    <field name="opening_stock"/>
+                                    <field name="closing_stock"/>
+                                    <field name="damaged_stock"/>
+                                    <field name="suggested_order"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Collections" name="collections">
+                            <field name="collection_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="amount"/>
+                                    <field name="payment_mode"/>
+                                    <field name="reference"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                            <group>
+                                <field name="total_collected" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Tickets" name="tickets">
+                            <field name="ticket_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="subject"/>
+                                    <field name="category"/>
+                                    <field name="priority"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Competitor Tracking" name="competitor">
+                            <field name="competitor_ids">
+                                <list editable="bottom">
+                                    <field name="brand_name"/>
+                                    <field name="product_name"/>
+                                    <field name="price"/>
+                                    <field name="shelf_share_pct"/>
+                                    <field name="scheme_details"/>
+                                    <field name="remarks"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Checklist" name="checklist">
+                            <field name="checklist_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="question"/>
+                                    <field name="answer" string="Done"/>
+                                    <field name="requires_photo"/>
+                                    <field name="remarks"/>
+                                </list>
+                            </field>
+                            <group>
+                                <field name="checklist_done" string="Checklist Done" readonly="1"/>
+                                <field name="checklist_total" string="Total Items" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="GPS &amp; Geo-fence" name="gps">
+                            <group>
+                                <group string="Check-in GPS">
+                                    <field name="checkin_latitude" readonly="1"/>
+                                    <field name="checkin_longitude" readonly="1"/>
+                                    <field name="checkin_accuracy" readonly="1"/>
+                                </group>
+                                <group string="Geo-fence">
+                                    <field name="geofence_valid" readonly="1"/>
+                                    <field name="geofence_distance" readonly="1" string="Distance from Store (m)"/>
+                                </group>
+                            </group>
+                        </page>
                     </notebook>
                 </sheet>
                 
@@ -111,7 +189,7 @@
                 <field name="employee_id"/>
                 <field name="partner_id"/>
                 <field name="beat_id"/>
-                <filter string="Today" name="today" domain="[('actual_start_time', '&gt;=', datetime.datetime.now().replace(hour=0, minute=0, second=0)), ('actual_start_time', '&lt;=', datetime.datetime.now().replace(hour=23, minute=59, second=59))]"/>
+                <filter string="Today" name="today" domain="[('actual_start_time', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00')), ('actual_start_time', '&lt;=', context_today().strftime('%Y-%m-%d 23:59:59'))]"/>
                 <filter string="In Progress" name="in_progress" domain="[('status', '=', 'in_progress')]"/>
                 <filter string="Completed" name="completed" domain="[('status', '=', 'completed')]"/>
                 <filter string="Productive" name="productive" domain="[('is_productive', '=', True)]"/>

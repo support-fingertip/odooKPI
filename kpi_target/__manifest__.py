@@ -19,6 +19,7 @@
         'security/ir.model.access.csv',
         'views/kpi_target_views.xml',
         'views/kpi_target_menus.xml',
+        'views/kpi_analytics_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

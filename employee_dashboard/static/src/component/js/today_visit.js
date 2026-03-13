@@ -73,6 +73,9 @@ export class TodayVisit extends Component {
             endDayForm: {
                 locationData: null,
             },
+
+            // Day-End Summary
+            dayEndSummary: null,
             
             switchBeatForm: {
                 reason: "",
@@ -91,6 +94,60 @@ export class TodayVisit extends Component {
           
             beatSwitchHistory: [],
             showSwitchHistoryModal: false,
+
+            // ── NEW: enhanced UI state ────────────────────────
+            checkinTime: null,
+            checkinStartTime: null,
+            todayStats: null,
+            visitLocations: [],
+            attendanceLocation: null,
+
+            // ── NEW: panel system ──────────────────────────────
+            activePanel: null,   // 'stock' | 'outstanding' | 'collect' | 'ticket' | 'competitor' | 'retailer'
+
+            // Stock Update
+            stockItems: [],
+
+            // Outstanding data
+            outstandingData: null,
+
+            // Collection form
+            collectForm: { amount: '', paymentMode: 'Cash', reference: '', remarks: '' },
+
+            // Ticket form
+            ticketForm: { subject: '', category: 'Product Quality', priority: 'Low', description: '' },
+
+            // Competitor info
+            competitors: [{ id: 1, brand: '', product: '', shelfPct: 0, price: 0, remarks: '' }],
+
+            // Accordion state for visit detail
+            accordionOpen: { lastVisit: false, assets: false, currentVisit: false, checklist: false, brochures: false },
+
+            // Visit checklist
+            visitChecklist: [
+                { id: 1, question: "Is the store exterior clean and well-maintained?", done: false },
+                { id: 2, question: "Are all products properly displayed on shelves?", done: false },
+                { id: 3, question: "Is the planogram being followed correctly?", done: false },
+                { id: 4, question: "Are price tags visible on all products?", done: false },
+                { id: 5, question: "Is the stock freshness maintained (FIFO)?", done: false },
+                { id: 6, question: "Are POSM/promotional materials in place?", done: false },
+                { id: 7, question: "Is the visi-cooler clean and functioning?", done: false },
+                { id: 8, question: "Are competitor products encroaching display space?", done: false },
+                { id: 9, question: "Is the back stock area organized?", done: false },
+                { id: 10, question: "Has the retailer been briefed on new schemes?", done: false },
+            ],
+
+            // Brochures
+            brochures: [
+                { id: 1, name: "Summer 2026 Product Catalog", type: "product", fileSize: "2.4 MB" },
+                { id: 2, name: "Festive Schemes & Offers", type: "promo", fileSize: "1.1 MB" },
+                { id: 3, name: "New Dealer Scheme", type: "scheme", fileSize: "0.8 MB" },
+            ],
+
+            // Retailer orders panel
+            retailerOrders: [],
+            retailerOrderStats: { retailers: 0, orders: 0, totalValue: 0 },
+            retailerTab: 'retailers',
         });
 
         onWillStart(async () => {
@@ -178,6 +235,8 @@ export class TodayVisit extends Component {
             });
             
             this.state.loading = false;
+            // Compute today stats for the new UI
+            this._computeTodayStats();
         } catch (error) {
             console.error("Error loading today's beats:", error);
             this.notification.add("Failed to load today's beats", { type: "danger" });
@@ -200,7 +259,7 @@ export class TodayVisit extends Component {
                     ["actual_start_time", "!=", false],
                     ["actual_end_time", "=", false]
                 ],
-                ["id", "beat_id", "beat_line_id", "actual_start_time", "partner_id", "visit_comments", "order_count"]
+                ["id", "beat_id", "beat_line_id", "actual_start_time", "partner_id", "visit_comments", "order_count", "total_order_amount"]
             );
 
             if (activeVisits.length > 0) {
@@ -613,14 +672,29 @@ export class TodayVisit extends Component {
             if (partner.country_id) addressParts.push(partner.country_id[1]);
             const fullAddress = addressParts.join(', ');
 
+            const avgSales = confirmedOrders.length > 0 ? totalSales / confirmedOrders.length : 0;
+
+            // Last visit info
+            const lastVisitDate = visits.length > 0 ? visits[0].actual_start_time : null;
+            const lastVisitOrders = lastVisitDate ? confirmedOrders.filter(o =>
+                o.date_order && o.date_order.slice(0, 10) === (lastVisitDate || '').slice(0, 10)
+            ).length : 0;
+            const lastVisitAmount = lastVisitDate ? confirmedOrders
+                .filter(o => o.date_order && o.date_order.slice(0, 10) === (lastVisitDate || '').slice(0, 10))
+                .reduce((s, o) => s + (o.amount_total || 0), 0) : 0;
+
             this.state.customerSummary = {
                 name: partner.name,
                 phone: partner.phone || partner.mobile,
                 outstanding: outstanding,
                 totalSales: totalSales,
+                avgSales: avgSales,
                 orderCount: confirmedOrders.length,
                 visitCount: visits.length,
                 lastOrderDate: lastOrderDate,
+                lastVisitDate: lastVisitDate,
+                lastVisitOrders: lastVisitOrders,
+                lastVisitAmount: lastVisitAmount,
                 category: partner.category_id && partner.category_id.length > 0
                     ? partner.category_id.map(c => c[1] || c).join(', ')
                     : '',
@@ -693,6 +767,15 @@ export class TodayVisit extends Component {
             minute: "2-digit",
             hour12: true
         });
+    }
+
+    formatTime(datetime) {
+        if (!datetime) return "-";
+        let date;
+        if (typeof datetime === 'string') {
+            date = new Date(datetime.includes('T') ? datetime : datetime.replace(' ', 'T') + 'Z');
+        } else { date = datetime; }
+        return date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
     }
 
     formatDateOnly(datetime) {
@@ -987,12 +1070,35 @@ export class TodayVisit extends Component {
                 await this.orm.create("sale.order.line", [lineVals]);
             }
 
+            // Confirm the order so it counts toward KPI actuals (state → 'sale').
+            // Draft orders are excluded from all KPI computations.
+            try {
+                await this.orm.call("sale.order", "action_confirm", [[orderId]]);
+            } catch (e) {
+                console.warn("Could not auto-confirm sale order:", e);
+            }
+
             if (this.state.activeVisit && this.state.activeVisit.id) {
                 await this.orm.write("visit.model", [this.state.activeVisit.id], {
                     is_productive: true,
                 });
 
-                this.state.activeVisit.order_count = (this.state.activeVisit.order_count || 0) + 1;
+                // Re-read the visit from DB to get the updated order_count and
+                // total_order_amount (the stored computed field is refreshed by
+                // the sale.order write/confirm trigger on the backend).
+                try {
+                    const [updatedVisit] = await this.orm.searchRead(
+                        "visit.model",
+                        [["id", "=", this.state.activeVisit.id]],
+                        ["order_count", "total_order_amount"]
+                    );
+                    if (updatedVisit) {
+                        this.state.activeVisit.order_count = updatedVisit.order_count;
+                        this.state.activeVisit.total_order_amount = updatedVisit.total_order_amount;
+                    }
+                } catch (e) {
+                    this.state.activeVisit.order_count = (this.state.activeVisit.order_count || 0) + 1;
+                }
                 this.state.activeVisit.is_productive = true;
             }
 
@@ -1294,12 +1400,38 @@ export class TodayVisit extends Component {
             const employeeId = this.getEmployeeId();
             const now = new Date();
             const formattedNow = this.formatDateTimeForOdoo(now);
+            const partnerId = this.state.currentBeatLine.partner_id[0];
+
+            // ── Geo-fence validation ──────────────────────────────────────
+            let geoValid = true;
+            let geoDistance = 0;
+            if (this.state.startDayForm.locationData) {
+                try {
+                    const loc = this.state.startDayForm.locationData;
+                    const geoResult = await this.orm.call(
+                        "geo.fence.config",
+                        "validate_checkin",
+                        [partnerId, loc.latitude, loc.longitude]
+                    );
+                    if (!geoResult.valid) {
+                        // Warn but allow (soft geo-fence)
+                        this.notification.add(
+                            `⚠️ Geo-fence Warning: ${geoResult.message}`,
+                            { type: "warning", sticky: true }
+                        );
+                        geoValid = false;
+                    }
+                    geoDistance = geoResult.distance || 0;
+                } catch (geoErr) {
+                    console.warn("Geo-fence check failed:", geoErr);
+                }
+            }
 
             const visitData = {
                 employee_id: employeeId,
                 beat_id: this.state.selectedBeat.id,
                 beat_line_id: this.state.currentBeatLine.id,
-                partner_id: this.state.currentBeatLine.partner_id[0],
+                partner_id: partnerId,
                 planned_start_time: formattedNow,
                 actual_start_time: formattedNow,
                 status: "in_progress",
@@ -1308,7 +1440,16 @@ export class TodayVisit extends Component {
                 travel_type: this.state.startDayForm.travelType,
                 vehicle_used: this.state.startDayForm.vehicleUsed,
                 is_productive: true,
+                geofence_valid: geoValid,
+                geofence_distance: geoDistance,
             };
+
+            // Save GPS co-ordinates captured at day start
+            if (this.state.startDayForm.locationData) {
+                visitData.checkin_latitude = this.state.startDayForm.locationData.latitude;
+                visitData.checkin_longitude = this.state.startDayForm.locationData.longitude;
+                visitData.checkin_accuracy = this.state.startDayForm.locationData.accuracy;
+            }
 
             if (this.state.startVisitForm.storeImage) {
                 visitData.store_image = this.state.startVisitForm.storeImage;
@@ -1321,17 +1462,21 @@ export class TodayVisit extends Component {
                 id: visitIds[0],
                 beat_id: [this.state.selectedBeat.id, this.state.selectedBeat.name],
                 beat_line_id: [this.state.currentBeatLine.id],
-                partner_id: [this.state.currentBeatLine.partner_id[0], this.state.currentBeatLine.partner_id[1]],
+                partner_id: [partnerId, this.state.currentBeatLine.partner_id[1]],
                 actual_start_time: formattedNow,
                 visit_comments: "",
                 order_count: 0,
+                total_order_amount: 0.0,
             };
 
-            this.notification.add("Visit started successfully!", { type: "success" });
+            // Pre-load checklist from admin template
+            await this._loadChecklist();
+
+            this.notification.add("✅ Visit started successfully!", { type: "success" });
 
             this.closeStartVisitModal();
             await this.loadTodayBeats();
-            await this.loadCustomerSummary(this.state.currentBeatLine.partner_id[0]);
+            await this.loadCustomerSummary(partnerId);
         } catch (error) {
             console.error("Error starting visit:", error);
             this.notification.add("Failed to start visit: " + (error.message || "Unknown error"), { type: "danger" });
@@ -1637,10 +1782,15 @@ export class TodayVisit extends Component {
     }
 
     async saveEndBeat() {
+        if (!this.state.selectedBeat) {
+            this.notification.add("No active beat to end.", { type: "warning" });
+            this.state.showEndBeatModal = false;
+            return;
+        }
         try {
             console.log("🛑 Ending beat:", this.state.selectedBeat.beat_number);
-            
-       
+
+
             const result = await this.orm.call(
                 "beat.module",
                 "action_complete_beat",
@@ -1665,14 +1815,68 @@ export class TodayVisit extends Component {
     
 
 
+    async _buildDayEndSummary() {
+        try {
+            const employeeId = this.getEmployeeId();
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+            const todayStart = today + ' 00:00:00';
+            const todayEnd = today + ' 23:59:59';
+
+            const [visits, orders, collections] = await Promise.all([
+                this.orm.searchRead(
+                    "visit.model",
+                    [["employee_id", "=", employeeId],
+                     ["actual_start_time", ">=", todayStart],
+                     ["actual_start_time", "<=", todayEnd]],
+                    ["id", "status", "partner_id", "total_order_amount", "total_collected"]
+                ),
+                this.orm.searchRead(
+                    "sale.order",
+                    [["user_id.employee_ids", "in", [employeeId]],
+                     ["date_order", ">=", todayStart],
+                     ["date_order", "<=", todayEnd],
+                     ["state", "in", ["sale", "done"]]],
+                    ["id", "name", "partner_id", "amount_total"]
+                ),
+                this.orm.searchRead(
+                    "visit.collection",
+                    [["employee_id", "=", employeeId],
+                     ["date", "=", today],
+                     ["state", "=", "confirmed"]],
+                    ["id", "amount", "payment_mode"]
+                ),
+            ]);
+
+            const completed = visits.filter(v => v.status === 'completed').length;
+            const missed = visits.filter(v => v.status === 'planned').length;
+            const totalOrderAmt = orders.reduce((s, o) => s + (o.amount_total || 0), 0);
+            const totalCollected = collections.reduce((s, c) => s + (c.amount || 0), 0);
+
+            this.state.dayEndSummary = {
+                totalVisits: visits.length,
+                completedVisits: completed,
+                missedVisits: missed,
+                totalOrders: orders.length,
+                totalOrderAmount: totalOrderAmt,
+                totalCollected: totalCollected,
+                orderList: orders.slice(0, 10),
+            };
+        } catch (e) {
+            console.warn("Could not build day-end summary:", e);
+            this.state.dayEndSummary = null;
+        }
+    }
+
     async openEndDayModal() {
         if (this.state.activeVisit) {
-            this.notification.add("Please end current visit first", { type: "warning" });
+            this.notification.add("❌ Please end the current visit before ending the day", { type: "warning" });
             return;
         }
 
         if (this.state.beatStarted) {
-            this.notification.add("Please end the current beat first", { type: "warning" });
+            this.notification.add("❌ Please end the current beat before ending the day", { type: "warning" });
             return;
         }
 
@@ -1686,6 +1890,8 @@ export class TodayVisit extends Component {
             return;
         }
 
+        // Build Day-End Summary before confirming
+        await this._buildDayEndSummary();
         this.state.isProcessing = true;
 
         try {
@@ -1809,12 +2015,20 @@ export class TodayVisit extends Component {
 
     getBeatProgress(beat) {
         if (!beat.beatLines || beat.beatLines.length === 0) return "0/0";
-        
-        const completed = beat.beatLines.filter(line => 
+
+        const completed = beat.beatLines.filter(line =>
             line.visitStatus && line.visitStatus.status === 'completed'
         ).length;
-        
+
         return `${completed}/${beat.beatLines.length}`;
+    }
+
+    getBeatProgressPct(beat) {
+        if (!beat.beatLines || beat.beatLines.length === 0) return 0;
+        const completed = beat.beatLines.filter(line =>
+            line.visitStatus && line.visitStatus.status === 'completed'
+        ).length;
+        return Math.round((completed / beat.beatLines.length) * 100);
     }
 
     getCustomerVisitStatus(beatLine) {
@@ -1856,7 +2070,10 @@ export class TodayVisit extends Component {
 
         this.state.kpiLoading = true;
         try {
-            const today = new Date().toISOString().slice(0, 10);
+            // Use local date (not UTC) so the filter matches the user's timezone.
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
             const todayStart = today + ' 00:00:00';
             const todayEnd = today + ' 23:59:59';
 
@@ -1871,36 +2088,13 @@ export class TodayVisit extends Component {
                 ["id"]
             );
 
-            let empUserId = false;
             let actualOrdersToday = 0;
-            try {
-                const [emp] = await this.orm.searchRead(
-                    "hr.employee",
-                    [["id", "=", employeeId]],
-                    ["user_id"]
-                );
-                if (emp && emp.user_id) {
-                    empUserId = emp.user_id[0];
-                    const orders = await this.orm.searchRead(
-                        "sale.order",
-                        [
-                            ["user_id", "=", empUserId],
-                            ["date_order", ">=", todayStart],
-                            ["date_order", "<=", todayEnd],
-                            ["state", "in", ["sale", "done"]],
-                        ],
-                        ["id"]
-                    );
-                    actualOrdersToday = orders.length;
-                }
-            } catch (e) {
-                console.warn("Could not load today's orders for KPI:", e);
-            }
-
             let targetVisits = 0;
             let targetOrders = 0;
             let periodActualVisits = 0;
             let periodActualOrders = 0;
+            let amountToday = 0.0;
+            let amountPeriod = 0.0;
             try {
                 const kpiTargets = await this.orm.searchRead(
                     "kpi.target",
@@ -1912,6 +2106,8 @@ export class TodayVisit extends Component {
                     targetVisits = kpiTargets[0].target_visits || 0;
                     targetOrders = kpiTargets[0].target_orders || 0;
 
+                    let periodFrom = null;
+                    let periodTo = null;
                     if (kpiTargets[0].period_id) {
                         const periodId = Array.isArray(kpiTargets[0].period_id)
                             ? kpiTargets[0].period_id[0]
@@ -1922,8 +2118,8 @@ export class TodayVisit extends Component {
                             ["date_from", "date_to"]
                         );
                         if (periods.length > 0 && periods[0].date_from && periods[0].date_to) {
-                            const periodFrom = periods[0].date_from + ' 00:00:00';
-                            const periodTo = periods[0].date_to + ' 23:59:59';
+                            periodFrom = periods[0].date_from + ' 00:00:00';
+                            periodTo = periods[0].date_to + ' 23:59:59';
 
                             const periodVisits = await this.orm.searchRead(
                                 "visit.model",
@@ -1936,21 +2132,22 @@ export class TodayVisit extends Component {
                                 ["id"]
                             );
                             periodActualVisits = periodVisits.length;
-
-                            if (empUserId) {
-                                const periodOrders = await this.orm.searchRead(
-                                    "sale.order",
-                                    [
-                                        ["user_id", "=", empUserId],
-                                        ["date_order", ">=", periodFrom],
-                                        ["date_order", "<=", periodTo],
-                                        ["state", "in", ["sale", "done"]],
-                                    ],
-                                    ["id"]
-                                );
-                                periodActualOrders = periodOrders.length;
-                            }
                         }
+                    }
+
+                    // Use backend method with sudo() to bypass sale.order record rules
+                    try {
+                        const orderStats = await this.orm.call(
+                            "employee.dashboard",
+                            "get_employee_order_stats",
+                            [employeeId, todayStart, todayEnd, periodFrom, periodTo]
+                        );
+                        actualOrdersToday = orderStats.orders_today || 0;
+                        periodActualOrders = orderStats.orders_period || 0;
+                        amountToday = orderStats.amount_today || 0.0;
+                        amountPeriod = orderStats.amount_period || 0.0;
+                    } catch (e) {
+                        console.warn("Could not load today's orders for KPI:", e);
                     }
                 }
             } catch (e) {
@@ -1962,6 +2159,8 @@ export class TodayVisit extends Component {
             this.state.todayKpi = {
                 actualVisitsToday: actualVisitsToday,
                 actualOrdersToday: actualOrdersToday,
+                amountToday: amountToday,
+                amountPeriod: amountPeriod,
                 targetVisits: targetVisits,
                 targetOrders: targetOrders,
                 periodActualVisits: periodActualVisits,
@@ -2003,10 +2202,572 @@ export class TodayVisit extends Component {
     closeSwitchHistoryModal() {
         this.state.showSwitchHistoryModal = false;
     }
+
+    // ── NEW: UI helpers for redesigned template ───────────────
+    formatAmount(val) {
+        if (!val) return "0";
+        if (val >= 10000000) return (val / 10000000).toFixed(1) + "Cr";
+        if (val >= 100000)   return (val / 100000).toFixed(1) + "L";
+        if (val >= 1000)     return (val / 1000).toFixed(0) + "K";
+        return Number(val).toFixed(0);
+    }
+
+    formatAmountLarge(val) {
+        if (!val) return "₹0";
+        if (val >= 10000000) return "₹" + (val / 10000000).toFixed(1) + "Cr";
+        if (val >= 100000)   return "₹" + (val / 100000).toFixed(1) + "L";
+        if (val >= 1000)     return "₹" + (val / 1000).toFixed(0) + "K";
+        return "₹" + Number(val).toFixed(0);
+    }
+
+    // ── Greeting helpers for the user hero ──────────────────────
+    greeting() {
+        const h = new Date().getHours();
+        if (h < 12) return "Good Morning";
+        if (h < 17) return "Good Afternoon";
+        return "Good Evening";
+    }
+
+    greetingIcon() {
+        const h = new Date().getHours();
+        if (h < 12) return "fa-sun-o";
+        if (h < 17) return "fa-cloud-o";
+        return "fa-moon-o";
+    }
+
+    userFirstName() {
+        const name = this.props.employeeName;
+        if (!name) return "there";
+        return name.split(" ")[0];
+    }
+
+    // Compute todayStats from existing state data (called after beat load)
+    _computeTodayStats() {
+        if (!this.state.dayStarted) return;
+        const beats = this.state.beats || [];
+        let total = 0, done = 0, planned = 0, missed = 0, orders = 0, value = 0;
+
+        for (const beat of beats) {
+            for (const line of (beat.beatLines || [])) {
+                total++;
+                const vs = line.visitStatus;
+                if (vs) {
+                    if (vs.status === 'completed') done++;
+                    else if (vs.status === 'planned') planned++;
+                    else if (vs.status === 'cancelled') missed++;
+                    else planned++;
+                } else {
+                    planned++;
+                }
+                if (vs && vs.order_count) orders += vs.order_count;
+            }
+        }
+
+        const now = new Date();
+        const checkin = this.state.currentAttendanceId ? this.state.checkinStartTime : null;
+        let workingTime = "0m";
+        if (checkin) {
+            const mins = Math.round((now - checkin) / 60000);
+            workingTime = mins >= 60 ? Math.floor(mins / 60) + "h " + (mins % 60) + "m" : mins + "m";
+        }
+
+        const visitPct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+        this.state.todayStats = {
+            total, done, planned, missed,
+            ordersCount: orders,
+            totalValue: value,
+            visitPct,
+            workingTime,
+            avgVisitTime: done > 0 ? "~" + Math.round(30 / done) + "m" : "0m",
+        };
+
+        // Set check-in time
+        const h = now.getHours();
+        const m = String(now.getMinutes()).padStart(2, "0");
+        const ampm = h >= 12 ? "pm" : "am";
+        this.state.checkinTime = (h % 12 || 12) + ":" + m + " " + ampm;
+    }
+
+    // ── NEW: Panel state helpers ──────────────────────────────────
+
+    openPanel(panelName) {
+        this.state.activePanel = panelName;
+        if (panelName === 'stock') this._initStockPanel();
+        if (panelName === 'outstanding') this._loadOutstanding();
+        if (panelName === 'retailer') this._loadRetailerOrders();
+    }
+
+    closePanel() {
+        this.state.activePanel = null;
+    }
+
+    _initStockPanel() {
+        if (!this.state.stockItems || this.state.stockItems.length === 0) {
+            this.state.stockItems = [{ id: Date.now(), productId: null, productName: '', price: 0, opening: 0, closing: 0, damaged: 0, suggestions: [], showSuggestions: false }];
+        }
+    }
+
+    addStockRow() {
+        this.state.stockItems.push({ id: Date.now(), productId: null, productName: '', price: 0, opening: 0, closing: 0, damaged: 0, suggestions: [], showSuggestions: false });
+    }
+
+    removeStockRow(id) {
+        this.state.stockItems = this.state.stockItems.filter(r => r.id !== id);
+    }
+
+    async onStockProductChange(ev, rowId) {
+        const row = this.state.stockItems.find(r => r.id === rowId);
+        if (!row) return;
+        const text = ev.target.value;
+        row.productName = text;
+        row.productId = null;
+        row.price = 0;
+        row.showSuggestions = false;
+        row.suggestions = [];
+
+        if (text.length >= 2) {
+            try {
+                const products = await this.orm.searchRead(
+                    "product.product",
+                    [["name", "ilike", text], ["sale_ok", "=", true]],
+                    ["id", "name", "list_price", "categ_id"],
+                    { limit: 8 }
+                );
+                row.suggestions = products;
+                row.showSuggestions = products.length > 0;
+            } catch (e) {
+                row.suggestions = [];
+                row.showSuggestions = false;
+            }
+        }
+    }
+
+    selectStockProduct(rowId, product) {
+        const row = this.state.stockItems.find(r => r.id === rowId);
+        if (row) {
+            row.productId = product.id;
+            row.productName = product.name;
+            row.price = product.list_price || 0;
+            row.suggestions = [];
+            row.showSuggestions = false;
+        }
+    }
+
+    onStockFieldChange(ev, rowId, field) {
+        const row = this.state.stockItems.find(r => r.id === rowId);
+        if (row) row[field] = parseFloat(ev.target.value) || 0;
+    }
+
+    async saveStockUpdate() {
+        const validItems = this.state.stockItems.filter(r => r.productId && r.productName && r.productName.trim());
+        if (validItems.length === 0) {
+            this.notification.add("Please add at least one product with a valid selection", { type: "warning" });
+            return;
+        }
+        if (!this.state.activeVisit) {
+            this.notification.add("No active visit – cannot save stock", { type: "warning" });
+            return;
+        }
+        this.state.isProcessing = true;
+        try {
+            const visitId = this.state.activeVisit.id;
+            const stockLines = validItems.map(item => ({
+                product_id: item.productId,
+                opening_stock: parseFloat(item.opening) || 0,
+                closing_stock: parseFloat(item.closing) || 0,
+                damaged_stock: parseFloat(item.damaged) || 0,
+            }));
+            // Use backend method which handles unlink+create with sudo
+            const result = await this.orm.call(
+                "visit.stock.ledger",
+                "save_stock_from_visit",
+                [visitId, stockLines]
+            );
+            const saved = result && result.saved ? result.saved : validItems.length;
+            this.notification.add(
+                `Stock updated for ${saved} product(s)!`,
+                { type: "success" }
+            );
+            this.state.stockItems = [];
+            this.closePanel();
+        } catch (e) {
+            const msg = (e.data && e.data.message) || e.message || String(e);
+            this.notification.add("Failed to save stock: " + msg, { type: "danger" });
+        } finally {
+            this.state.isProcessing = false;
+        }
+    }
+
+    async _loadOutstanding() {
+        if (!this.state.activeVisit) return;
+        try {
+            const partnerId = this.state.activeVisit.partner_id[0];
+            // Use backend method for accurate credit limit + overdue data
+            const result = await this.orm.call(
+                "visit.collection",
+                "get_customer_outstanding",
+                [partnerId]
+            );
+            const cs = this.state.customerSummary;
+            this.state.outstandingData = {
+                total: result.total || 0,
+                totalSales: cs ? cs.totalSales || 0 : 0,
+                creditLimit: result.credit_limit || 0,
+                overdue: result.overdue || 0,
+                lastPayment: result.last_payment || "--",
+                lastPaymentAmount: result.last_payment_amount || 0,
+            };
+        } catch (e) {
+            this.state.outstandingData = {
+                total: 0, totalSales: 0, creditLimit: 0,
+                overdue: 0, lastPayment: "--", lastPaymentAmount: 0
+            };
+        }
+    }
+
+    onCollectFieldChange(field, ev) {
+        this.state.collectForm[field] = ev.target.value;
+    }
+
+    async saveCollection() {
+        if (!this.state.collectForm.amount || parseFloat(this.state.collectForm.amount) <= 0) {
+            this.notification.add("Please enter a valid amount", { type: "warning" });
+            return;
+        }
+        if (!this.state.activeVisit) {
+            this.notification.add("No active visit – cannot save collection", { type: "warning" });
+            return;
+        }
+        this.state.isProcessing = true;
+        try {
+            const visitId = this.state.activeVisit.id;
+            const today = new Date().toISOString().slice(0, 10);
+            // orm.create returns integer ID or array; normalise to array
+            const createdResult = await this.orm.create("visit.collection", [{
+                visit_id: visitId,
+                date: today,
+                amount: parseFloat(this.state.collectForm.amount),
+                payment_mode: this.state.collectForm.paymentMode || 'Cash',
+                reference: this.state.collectForm.reference || '',
+                remarks: this.state.collectForm.remarks || '',
+            }]);
+            const ids = Array.isArray(createdResult) ? createdResult : [createdResult];
+
+            // Auto-confirm to create accounting entry; if confirm fails just keep draft
+            try {
+                await this.orm.call("visit.collection", "action_confirm", [ids]);
+            } catch (confirmErr) {
+                const cMsg = (confirmErr.data && confirmErr.data.message) || confirmErr.message || String(confirmErr);
+                console.warn("Could not auto-confirm collection (saved as draft):", cMsg);
+                this.notification.add(
+                    `Payment saved as draft (auto-confirm skipped: ${cMsg})`,
+                    { type: "warning" }
+                );
+            }
+
+            this.notification.add(
+                `Payment of ₹${parseFloat(this.state.collectForm.amount).toFixed(2)} recorded!`,
+                { type: "success" }
+            );
+            this.state.collectForm = { amount: '', paymentMode: 'Cash', reference: '', remarks: '' };
+            await this._loadOutstanding();
+            this.closePanel();
+        } catch (e) {
+            const msg = (e.data && e.data.message) || e.message || String(e);
+            this.notification.add("Failed to save collection: " + msg, { type: "danger" });
+        } finally {
+            this.state.isProcessing = false;
+        }
+    }
+
+    onTicketFieldChange(field, ev) {
+        this.state.ticketForm[field] = ev.target.value;
+    }
+
+    async saveTicket() {
+        if (!this.state.ticketForm.subject) {
+            this.notification.add("Please enter a subject", { type: "warning" });
+            return;
+        }
+        if (!this.state.activeVisit) {
+            this.notification.add("No active visit – cannot raise ticket", { type: "warning" });
+            return;
+        }
+        try {
+            const visitId = this.state.activeVisit.id;
+            const today = new Date().toISOString().slice(0, 10);
+            await this.orm.create("visit.ticket", [{
+                visit_id: visitId,
+                date: today,
+                subject: this.state.ticketForm.subject,
+                category: this.state.ticketForm.category || 'Product Quality',
+                priority: this.state.ticketForm.priority || 'Low',
+                description: this.state.ticketForm.description || '',
+            }]);
+            this.notification.add("✅ Support ticket raised successfully!", { type: "success" });
+            this.state.ticketForm = { subject: '', category: 'Product Quality', priority: 'Low', description: '' };
+            this.closePanel();
+        } catch (e) {
+            this.notification.add("Failed to raise ticket: " + (e.message || e), { type: "danger" });
+        }
+    }
+
+    addCompetitor() {
+        this.state.competitors.push({ id: Date.now(), brand: '', product: '', shelfPct: 0, price: 0, remarks: '' });
+    }
+
+    removeCompetitor(id) {
+        this.state.competitors = this.state.competitors.filter(c => c.id !== id);
+    }
+
+    onCompetitorFieldChange(ev, id, field) {
+        const c = this.state.competitors.find(x => x.id === id);
+        if (c) c[field] = ev.target.value;
+    }
+
+    async saveCompetitorInfo() {
+        const validEntries = this.state.competitors.filter(c => c.brand && c.brand.trim());
+        if (validEntries.length === 0) {
+            this.notification.add("Please add at least one competitor entry", { type: "warning" });
+            return;
+        }
+        if (!this.state.activeVisit) {
+            this.notification.add("No active visit – cannot save competitor info", { type: "warning" });
+            return;
+        }
+        try {
+            const visitId = this.state.activeVisit.id;
+            // Delete existing competitor entries for this visit and re-create
+            const existing = await this.orm.searchRead(
+                "visit.competitor",
+                [["visit_id", "=", visitId]],
+                ["id"]
+            );
+            if (existing.length) {
+                await this.orm.unlink("visit.competitor", existing.map(r => r.id));
+            }
+            for (const entry of validEntries) {
+                await this.orm.create("visit.competitor", [{
+                    visit_id: visitId,
+                    brand_name: entry.brand,
+                    product_name: entry.product || '',
+                    shelf_share_pct: parseFloat(entry.shelfPct) || 0,
+                    price: parseFloat(entry.price) || 0,
+                    remarks: entry.remarks || '',
+                }]);
+            }
+            this.notification.add(`✅ Competitor info saved (${validEntries.length} entries)!`, { type: "success" });
+            this.closePanel();
+        } catch (e) {
+            this.notification.add("Failed to save competitor info: " + (e.message || e), { type: "danger" });
+        }
+    }
+
+    toggleAccordion(key) {
+        this.state.accordionOpen[key] = !this.state.accordionOpen[key];
+    }
+
+    toggleChecklistItem(id) {
+        const item = this.state.visitChecklist.find(i => i.id === id);
+        if (item) item.done = !item.done;
+    }
+
+    async saveChecklist() {
+        if (!this.state.activeVisit) return;
+        try {
+            const visitId = this.state.activeVisit.id;
+            const responses = this.state.visitChecklist
+                .filter(i => typeof i.dbId !== 'undefined')
+                .map(i => ({ id: i.dbId, answer: i.done, remarks: i.remarks || '' }));
+            if (responses.length) {
+                await this.orm.call("visit.checklist", "save_responses", [visitId, responses]);
+            }
+            this.notification.add("✅ Checklist saved!", { type: "success" });
+        } catch (e) {
+            this.notification.add("Failed to save checklist: " + (e.message || e), { type: "danger" });
+        }
+    }
+
+    async _loadChecklist() {
+        if (!this.state.activeVisit) return;
+        try {
+            const visitId = this.state.activeVisit.id;
+            let items = await this.orm.call("visit.checklist", "get_for_visit", [visitId]);
+            if (!items || items.length === 0) {
+                // Create from template if none exist
+                await this.orm.call("visit.checklist", "create_from_template", [visitId]);
+                items = await this.orm.call("visit.checklist", "get_for_visit", [visitId]);
+            }
+            if (items && items.length > 0) {
+                this.state.visitChecklist = items.map(i => ({
+                    id: i.id,
+                    dbId: i.id,
+                    question: i.question,
+                    done: i.answer,
+                    requiresPhoto: i.requires_photo,
+                    remarks: i.remarks || '',
+                }));
+            }
+        } catch (e) {
+            console.error("Error loading checklist:", e);
+        }
+    }
+
+    get checklistDone() {
+        return this.state.visitChecklist.filter(i => i.done).length;
+    }
+
+    openRetailerOrders() {
+        this.state.activePanel = 'retailer';
+        this._loadRetailerOrders();
+    }
+
+    async _loadRetailerOrders() {
+        try {
+            const employeeId = this.getEmployeeId();
+            const today = new Date().toISOString().slice(0, 10);
+            const firstDay = today.slice(0, 8) + '01';
+
+            const orders = await this.orm.searchRead(
+                "sale.order",
+                [["user_id.employee_ids", "in", [employeeId]], ["date_order", ">=", firstDay]],
+                ["id", "name", "partner_id", "amount_total", "state", "order_line", "date_order"],
+                { limit: 200, order: "date_order desc" }
+            );
+
+            // Group by partner
+            const byPartner = {};
+            for (const o of orders) {
+                const pid = o.partner_id ? o.partner_id[0] : 0;
+                const pname = o.partner_id ? o.partner_id[1] : "Unknown";
+                if (!byPartner[pid]) byPartner[pid] = { id: pid, name: pname, orders: [], total: 0, expanded: false };
+                byPartner[pid].orders.push(o);
+                byPartner[pid].total += o.amount_total || 0;
+            }
+
+            this.state.retailerOrders = Object.values(byPartner);
+            this.state.retailerOrderStats = {
+                retailers: Object.keys(byPartner).length,
+                orders: orders.length,
+                totalValue: orders.reduce((s, o) => s + (o.amount_total || 0), 0),
+            };
+            this.state.retailerTab = 'retailers';
+        } catch (e) {
+            this.state.retailerOrders = [];
+            this.state.retailerOrderStats = { retailers: 0, orders: 0, totalValue: 0 };
+        }
+    }
+
+    toggleRetailerExpand(id) {
+        const r = this.state.retailerOrders.find(x => x.id === id);
+        if (r) r.expanded = !r.expanded;
+    }
+
+    formatAmt(val) {
+        return "Rs. " + (parseFloat(val) || 0).toFixed(2);
+    }
+
+    getBrochureTypeClass(type) {
+        const map = { 'product': 'emp360-badge-info', 'promo': 'emp360-badge-success', 'scheme': 'emp360-badge-warning' };
+        return map[type] || 'emp360-badge-secondary';
+    }
+
+    // ── Brochure functionality ────────────────────────────────────
+
+    openAddBrochure() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png';
+        input.multiple = false;
+        input.onchange = (ev) => {
+            const file = ev.target.files[0];
+            if (!file) return;
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+            const ext = file.name.split('.').pop().toLowerCase();
+            let type = 'product';
+            if (file.name.toLowerCase().includes('promo') || file.name.toLowerCase().includes('offer') || file.name.toLowerCase().includes('scheme')) {
+                type = 'promo';
+            } else if (file.name.toLowerCase().includes('dealer') || file.name.toLowerCase().includes('scheme')) {
+                type = 'scheme';
+            }
+            const newBrochure = {
+                id: Date.now(),
+                name: file.name.replace(/\.[^/.]+$/, ''), // remove extension
+                type: type,
+                fileSize: sizeMB,
+                fileData: null,
+                fileName: file.name,
+                ext: ext,
+            };
+            // Read as data URL for sharing
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                newBrochure.fileData = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            this.state.brochures.push(newBrochure);
+            this.notification.add(`Brochure "${newBrochure.name}" added successfully!`, { type: "success" });
+        };
+        input.click();
+    }
+
+    shareBrochure(brochure) {
+        if (!brochure) return;
+        // Build share message for WhatsApp
+        const visitName = this.state.customerSummary ? this.state.customerSummary.name : 'Customer';
+        const msg = `Hi, please find the brochure: *${brochure.name}* (${brochure.type}) - ${brochure.fileSize}`;
+
+        if (brochure.fileData) {
+            // If file is loaded, offer download
+            const a = document.createElement('a');
+            a.href = brochure.fileData;
+            a.download = brochure.fileName || (brochure.name + '.pdf');
+            a.click();
+            this.notification.add(`Downloading "${brochure.name}"...`, { type: "info" });
+        } else {
+            // Share via WhatsApp
+            const encoded = encodeURIComponent(msg);
+            window.open(`https://wa.me/?text=${encoded}`, '_blank');
+        }
+    }
+
+    downloadBrochure(brochure) {
+        if (!brochure) return;
+        if (brochure.fileData) {
+            const a = document.createElement('a');
+            a.href = brochure.fileData;
+            a.download = brochure.fileName || (brochure.name + '.pdf');
+            a.click();
+        } else {
+            // Share as text via WhatsApp if no file data
+            const msg = `Brochure: *${brochure.name}* (${brochure.type})\nSize: ${brochure.fileSize}`;
+            const encoded = encodeURIComponent(msg);
+            window.open(`https://wa.me/?text=${encoded}`, '_blank');
+        }
+    }
+
+    shareAllBrochures() {
+        if (!this.state.brochures || this.state.brochures.length === 0) {
+            this.notification.add("No brochures to share", { type: "warning" });
+            return;
+        }
+        const visitName = this.state.customerSummary ? this.state.customerSummary.name : 'Customer';
+        let msg = `Hi *${visitName}*,\n\nPlease find our latest brochures:\n\n`;
+        for (const b of this.state.brochures) {
+            const typeEmoji = b.type === 'product' ? '📦' : b.type === 'promo' ? '🎉' : '📋';
+            msg += `${typeEmoji} *${b.name}* (${b.fileSize})\n`;
+        }
+        msg += `\nFor more information, contact us.`;
+        const encoded = encodeURIComponent(msg);
+        window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    }
 }
 
 TodayVisit.template = "employee_dashboard.TodayVisit";
 TodayVisit.props = {
-    employeeId: { type: Number, optional: true },
-    userId: { type: Number, optional: true },
+    employeeId:   { type: Number, optional: true },
+    userId:       { type: Number, optional: true },
+    employeeName: { type: String, optional: true },
+    isManager:    { type: Boolean, optional: true },
 };

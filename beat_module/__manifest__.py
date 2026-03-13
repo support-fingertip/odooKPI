@@ -8,6 +8,7 @@
         'security/ir.model.access.csv',
         'data/sequence_data.xml',
         'views/beat_views.xml',
+        'views/beat_analytics_views.xml',
     ],
     'installable': True,
     'application': True,
