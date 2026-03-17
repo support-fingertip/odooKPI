@@ -26,7 +26,7 @@
             <div class="mobile360-chips">
                 <t t-foreach="[['all','All'],['today','Today'],['week','This Week'],['month','This Month']]" t-as="f" t-key="f[0]">
                     <button t-attf-class="mobile360-chip {{state.filter === f[0] ? 'active' : ''}}"
-                        t-on-click="() => setFilter(f[0])"><t t-esc="f[1]"/></button>
+                        t-on-click="() => this.setFilter(f[0])"><t t-esc="f[1]"/></button>
                 </t>
             </div>
 
@@ -34,7 +34,7 @@
             <div class="mobile360-chips" style="margin-bottom:0;padding-bottom:8px;">
                 <t t-foreach="[['all','All Status'],['completed','Completed'],['in_progress','In Progress'],['planned','Planned'],['cancelled','Cancelled']]" t-as="s" t-key="s[0]">
                     <button t-attf-class="mobile360-chip {{state.statusFilter === s[0] ? 'active' : ''}}"
-                        t-on-click="() => setStatusFilter(s[0])"><t t-esc="s[1]"/></button>
+                        t-on-click="() => this.setStatusFilter(s[0])"><t t-esc="s[1]"/></button>
                 </t>
             </div>
 
@@ -54,7 +54,7 @@
 
             <!-- Visit Cards -->
             <t t-foreach="state.filtered" t-as="visit" t-key="visit.id">
-                <div class="mobile360-visit-card" t-on-click="() => openDetail(visit)">
+                <div class="mobile360-visit-card" t-on-click="() => this.openDetail(visit)">
                     <div class="mobile360-visit-card-header">
                         <div class="mobile360-visit-avatar"
                             t-attf-style="background:{{getAvatarGradient(visit.partner_id?.[1])}};">
@@ -164,7 +164,6 @@
                             </div>
 
                             <div style="padding:16px;">
-                                <!-- Beat info -->
                                 <t t-if="state.visitDetail.beat_id">
                                     <div class="mobile360-stat-row">
                                         <span class="mobile360-stat-label"><i class="fa fa-road"/> Beat</span>

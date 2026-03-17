@@ -26,7 +26,7 @@
                 <i t-attf-class="fa fa-sun-o me-1"/>
                 <t t-esc="greeting"/>
             </div>
-            <div class="mobile360-hero-name"><t t-esc="state.employee ? state.employee.name.split(' ')[0] : 'there'"/></div>
+            <div class="mobile360-hero-name"><t t-esc="employeeFirstName"/></div>
             <div class="mobile360-hero-date"><t t-esc="todayDateStr"/></div>
 
             <!-- Attendance status badge -->
@@ -47,7 +47,7 @@
         <!-- Active Visit Banner -->
         <t t-if="state.activeVisit">
             <div class="mobile360-section" style="padding-top:8px;">
-                <div class="mobile360-active-visit" t-on-click="() => navigateTo('today')">
+                <div class="mobile360-active-visit" t-on-click="() => this.navigateTo('today')">
                     <div class="m-flex m-items-center m-justify-between">
                         <div>
                             <div style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">ACTIVE VISIT</div>
@@ -71,11 +71,11 @@
         <div class="mobile360-section">
             <div class="mobile360-section-header">
                 <span class="mobile360-section-title">This Month</span>
-                <button class="mobile360-section-link" t-on-click="() => navigateTo('visits')">View All</button>
+                <button class="mobile360-section-link" t-on-click="() => this.navigateTo('visits')">View All</button>
             </div>
             <div class="mobile360-kpi-grid">
                 <!-- Visits -->
-                <div class="mobile360-kpi-card blue" t-on-click="() => navigateTo('visits')">
+                <div class="mobile360-kpi-card blue" t-on-click="() => this.navigateTo('visits')">
                     <div class="mobile360-kpi-icon m-bg-primary" style="width:36px;height:36px;border-radius:10px;">
                         <i class="fa fa-map-marker"/>
                     </div>
@@ -87,7 +87,7 @@
                 </div>
 
                 <!-- Beat progress -->
-                <div class="mobile360-kpi-card green" t-on-click="() => navigateTo('today')">
+                <div class="mobile360-kpi-card green" t-on-click="() => this.navigateTo('today')">
                     <div class="mobile360-kpi-icon m-bg-success" style="width:36px;height:36px;border-radius:10px;">
                         <i class="fa fa-road"/>
                     </div>
@@ -101,7 +101,7 @@
                 </div>
 
                 <!-- Orders -->
-                <div class="mobile360-kpi-card orange" t-on-click="() => navigateTo('orders')">
+                <div class="mobile360-kpi-card orange" t-on-click="() => this.navigateTo('orders')">
                     <div class="mobile360-kpi-icon m-bg-warning" style="width:36px;height:36px;border-radius:10px;">
                         <i class="fa fa-shopping-cart"/>
                     </div>
@@ -111,7 +111,7 @@
                 </div>
 
                 <!-- Sales -->
-                <div class="mobile360-kpi-card purple" t-on-click="() => navigateTo('orders')">
+                <div class="mobile360-kpi-card purple" t-on-click="() => this.navigateTo('orders')">
                     <div class="mobile360-kpi-icon m-bg-purple" style="width:36px;height:36px;border-radius:10px;">
                         <i class="fa fa-rupee"/>
                     </div>
@@ -144,19 +144,19 @@
         <div class="mobile360-section">
             <div class="mobile360-section-title" style="margin-bottom:14px;">Quick Actions</div>
             <div class="mobile360-quick-actions">
-                <button class="mobile360-quick-btn" t-on-click="() => navigateTo('today')">
+                <button class="mobile360-quick-btn" t-on-click="() => this.navigateTo('today')">
                     <div class="mobile360-quick-icon m-bg-success"><i class="fa fa-play-circle"/></div>
                     <span class="mobile360-quick-label">Start Day</span>
                 </button>
-                <button class="mobile360-quick-btn" t-on-click="() => navigateTo('today')">
+                <button class="mobile360-quick-btn" t-on-click="() => this.navigateTo('today')">
                     <div class="mobile360-quick-icon m-bg-primary"><i class="fa fa-map-marker"/></div>
                     <span class="mobile360-quick-label">New Visit</span>
                 </button>
-                <button class="mobile360-quick-btn" t-on-click="() => navigateTo('orders')">
+                <button class="mobile360-quick-btn" t-on-click="() => this.navigateTo('orders')">
                     <div class="mobile360-quick-icon m-bg-warning"><i class="fa fa-shopping-cart"/></div>
                     <span class="mobile360-quick-label">New Order</span>
                 </button>
-                <button class="mobile360-quick-btn" t-on-click="() => navigateTo('profile')">
+                <button class="mobile360-quick-btn" t-on-click="() => this.navigateTo('profile')">
                     <div class="mobile360-quick-icon m-bg-purple"><i class="fa fa-money"/></div>
                     <span class="mobile360-quick-label">Collect</span>
                 </button>
@@ -167,7 +167,7 @@
         <t t-if="state.currentBeat">
             <div class="mobile360-section">
                 <div class="mobile360-section-title" style="margin-bottom:12px;">Today's Beat</div>
-                <div class="mobile360-beat-card" t-on-click="() => navigateTo('today')">
+                <div class="mobile360-beat-card" t-on-click="() => this.navigateTo('today')">
                     <div class="mobile360-beat-header">
                         <div class="mobile360-beat-name"><t t-esc="state.currentBeat.name"/></div>
                         <div class="mobile360-beat-meta">
@@ -205,22 +205,22 @@
         <!-- Team KPI Grid -->
         <div class="mobile360-section" style="padding-top:8px;">
             <div class="mobile360-kpi-grid">
-                <div class="mobile360-kpi-card blue" t-on-click="() => navigateTo('team')">
+                <div class="mobile360-kpi-card blue" t-on-click="() => this.navigateTo('team')">
                     <div class="mobile360-kpi-icon m-bg-primary" style="width:36px;height:36px;border-radius:10px;"><i class="fa fa-users"/></div>
                     <div class="mobile360-kpi-value"><t t-esc="state.teamStats.active"/>/<t t-esc="state.teamStats.total"/></div>
                     <div class="mobile360-kpi-label">Field Active</div>
                 </div>
-                <div class="mobile360-kpi-card green" t-on-click="() => navigateTo('visits')">
+                <div class="mobile360-kpi-card green" t-on-click="() => this.navigateTo('visits')">
                     <div class="mobile360-kpi-icon m-bg-success" style="width:36px;height:36px;border-radius:10px;"><i class="fa fa-check-circle"/></div>
                     <div class="mobile360-kpi-value"><t t-esc="state.teamStats.visits_today"/></div>
                     <div class="mobile360-kpi-label">Today's Visits</div>
                 </div>
-                <div class="mobile360-kpi-card orange" t-on-click="() => navigateTo('orders')">
+                <div class="mobile360-kpi-card orange" t-on-click="() => this.navigateTo('orders')">
                     <div class="mobile360-kpi-icon m-bg-warning" style="width:36px;height:36px;border-radius:10px;"><i class="fa fa-shopping-cart"/></div>
                     <div class="mobile360-kpi-value"><t t-esc="state.teamStats.orders_today"/></div>
                     <div class="mobile360-kpi-label">Orders Today</div>
                 </div>
-                <div class="mobile360-kpi-card purple" t-on-click="() => navigateTo('team')">
+                <div class="mobile360-kpi-card purple" t-on-click="() => this.navigateTo('team')">
                     <div class="mobile360-kpi-icon m-bg-purple" style="width:36px;height:36px;border-radius:10px;"><i class="fa fa-rupee"/></div>
                     <div class="mobile360-kpi-value">0</div>
                     <div class="mobile360-kpi-label">Revenue</div>
@@ -233,7 +233,7 @@
             <div class="mobile360-section">
                 <div class="mobile360-section-header">
                     <span class="mobile360-section-title">Top Performers Today</span>
-                    <button class="mobile360-section-link" t-on-click="() => navigateTo('team')">View Team</button>
+                    <button class="mobile360-section-link" t-on-click="() => this.navigateTo('team')">View Team</button>
                 </div>
                 <div class="mobile360-list">
                     <t t-foreach="state.topPerformers" t-as="emp" t-key="emp.id">
@@ -258,19 +258,19 @@
         <div class="mobile360-section">
             <div class="mobile360-section-title" style="margin-bottom:14px;">Quick Actions</div>
             <div class="mobile360-quick-actions">
-                <button class="mobile360-quick-btn" t-on-click="() => navigateTo('team')">
+                <button class="mobile360-quick-btn" t-on-click="() => this.navigateTo('team')">
                     <div class="mobile360-quick-icon m-bg-primary"><i class="fa fa-users"/></div>
                     <span class="mobile360-quick-label">View Team</span>
                 </button>
-                <button class="mobile360-quick-btn" t-on-click="() => navigateTo('visits')">
+                <button class="mobile360-quick-btn" t-on-click="() => this.navigateTo('visits')">
                     <div class="mobile360-quick-icon m-bg-success"><i class="fa fa-map-marker"/></div>
                     <span class="mobile360-quick-label">All Visits</span>
                 </button>
-                <button class="mobile360-quick-btn" t-on-click="() => navigateTo('orders')">
+                <button class="mobile360-quick-btn" t-on-click="() => this.navigateTo('orders')">
                     <div class="mobile360-quick-icon m-bg-warning"><i class="fa fa-bar-chart"/></div>
                     <span class="mobile360-quick-label">Analytics</span>
                 </button>
-                <button class="mobile360-quick-btn" t-on-click="() => navigateTo('profile')">
+                <button class="mobile360-quick-btn" t-on-click="() => this.navigateTo('profile')">
                     <div class="mobile360-quick-icon m-bg-purple"><i class="fa fa-cog"/></div>
                     <span class="mobile360-quick-label">Settings</span>
                 </button>

@@ -60,6 +60,7 @@
                 <div t-if="state.activeScreen === 'home'" class="mobile360-screen">
                     <MobileHome
                         employeeId="state.employeeId"
+                        employeeName="state.employeeName"
                         isManager="state.isManager"
                         employees="state.employees"
                         onNavigate.bind="onNavigate"
@@ -106,7 +107,7 @@
                 <t t-foreach="navItems" t-as="nav" t-key="nav.id">
                     <button
                         t-attf-class="mobile360-nav-item {{state.activeScreen === nav.id ? 'active' : ''}}"
-                        t-on-click="() => navigate(nav.id)">
+                        t-on-click="() => this.navigate(nav.id)">
                         <i t-attf-class="fa {{nav.icon}} mobile360-nav-icon"/>
                         <span class="mobile360-nav-label"><t t-esc="nav.label"/></span>
                         <t t-if="getBadge(nav.id)">

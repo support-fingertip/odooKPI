@@ -29,7 +29,7 @@
     <menuitem id="menu_emp360_manager_dashboard"
               name="Dashboard"
               parent="menu_emp360_root"
-              action="action_employee_component"
+              action="employee_dashboard.action_employee_component"
               sequence="10"
               groups="employee_dashboard.group_employee_dashboard_manager"/>
 

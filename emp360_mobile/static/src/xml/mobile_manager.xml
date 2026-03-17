@@ -48,11 +48,11 @@
 
             <!-- Filter chips -->
             <div class="mobile360-chips" style="margin-bottom:14px;">
-                <button t-attf-class="mobile360-chip {{state.filter === 'all' ? 'active' : ''}}" t-on-click="() => setFilter('all')">All</button>
-                <button t-attf-class="mobile360-chip {{state.filter === 'active' ? 'active' : ''}}" t-on-click="() => setFilter('active')">
+                <button t-attf-class="mobile360-chip {{state.filter === 'all' ? 'active' : ''}}" t-on-click="() => this.setFilter('all')">All</button>
+                <button t-attf-class="mobile360-chip {{state.filter === 'active' ? 'active' : ''}}" t-on-click="() => this.setFilter('active')">
                     <span style="width:8px;height:8px;border-radius:50%;background:#06d6a0;display:inline-block;margin-right:4px;"/>Checked In
                 </button>
-                <button t-attf-class="mobile360-chip {{state.filter === 'inactive' ? 'active' : ''}}" t-on-click="() => setFilter('inactive')">Not Active</button>
+                <button t-attf-class="mobile360-chip {{state.filter === 'inactive' ? 'active' : ''}}" t-on-click="() => this.setFilter('inactive')">Not Active</button>
             </div>
 
             <!-- Empty -->
@@ -66,7 +66,7 @@
 
             <!-- Employee cards -->
             <t t-foreach="state.filtered" t-as="emp" t-key="emp.id">
-                <div class="mobile360-emp-card" t-on-click="() => openEmpDetail(emp)">
+                <div class="mobile360-emp-card" t-on-click="() => this.openEmpDetail(emp)">
                     <div class="mobile360-emp-card-header">
                         <div class="mobile360-emp-avatar" t-attf-style="background:{{getAvatarGradient(emp.name)}};">
                             <t t-esc="getInitials(emp.name)"/>
@@ -74,7 +74,6 @@
                         <div style="flex:1;min-width:0;">
                             <div class="mobile360-emp-name"><t t-esc="emp.name"/></div>
                             <div class="mobile360-emp-role"><t t-esc="emp.job_title or emp.department_name or '—'"/></div>
-                            <!-- Beat status -->
                             <t t-if="state.empStats[emp.id]">
                                 <div style="margin-top:6px;">
                                     <t t-if="state.empStats[emp.id].active_visit">
@@ -105,7 +104,6 @@
                         </div>
                     </div>
 
-                    <!-- Mini stats -->
                     <div class="mobile360-emp-stats">
                         <div class="mobile360-emp-stat">
                             <div class="mobile360-emp-stat-val"><t t-esc="state.empStats[emp.id]?.visits_done or 0"/></div>
@@ -144,7 +142,6 @@
 
                     <t t-elif="state.empDetail">
                         <div style="padding:0;">
-                            <!-- Profile header -->
                             <div style="background:linear-gradient(135deg,#4361ee,#3a0ca3);padding:24px 20px;text-align:center;color:#fff;">
                                 <div style="width:64px;height:64px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;margin:0 auto 12px;box-shadow:0 8px 24px rgba(0,0,0,0.25);"
                                     t-attf-style="background:{{getAvatarGradient(state.empDetail.name)}};width:64px;height:64px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;margin:0 auto 12px;box-shadow:0 8px 24px rgba(0,0,0,0.25);">
@@ -167,7 +164,6 @@
                                 </t>
                             </div>
 
-                            <!-- Contact info -->
                             <div style="padding:16px;">
                                 <t t-if="state.empDetail.work_phone">
                                     <div class="mobile360-stat-row">
@@ -182,7 +178,6 @@
                                     </div>
                                 </t>
 
-                                <!-- This Month stats -->
                                 <div style="font-size:13px;font-weight:700;color:#0f172a;margin:16px 0 10px;">This Month</div>
                                 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;">
                                     <div style="background:#f0f4f8;border-radius:12px;padding:12px;text-align:center;">
@@ -203,7 +198,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Today visits -->
                                 <t t-if="state.empDetail.todayVisits and state.empDetail.todayVisits.length">
                                     <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:10px;">Today's Visits</div>
                                     <t t-foreach="state.empDetail.todayVisits" t-as="v" t-key="v.id">

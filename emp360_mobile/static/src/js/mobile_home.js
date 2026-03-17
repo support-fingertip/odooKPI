@@ -9,10 +9,20 @@ import { useService } from "@web/core/utils/hooks";
 
 export class MobileHome extends Component {
     static template = "employee_mobile.MobileHome";
+    static props = {
+        employeeId: { type: [Number, { value: false }], optional: true },
+        employeeName: { type: [String, { value: "" }], optional: true },
+        isManager: { type: Boolean, optional: true },
+        employees: { type: Array, optional: true },
+        onNavigate: { type: Function, optional: true },
+    };
 
     setup() {
         this.orm          = useService("orm");
         this.notification = useService("notification");
+
+        // ── Bind methods that are called from template ───────────────────────
+        this.navigateTo = this.navigateTo.bind(this);
 
         this.state = useState({
             loading:     true,
@@ -272,7 +282,9 @@ export class MobileHome extends Component {
     }
 
     navigateTo(screen) {
-        this.props.onNavigate(screen);
+        if (this.props.onNavigate) {
+            this.props.onNavigate(screen);
+        }
     }
 
     get greeting() {
@@ -280,6 +292,11 @@ export class MobileHome extends Component {
         if (h < 12) return "Good Morning";
         if (h < 17) return "Good Afternoon";
         return "Good Evening";
+    }
+
+    get employeeFirstName() {
+        const name = this.props.employeeName || "";
+        return name.split(" ")[0] || "there";
     }
 
     getInitials(name) {

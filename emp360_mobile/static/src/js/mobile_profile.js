@@ -9,16 +9,23 @@ import { useService } from "@web/core/utils/hooks";
 
 export class MobileProfile extends Component {
     static template = "employee_mobile.MobileProfile";
+    static props = {
+        employeeId: { type: [Number, { value: false }], optional: true },
+        isManager: { type: Boolean, optional: true },
+    };
 
     setup() {
         this.orm          = useService("orm");
         this.notification = useService("notification");
         this.action       = useService("action");
 
+        // ── Bind all methods used in template ────────────────────────────────
+        this.setSection = this.setSection.bind(this);
+
         this.state = useState({
             loading:       true,
             employee:      null,
-            activeSection: "profile",  // profile | attendance | kpi | collections | tickets | pjp
+            activeSection: "profile",
             attendance:    [],
             attLoading:    false,
             kpiTargets:    [],
@@ -229,7 +236,6 @@ export class MobileProfile extends Component {
         return "#ef233c";
     }
 
-    // ── Navigation to Odoo views ─────────────────────────────────────────────
     openOdooView(model, domain, viewType = "list") {
         this.action.doAction({
             type: "ir.actions.act_window",

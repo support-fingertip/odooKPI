@@ -9,16 +9,25 @@ import { useService } from "@web/core/utils/hooks";
 
 export class MobileManager extends Component {
     static template = "employee_mobile.MobileManager";
+    static props = {
+        employeeId: { type: [Number, { value: false }], optional: true },
+    };
 
     setup() {
         this.orm          = useService("orm");
         this.notification = useService("notification");
 
+        // ── Bind all methods used in template ────────────────────────────────
+        this.setFilter      = this.setFilter.bind(this);
+        this.onSearchInput  = this.onSearchInput.bind(this);
+        this.openEmpDetail  = this.openEmpDetail.bind(this);
+        this.closeEmpDetail = this.closeEmpDetail.bind(this);
+
         this.state = useState({
             loading:   true,
             employees: [],
-            empStats:  {},       // empId -> stats object
-            filter:    "all",    // all | active | inactive
+            empStats:  {},
+            filter:    "all",
             search:    "",
             filtered:  [],
             selectedEmpId:   null,
@@ -55,7 +64,6 @@ export class MobileManager extends Component {
                 return;
             }
 
-            // Parallel load: attendance, beats, visits
             const [attRows, beatRows, visitRows] = await Promise.all([
                 this.orm.searchRead(
                     "hr.attendance",
@@ -77,7 +85,6 @@ export class MobileManager extends Component {
                 ),
             ]);
 
-            // Build per-employee stats
             const stats = {};
             for (const emp of employees) {
                 const id = emp.id;
@@ -101,7 +108,6 @@ export class MobileManager extends Component {
             }
             this.state.empStats = stats;
 
-            // Team summary
             const allAtt    = Object.values(stats).filter(s => s.checked_in).length;
             const allBeats  = Object.values(stats).filter(s => s.beat_status === "in_progress").length;
             const allVisits = Object.values(stats).reduce((s, e) => s + e.visits_done, 0);

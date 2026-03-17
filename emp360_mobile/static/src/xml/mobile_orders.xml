@@ -44,7 +44,7 @@
             <div class="mobile360-chips">
                 <t t-foreach="[['today','Today'],['week','Week'],['month','Month'],['all','All']]" t-as="f" t-key="f[0]">
                     <button t-attf-class="mobile360-chip {{state.filter === f[0] ? 'active' : ''}}"
-                        t-on-click="() => setFilter(f[0])"><t t-esc="f[1]"/></button>
+                        t-on-click="() => this.setFilter(f[0])"><t t-esc="f[1]"/></button>
                 </t>
             </div>
 
@@ -52,7 +52,7 @@
             <div class="mobile360-chips" style="margin-bottom:14px;">
                 <t t-foreach="[['all','All'],['sale','Confirmed'],['draft','Draft'],['done','Done'],['cancel','Cancelled']]" t-as="s" t-key="s[0]">
                     <button t-attf-class="mobile360-chip {{state.statusFilter === s[0] ? 'active' : ''}}"
-                        t-on-click="() => setStatusFilter(s[0])"><t t-esc="s[1]"/></button>
+                        t-on-click="() => this.setStatusFilter(s[0])"><t t-esc="s[1]"/></button>
                 </t>
             </div>
 
@@ -66,7 +66,7 @@
             </t>
 
             <t t-foreach="state.filtered" t-as="order" t-key="order.id">
-                <div class="mobile360-order-card" t-on-click="() => openOrderDetail(order)">
+                <div class="mobile360-order-card" t-on-click="() => this.openOrderDetail(order)">
                     <div class="mobile360-order-header">
                         <div>
                             <div class="mobile360-order-number"><t t-esc="order.name"/></div>
