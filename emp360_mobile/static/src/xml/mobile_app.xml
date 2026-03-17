@@ -2,6 +2,39 @@
 <templates xml:space="preserve">
 
 <!-- ============================================================
+     EMPLOYEE 360 — SCREEN ERROR BOUNDARY
+     Catches OWL render crashes and shows cache-clear recovery UI
+     ============================================================ -->
+
+<t t-name="employee_mobile.ScreenErrorBoundary">
+    <t t-if="state.error">
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:32px 24px;text-align:center;">
+            <div style="width:72px;height:72px;border-radius:20px;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+                <i class="fa fa-exclamation-triangle" style="font-size:28px;color:#ef233c;"/>
+            </div>
+            <div style="font-size:19px;font-weight:800;color:#0f172a;letter-spacing:-0.3px;">Screen Failed to Load</div>
+            <div style="font-size:14px;color:#64748b;margin:8px 0 8px;line-height:1.5;">
+                The app asset cache is outdated. Clear it and the app will reload with the latest version.
+            </div>
+            <div style="font-size:12px;color:#94a3b8;background:#f8fafc;border-radius:8px;padding:8px 12px;margin-bottom:24px;font-family:monospace;max-width:300px;word-break:break-all;">
+                <t t-esc="state.errorMsg"/>
+            </div>
+            <a href="/emp360/clear-assets"
+               style="display:block;background:linear-gradient(135deg,#4361ee,#3a0ca3);color:#fff;padding:14px 32px;border-radius:14px;font-weight:700;text-decoration:none;font-size:15px;box-shadow:0 4px 16px rgba(67,97,238,0.35);">
+                <i class="fa fa-refresh" style="margin-right:8px;"/>
+                Clear Cache &amp; Reload
+            </a>
+            <div style="margin-top:16px;font-size:12px;color:#94a3b8;">
+                Or navigate to <strong>/emp360/clear-assets</strong> in your browser
+            </div>
+        </div>
+    </t>
+    <t t-else="">
+        <t t-slot="default"/>
+    </t>
+</t>
+
+<!-- ============================================================
      EMPLOYEE 360 — MOBILE APP SHELL  v2.0
      Status bar · Top bar · Content · Bottom nav
      ============================================================ -->
@@ -76,15 +109,27 @@
             </div>
 
             <div t-if="state.activeScreen === 'visits'" class="mobile360-screen">
-                <MobileVisits employeeId="state.employeeId" isManager="state.isManager"/>
+                <ScreenErrorBoundary>
+                    <t t-set-slot="default">
+                        <MobileVisits employeeId="state.employeeId" isManager="state.isManager"/>
+                    </t>
+                </ScreenErrorBoundary>
             </div>
 
             <div t-if="state.activeScreen === 'orders'" class="mobile360-screen">
-                <MobileOrders employeeId="state.employeeId" isManager="state.isManager"/>
+                <ScreenErrorBoundary>
+                    <t t-set-slot="default">
+                        <MobileOrders employeeId="state.employeeId" isManager="state.isManager"/>
+                    </t>
+                </ScreenErrorBoundary>
             </div>
 
             <div t-if="state.activeScreen === 'team' and state.isManager" class="mobile360-screen">
-                <MobileManager employeeId="state.employeeId"/>
+                <ScreenErrorBoundary>
+                    <t t-set-slot="default">
+                        <MobileManager employeeId="state.employeeId"/>
+                    </t>
+                </ScreenErrorBoundary>
             </div>
 
             <div t-if="state.activeScreen === 'profile'" class="mobile360-screen">
