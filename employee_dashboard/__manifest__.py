@@ -7,26 +7,32 @@
     "license": "LGPL-3",
     "depends": ["hr", "hr_timesheet", "beat_module", "sale_management", "account"],
     "data": [
-        'security/security.xml',
-        'data/visit_sequence.xml',
-        'security/ir.model.access.csv',
-        'views/hr_employee.xml',
-        'views/hr_attendance.xml',
-        'views/visit_views.xml',
-        'views/pjp_model_views.xml',
-        "views/main_menu.xml",
-        'views/sale_order.xml',
-        'views/visit_stock_views.xml',
-        'views/visit_collection_views.xml',
-        'views/visit_ticket_views.xml',
-        'views/visit_competitor_views.xml',
-        'views/visit_checklist_views.xml',
-        'views/visit_geofence_views.xml',
-        "views/employee_client_action_views.xml",
-        "views/executive_beat_report_views.xml",
-        "views/dashboard_reports.xml",
-        "views/dashboard_report_view.xml",
-    ],
+    'security/security.xml',
+    'data/visit_sequence.xml',
+    'security/ir.model.access.csv',
+
+    'views/hr_employee.xml',
+    'views/hr_attendance.xml',
+    'views/visit_views.xml',
+    'views/pjp_model_views.xml',
+
+    # ACTIONS FIRST
+    "views/employee_client_action_views.xml",
+    "views/executive_beat_report_views.xml",
+    "views/dashboard_reports.xml",
+    "views/dashboard_report_view.xml",
+
+    # MENUS LAST
+    "views/main_menu.xml",
+
+    'views/sale_order.xml',
+    'views/visit_stock_views.xml',
+    'views/visit_collection_views.xml',
+    'views/visit_ticket_views.xml',
+    'views/visit_competitor_views.xml',
+    'views/visit_checklist_views.xml',
+    'views/visit_geofence_views.xml',
+],
     "assets": {
         "web.assets_backend": [
             "employee_dashboard/static/lib/chart.min.js",
