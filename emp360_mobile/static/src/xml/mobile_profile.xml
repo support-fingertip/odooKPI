@@ -169,11 +169,44 @@
                         <div class="mobile360-settings-icon m-bg-purple"><i class="fa fa-info-circle"/></div>
                         <div style="flex:1;">
                             <div class="mobile360-settings-label">About Employee 360</div>
-                            <div class="mobile360-settings-sub">v2.0 · Odoo 18</div>
+                            <div class="mobile360-settings-sub">v18.0.1.0.4 · Odoo 18</div>
                         </div>
                         <i class="fa fa-chevron-right mobile360-settings-arrow"/>
                     </div>
                 </div>
+
+                <!-- Admin Tools (manager/admin only) -->
+                <t t-if="isManager">
+                    <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin:20px 0 12px;">
+                        Admin Tools
+                    </div>
+                    <div class="mobile360-list">
+                        <a href="/emp360/clear-assets" style="text-decoration:none;">
+                            <div class="mobile360-settings-row" style="cursor:pointer;">
+                                <div class="mobile360-settings-icon" style="background:linear-gradient(135deg,#ef233c,#b5179e);">
+                                    <i class="fa fa-trash"/>
+                                </div>
+                                <div style="flex:1;">
+                                    <div class="mobile360-settings-label">Clear Asset Cache</div>
+                                    <div class="mobile360-settings-sub">Force Odoo to recompile JS/CSS bundles</div>
+                                </div>
+                                <i class="fa fa-external-link mobile360-settings-arrow"/>
+                            </div>
+                        </a>
+                        <a href="/web?debug=assets" style="text-decoration:none;">
+                            <div class="mobile360-settings-row" style="cursor:pointer;">
+                                <div class="mobile360-settings-icon" style="background:linear-gradient(135deg,#f77f00,#d62828);">
+                                    <i class="fa fa-bug"/>
+                                </div>
+                                <div style="flex:1;">
+                                    <div class="mobile360-settings-label">Debug Mode (Assets)</div>
+                                    <div class="mobile360-settings-sub">Open Odoo with asset debug active</div>
+                                </div>
+                                <i class="fa fa-external-link mobile360-settings-arrow"/>
+                            </div>
+                        </a>
+                    </div>
+                </t>
             </t>
 
             <!-- ════════════════════════════════════════════
