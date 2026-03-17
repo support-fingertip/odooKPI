@@ -35,13 +35,19 @@ export class MobileHome extends Component {
                 beats_today:     0,
                 beats_completed: 0,
             },
-            attendance: { checkedIn: false, checkIn: null, checkOut: null, workedHours: null },
+            attendance: {
+                checkedIn: false, checkIn: null, checkOut: null, workedHours: null,
+                checkinCity: null, lat: null, lng: null,
+            },
             activeVisit:  null,
             currentBeat:  null,
             recentVisits: [],
+            // Location
+            locationInfo: { lat: null, lng: null, accuracy: null, loading: false, error: null, address: null },
             // Manager
             teamStats: { total: 0, active: 0, visits_today: 0, orders_today: 0, sales_today: 0 },
             topPerformers: [],
+            teamLocations: [],
         });
 
         onWillStart(async () => { await this._load(); });
@@ -55,8 +61,32 @@ export class MobileHome extends Component {
         try {
             if (this.isManager) await this._loadManagerData();
             else                await this._loadFieldUserData();
+            // Request GPS non-blocking after main data is ready
+            this._loadCurrentLocation();
         } catch (e) { console.error("[MobileHome]", e); }
         finally     { this.state.loading = false; }
+    }
+
+    _loadCurrentLocation() {
+        if (!navigator.geolocation) {
+            this.state.locationInfo.error = "GPS not supported";
+            return;
+        }
+        this.state.locationInfo.loading = true;
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                this.state.locationInfo.lat      = pos.coords.latitude.toFixed(6);
+                this.state.locationInfo.lng      = pos.coords.longitude.toFixed(6);
+                this.state.locationInfo.accuracy = Math.round(pos.coords.accuracy);
+                this.state.locationInfo.loading  = false;
+                this.state.locationInfo.error    = null;
+            },
+            (err) => {
+                this.state.locationInfo.error   = "Location unavailable";
+                this.state.locationInfo.loading = false;
+            },
+            { timeout: 10000, enableHighAccuracy: true, maximumAge: 60000 }
+        );
     }
 
     async _loadFieldUserData() {
@@ -74,6 +104,9 @@ export class MobileHome extends Component {
                     checkIn:     att.check_in,
                     checkOut:    att.check_out || null,
                     workedHours: att.worked_hours ? this._fmtHours(att.worked_hours) : null,
+                    checkinCity: att.checkin_city || null,
+                    lat:         att.checkin_latitude || null,
+                    lng:         att.checkin_longitude || null,
                 };
             }
         } catch (e) { console.warn("att:", e); }
@@ -177,6 +210,12 @@ export class MobileHome extends Component {
                 if (v.status === "completed") byEmp[eid].visits++;
             }
             this.state.topPerformers = Object.values(byEmp).sort((a, b) => b.visits - a.visits).slice(0, 5);
+
+            // Team locations
+            try {
+                this.state.teamLocations = await this.orm.call("emp360.mobile", "get_team_locations", []);
+            } catch (e) { console.warn("[MobileHome] team locations:", e); }
+
         } catch (e) { console.error("[MobileHome] manager:", e); }
     }
 
@@ -225,6 +264,21 @@ export class MobileHome extends Component {
     get greetingIcon() {
         const h = new Date().getHours();
         return h < 12 ? "fa-sun-o" : h < 17 ? "fa-cloud" : "fa-moon-o";
+    }
+
+    get mapsUrl() {
+        const { lat, lng } = this.state.locationInfo;
+        if (!lat || !lng) return "#";
+        return `https://maps.google.com/?q=${lat},${lng}`;
+    }
+
+    teamMemberMapsUrl(lat, lng) {
+        if (!lat || !lng) return "#";
+        return `https://maps.google.com/?q=${lat},${lng}`;
+    }
+
+    get teamLocationsWithGps() {
+        return (this.state.teamLocations || []).filter(l => l.latitude && l.longitude);
     }
 
     get employeeFirstName() {

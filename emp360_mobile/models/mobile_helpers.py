@@ -65,12 +65,73 @@ class MobileAppHelpers(models.AbstractModel):
         ], order="check_in desc", limit=1)
         if not att:
             return False
-        return {
-            "id":           att.id,
-            "check_in":     fields.Datetime.to_string(att.check_in),
-            "check_out":    fields.Datetime.to_string(att.check_out) if att.check_out else False,
-            "worked_hours": att.worked_hours or 0,
+        result = {
+            "id":                att.id,
+            "check_in":          fields.Datetime.to_string(att.check_in),
+            "check_out":         fields.Datetime.to_string(att.check_out) if att.check_out else False,
+            "worked_hours":      att.worked_hours or 0,
+            "checkin_latitude":  getattr(att, "checkin_latitude", False) or False,
+            "checkin_longitude": getattr(att, "checkin_longitude", False) or False,
+            "checkin_city":      getattr(att, "checkin_city", False) or False,
+            "checkin_state":     getattr(att, "checkin_state", False) or False,
         }
+        return result
+
+    @api.model
+    def get_team_locations(self):
+        """Return today's last-known GPS location for each active employee (manager only)."""
+        user = self.env.user
+        is_manager = user.has_group(
+            "employee_dashboard.group_employee_dashboard_manager")
+        if not is_manager:
+            return []
+
+        today = fields.Date.context_today(self)
+        employees = self.env["hr.employee"].sudo().search(
+            [("active", "=", True)], order="name asc", limit=200)
+
+        result = []
+        for emp in employees:
+            # Latest active/completed visit today with GPS
+            visit = self.env["visit.model"].sudo().search([
+                ("employee_id", "=", emp.id),
+                ("actual_start_time", ">=", f"{today} 00:00:00"),
+                ("checkin_latitude", "!=", 0),
+                ("checkin_latitude", "!=", False),
+            ], order="actual_start_time desc", limit=1)
+
+            # Attendance for today
+            att = self.env["hr.attendance"].sudo().search([
+                ("employee_id", "=", emp.id),
+                ("check_in", ">=", f"{today} 00:00:00"),
+            ], order="check_in desc", limit=1)
+
+            loc = {
+                "employee_id":   emp.id,
+                "employee_name": emp.name,
+                "is_active":     bool(att and not att.check_out),
+                "latitude":      False,
+                "longitude":     False,
+                "location_type": "unknown",
+                "customer":      "",
+                "status":        "unknown",
+            }
+
+            if visit:
+                loc["latitude"]      = visit.checkin_latitude
+                loc["longitude"]     = visit.checkin_longitude
+                loc["location_type"] = "visit"
+                loc["customer"]      = visit.partner_id.name if visit.partner_id else ""
+                loc["status"]        = visit.status
+            elif att and getattr(att, "checkin_latitude", False):
+                loc["latitude"]      = att.checkin_latitude
+                loc["longitude"]     = att.checkin_longitude
+                loc["location_type"] = "checkin"
+                loc["status"]        = "checked_in"
+
+            result.append(loc)
+
+        return result
 
     @api.model
     def start_day(self, employee_id):

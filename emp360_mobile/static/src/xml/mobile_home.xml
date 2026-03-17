@@ -157,6 +157,87 @@
             </div>
         </div>
 
+        <!-- ── My Location Card ──────────────────────────────────────── -->
+        <div class="mobile360-section" style="margin-top:4px;">
+            <div class="mobile360-section-header">
+                <span class="mobile360-section-title">
+                    <i class="fa fa-map-marker" style="color:#4361ee;margin-right:6px;"/>My Location
+                </span>
+                <t t-if="state.locationInfo.lat">
+                    <a t-att-href="mapsUrl" target="_blank" class="mobile360-section-link">Open Maps →</a>
+                </t>
+            </div>
+
+            <!-- GPS acquired -->
+            <t t-if="state.locationInfo.lat">
+                <div class="mobile360-location-card">
+                    <div class="mobile360-location-icon">
+                        <i class="fa fa-crosshairs"/>
+                    </div>
+                    <div class="mobile360-location-info">
+                        <div class="mobile360-location-coords">
+                            <t t-esc="state.locationInfo.lat"/>°,
+                            <t t-esc="state.locationInfo.lng"/>°
+                        </div>
+                        <div class="mobile360-location-sub">
+                            <i class="fa fa-dot-circle-o" style="color:#06d6a0;margin-right:3px;"/>
+                            Accuracy ±<t t-esc="state.locationInfo.accuracy"/>m
+                            <t t-if="state.attendance.checkinCity">
+                                <span style="margin:0 5px;opacity:0.4;">·</span>
+                                <i class="fa fa-building-o" style="margin-right:3px;"/>
+                                <t t-esc="state.attendance.checkinCity"/>
+                            </t>
+                        </div>
+                    </div>
+                    <a t-att-href="mapsUrl" target="_blank" class="mobile360-location-btn">
+                        <i class="fa fa-external-link"/>
+                    </a>
+                </div>
+            </t>
+
+            <!-- GPS loading -->
+            <t t-elif="state.locationInfo.loading">
+                <div class="mobile360-location-card mobile360-location-card--loading">
+                    <div class="mobile360-location-icon" style="background:linear-gradient(135deg,#64748b,#94a3b8);">
+                        <i class="fa fa-spinner fa-spin"/>
+                    </div>
+                    <div class="mobile360-location-info">
+                        <div class="mobile360-location-coords" style="color:rgba(255,255,255,0.6);">Acquiring GPS…</div>
+                        <div class="mobile360-location-sub">Please wait</div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- GPS error / denied -->
+            <t t-elif="state.locationInfo.error">
+                <div class="mobile360-location-card mobile360-location-card--error">
+                    <div class="mobile360-location-icon" style="background:linear-gradient(135deg,#ef233c,#d62828);">
+                        <i class="fa fa-exclamation-triangle"/>
+                    </div>
+                    <div class="mobile360-location-info">
+                        <div class="mobile360-location-coords" style="color:rgba(255,255,255,0.85);">
+                            <t t-esc="state.locationInfo.error"/>
+                        </div>
+                        <div class="mobile360-location-sub">Enable location in browser settings</div>
+                    </div>
+                    <button class="mobile360-location-btn" t-on-click="_loadCurrentLocation"
+                        style="background:rgba(255,255,255,0.12);">
+                        <i class="fa fa-refresh"/>
+                    </button>
+                </div>
+            </t>
+
+            <!-- Check-in location from attendance -->
+            <t t-if="state.attendance.checkedIn and state.attendance.lat and !state.locationInfo.lat">
+                <div class="mobile360-location-badge-row" style="margin-top:8px;">
+                    <i class="fa fa-sign-in" style="color:#4361ee;margin-right:6px;font-size:13px;"/>
+                    <span style="font-size:12px;color:#475569;">Checked-in at:
+                        <strong><t t-esc="state.attendance.lat"/>°, <t t-esc="state.attendance.lng"/>°</strong>
+                    </span>
+                </div>
+            </t>
+        </div>
+
         <!-- Today's Beat -->
         <t t-if="state.currentBeat">
             <div class="mobile360-section" style="margin-top:4px;">
@@ -285,6 +366,83 @@
                     <span class="mobile360-quick-label">Settings</span>
                 </button>
             </div>
+        </div>
+
+        <!-- ── Team Locations ────────────────────────────────────────── -->
+        <div class="mobile360-section" style="margin-top:4px;">
+            <div class="mobile360-section-header">
+                <span class="mobile360-section-title">
+                    <i class="fa fa-map-marker" style="color:#4361ee;margin-right:6px;"/>Team Locations
+                </span>
+                <span class="mobile360-section-link" style="cursor:default;">Today</span>
+            </div>
+
+            <t t-if="teamLocationsWithGps.length">
+                <div class="mobile360-list">
+                    <t t-foreach="teamLocationsWithGps" t-as="loc" t-key="loc.employee_id">
+                        <div class="mobile360-list-item">
+                            <!-- Avatar -->
+                            <div class="mobile360-list-icon"
+                                t-attf-style="background:{{getAvatarGradient(loc.employee_name)}};font-weight:800;font-size:13px;">
+                                <t t-esc="getInitials(loc.employee_name)"/>
+                            </div>
+
+                            <!-- Info -->
+                            <div class="mobile360-list-content">
+                                <div class="mobile360-list-title"><t t-esc="loc.employee_name"/></div>
+                                <div class="mobile360-list-sub">
+                                    <t t-if="loc.customer">
+                                        <i class="fa fa-building-o" style="margin-right:3px;"/>
+                                        <t t-esc="loc.customer"/>
+                                        <span style="margin:0 4px;opacity:0.4;">·</span>
+                                    </t>
+                                    <span style="font-family:monospace;font-size:11px;">
+                                        <t t-esc="loc.latitude.toFixed ? loc.latitude.toFixed(4) : loc.latitude"/>°,
+                                        <t t-esc="loc.longitude.toFixed ? loc.longitude.toFixed(4) : loc.longitude"/>°
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Right: status badge + map link -->
+                            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
+                                <t t-if="loc.is_active">
+                                    <span class="mobile360-badge success" style="font-size:9px;">
+                                        <span style="width:6px;height:6px;border-radius:50%;background:#06d6a0;display:inline-block;margin-right:3px;animation:m-pulse 2s ease-in-out infinite;"/>
+                                        Active
+                                    </span>
+                                </t>
+                                <t t-else="">
+                                    <span class="mobile360-badge muted" style="font-size:9px;">Off</span>
+                                </t>
+                                <a t-att-href="teamMemberMapsUrl(loc.latitude, loc.longitude)"
+                                    target="_blank" class="mobile360-location-btn-sm">
+                                    <i class="fa fa-map-marker"/>
+                                </a>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+
+            <t t-elif="!state.teamLocations.length">
+                <div class="mobile360-empty" style="padding:28px 0;">
+                    <div class="mobile360-empty-icon" style="background:linear-gradient(135deg,#4361ee,#3a0ca3);color:#fff;width:44px;height:44px;font-size:18px;">
+                        <i class="fa fa-map-o"/>
+                    </div>
+                    <div class="mobile360-empty-title" style="font-size:14px;">No GPS Data Yet</div>
+                    <div class="mobile360-empty-sub" style="font-size:12px;">Locations appear when team members check in or start a visit</div>
+                </div>
+            </t>
+
+            <t t-else="">
+                <div class="mobile360-empty" style="padding:28px 0;">
+                    <div class="mobile360-empty-icon" style="background:linear-gradient(135deg,#64748b,#94a3b8);color:#fff;width:44px;height:44px;font-size:18px;">
+                        <i class="fa fa-location-arrow"/>
+                    </div>
+                    <div class="mobile360-empty-title" style="font-size:14px;">Locations Not Shared</div>
+                    <div class="mobile360-empty-sub" style="font-size:12px;">Team members haven't shared GPS locations today</div>
+                </div>
+            </t>
         </div>
 
         <div class="m-spacer-16"/>
