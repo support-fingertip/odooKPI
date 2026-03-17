@@ -13,12 +13,13 @@
 import { registry }         from "@web/core/registry";
 import { Component, useState, onWillStart, onMounted } from "@odoo/owl";
 import { useService }       from "@web/core/utils/hooks";
-import { MobileHome }       from "./mobile_home";
-import { MobileToday }      from "./mobile_today";
-import { MobileVisits }     from "./mobile_visits";
-import { MobileOrders }     from "./mobile_orders";
-import { MobileManager }    from "./mobile_manager";
-import { MobileProfile }    from "./mobile_profile";
+import { MobileHome }           from "./mobile_home";
+import { MobileToday }          from "./mobile_today";
+import { MobileVisits }         from "./mobile_visits";
+import { MobileOrders }         from "./mobile_orders";
+import { MobileManager }        from "./mobile_manager";
+import { MobileProfile }        from "./mobile_profile";
+import { ScreenErrorBoundary }  from "./error_boundary";
 
 // ── Navigation items ─────────────────────────────────────────────
 const USER_NAV = [
@@ -58,7 +59,7 @@ const SCREEN_GRADIENTS = {
 // ── Main Mobile App Component ─────────────────────────────────────
 export class MobileApp extends Component {
     static template = "employee_mobile.MobileApp";
-    static components = { MobileHome, MobileToday, MobileVisits, MobileOrders, MobileManager, MobileProfile };
+    static components = { MobileHome, MobileToday, MobileVisits, MobileOrders, MobileManager, MobileProfile, ScreenErrorBoundary };
 
     setup() {
         this.orm          = useService("orm");

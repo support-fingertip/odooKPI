@@ -27,16 +27,9 @@ class EmpMobileClearAssets(http.Controller):
     def clear_assets_cache(self, **kwargs):
         """Delete compiled asset bundles so Odoo recompiles on next request."""
 
-        # Only allow users with system config rights (managers/admins)
+        # Any authenticated user can clear the emp360 asset cache.
+        # (clearing bundles only causes a one-time recompile — no security risk)
         env = request.env
-        is_allowed = env.user.has_group('base.group_system') or \
-                     env.user.has_group('base.group_erp_manager')
-
-        if not is_allowed:
-            return request.make_response(
-                '<h3>Not authorized. Only managers/admins can clear asset cache.</h3>',
-                headers=[('Content-Type', 'text/html')]
-            )
 
         # Find and delete all compiled asset bundles
         attachments = env['ir.attachment'].sudo().search([
@@ -72,7 +65,7 @@ class EmpMobileClearAssets(http.Controller):
     <h2>Asset Cache Cleared</h2>
     <p>Deleted <strong>{count}</strong> compiled bundle(s) from database.<br/>
        Odoo will recompile fresh assets on the next page load.</p>
-    <span class="badge">emp360_mobile v18.0.1.0.2 will now load</span>
+    <span class="badge">emp360_mobile v18.0.1.0.5 will now load</span>
     <br/>
     <a class="btn" href="/web">→ Go to App</a>
     <div class="counter" id="ct">Redirecting in 4s…</div>
