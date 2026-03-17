@@ -1,8 +1,9 @@
 /** @odoo-module **/
 /**
- * EMPLOYEE 360 — MOBILE HOME / DASHBOARD  v2.0
+ * EMPLOYEE 360 — MOBILE HOME / DASHBOARD  v3.0
  * KPI cards, beat progress, quick actions, active visit banner
  * Manager: live team overview + top performers
+ * v3: Added live GPS location display on hero
  */
 
 import { Component, useState, onWillStart } from "@odoo/owl";
@@ -39,6 +40,9 @@ export class MobileHome extends Component {
             activeVisit:  null,
             currentBeat:  null,
             recentVisits: [],
+            // GPS Location
+            gpsStatus: "idle",   // idle | requesting | granted | denied | unavailable
+            gpsCoords: "",
             // Manager
             teamStats: { total: 0, active: 0, visits_today: 0, orders_today: 0, sales_today: 0 },
             topPerformers: [],
@@ -59,8 +63,55 @@ export class MobileHome extends Component {
         finally     { this.state.loading = false; }
     }
 
+    // ── GPS Location ─────────────────────────────────────────────
+    _tryGetLocation() {
+        if (!navigator.geolocation) {
+            this.state.gpsStatus = "unavailable";
+            return;
+        }
+        this.state.gpsStatus = "requesting";
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                this.state.gpsStatus = "granted";
+                const lat = pos.coords.latitude.toFixed(4);
+                const lng = pos.coords.longitude.toFixed(4);
+                this.state.gpsCoords = `${lat}°, ${lng}°`;
+            },
+            () => { this.state.gpsStatus = "denied"; },
+            { timeout: 8000, maximumAge: 300000 }
+        );
+    }
+
+    get locationText() {
+        switch (this.state.gpsStatus) {
+            case "granted":     return this.state.gpsCoords || "Location acquired";
+            case "requesting":  return "Getting location…";
+            case "denied":      return "Location denied";
+            case "unavailable": return "GPS unavailable";
+            default:            return "Tap for location";
+        }
+    }
+
+    get locationIcon() {
+        if (this.state.gpsStatus === "granted")    return "fa-map-marker";
+        if (this.state.gpsStatus === "requesting") return "fa-spinner fa-spin";
+        return "fa-map-marker";
+    }
+
+    get locationChipClass() {
+        if (this.state.gpsStatus === "granted")    return "gps-ok";
+        if (this.state.gpsStatus === "requesting") return "gps-busy";
+        if (this.state.gpsStatus === "denied")     return "gps-off";
+        return "gps-idle";
+    }
+
+    // ── Field User Data ───────────────────────────────────────────
     async _loadFieldUserData() {
         if (!this.empId) return;
+
+        // Start GPS in background (non-blocking)
+        this._tryGetLocation();
+
         const today    = new Date().toISOString().slice(0, 10);
         const now      = new Date();
         const firstDay = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-01`;
@@ -143,6 +194,7 @@ export class MobileHome extends Component {
         } catch (e) {}
     }
 
+    // ── Manager Data ──────────────────────────────────────────────
     async _loadManagerData() {
         const today = new Date().toISOString().slice(0, 10);
         try {

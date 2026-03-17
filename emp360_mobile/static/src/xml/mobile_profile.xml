@@ -2,14 +2,14 @@
 <templates xml:space="preserve">
 
 <!-- ============================================================
-     EMPLOYEE 360 — MOBILE PROFILE / MORE SCREEN  v2.0
+     EMPLOYEE 360 — MOBILE PROFILE / MORE SCREEN  v3.0
      Profile · Attendance · KPI · Collections · Tickets
      ============================================================ -->
 
 <t t-name="employee_mobile.MobileProfile">
 
     <t t-if="state.loading">
-        <div class="mobile360-loading">
+        <div class="mobile360-loading" style="min-height:60vh;">
             <div class="mobile360-spinner"/>
             <span class="mobile360-loading-text">Loading profile…</span>
         </div>
@@ -18,67 +18,94 @@
     <t t-else="">
 
         <!-- ── Profile Hero ────────────────────────────────── -->
-        <div style="background:linear-gradient(135deg,#7209b7,#3a0ca3);padding:28px 16px 38px;text-align:center;position:relative;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#7209b7 0%,#3a0ca3 100%);padding:28px 16px 44px;text-align:center;position:relative;overflow:hidden;">
             <div class="mobile360-hero-decor"/>
+            <div class="mobile360-hero-decor-2"/>
 
-            <!-- Large avatar -->
-            <div class="mobile360-profile-avatar" style="background:linear-gradient(135deg,#4361ee,#7209b7);">
-                <t t-esc="initials"/>
+            <!-- Large avatar ring -->
+            <div style="position:relative;display:inline-block;">
+                <div style="width:88px;height:88px;border-radius:28px;background:linear-gradient(135deg,rgba(255,255,255,0.25),rgba(255,255,255,0.08));border:2px solid rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#fff;letter-spacing:-1px;margin:0 auto;backdrop-filter:blur(8px);">
+                    <t t-esc="initials"/>
+                </div>
+                <!-- Active dot -->
+                <div style="position:absolute;bottom:4px;right:4px;width:14px;height:14px;border-radius:50%;background:#06d6a0;border:2px solid #3a0ca3;"/>
             </div>
 
-            <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.4px;margin-top:4px;">
+            <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.4px;margin-top:10px;">
                 <t t-esc="state.employee?.name or 'Employee'"/>
             </div>
-            <div style="font-size:13px;color:rgba(255,255,255,0.75);margin-top:4px;">
+            <div style="font-size:13px;color:rgba(255,255,255,0.75);margin-top:4px;font-weight:600;">
                 <t t-esc="state.employee?.job_id?.[1] || '—'"/>
             </div>
             <t t-if="state.employee?.department_id">
-                <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:3px;">
-                    <i class="fa fa-sitemap" style="margin-right:4px;"/>
+                <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:4px 12px;margin-top:10px;font-size:12px;color:rgba(255,255,255,0.9);font-weight:600;backdrop-filter:blur(6px);">
+                    <i class="fa fa-sitemap" style="font-size:10px;"/>
                     <t t-esc="state.employee.department_id?.[1]"/>
                 </div>
             </t>
         </div>
 
-        <!-- ── Month Snapshot Card ─────────────────────────── -->
-        <div style="padding:0 16px;margin-top:-18px;">
-            <div style="background:#fff;border-radius:20px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,0.09);margin-bottom:20px;">
+        <!-- ── Month Snapshot ──────────────────────────────── -->
+        <div style="padding:0 16px;margin-top:-24px;">
+            <div style="background:#fff;border-radius:20px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 8px 28px rgba(67,97,238,0.12);margin-bottom:18px;">
                 <div style="display:grid;grid-template-columns:repeat(3,1fr);">
-                    <div style="padding:15px 10px;text-align:center;border-right:1px solid #f1f5f9;">
-                        <div style="font-size:24px;font-weight:900;color:#4361ee;"><t t-esc="state.monthStats.visits"/></div>
+
+                    <div style="padding:16px 10px;text-align:center;border-right:1px solid #f1f5f9;">
+                        <div style="width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#4361ee,#3a0ca3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin:0 auto 6px;">
+                            <i class="fa fa-map-marker"/>
+                        </div>
+                        <div style="font-size:22px;font-weight:900;color:#4361ee;line-height:1;"><t t-esc="state.monthStats.visits"/></div>
                         <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;">Visits</div>
                     </div>
-                    <div style="padding:15px 10px;text-align:center;border-right:1px solid #f1f5f9;">
-                        <div style="font-size:24px;font-weight:900;color:#06d6a0;"><t t-esc="state.monthStats.orders"/></div>
+
+                    <div style="padding:16px 10px;text-align:center;border-right:1px solid #f1f5f9;">
+                        <div style="width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#06d6a0,#019b72);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin:0 auto 6px;">
+                            <i class="fa fa-shopping-cart"/>
+                        </div>
+                        <div style="font-size:22px;font-weight:900;color:#06d6a0;line-height:1;"><t t-esc="state.monthStats.orders"/></div>
                         <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;">Orders</div>
                     </div>
-                    <div style="padding:15px 10px;text-align:center;">
-                        <div style="font-size:17px;font-weight:900;color:#f77f00;"><t t-esc="fmtMoney(state.monthStats.collections)"/></div>
+
+                    <div style="padding:16px 10px;text-align:center;">
+                        <div style="width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#f77f00,#d62828);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin:0 auto 6px;">
+                            <i class="fa fa-money"/>
+                        </div>
+                        <div style="font-size:15px;font-weight:900;color:#f77f00;line-height:1;"><t t-esc="fmtMoney(state.monthStats.collections)"/></div>
                         <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;">Collected</div>
                     </div>
+
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid #f1f5f9;">
-                    <div style="padding:12px 10px;text-align:center;border-right:1px solid #f1f5f9;">
-                        <div style="font-size:20px;font-weight:900;color:#7209b7;"><t t-esc="state.monthStats.attendance"/></div>
+
+                    <div style="padding:14px 10px;text-align:center;border-right:1px solid #f1f5f9;">
+                        <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#7209b7,#3a0ca3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;margin:0 auto 5px;">
+                            <i class="fa fa-calendar-check-o"/>
+                        </div>
+                        <div style="font-size:20px;font-weight:900;color:#7209b7;line-height:1;"><t t-esc="state.monthStats.attendance"/></div>
                         <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;">Days Present</div>
                     </div>
-                    <div style="padding:12px 10px;text-align:center;">
-                        <div style="font-size:20px;font-weight:900;color:#0077b6;"><t t-esc="state.monthStats.worked_hrs"/></div>
+
+                    <div style="padding:14px 10px;text-align:center;">
+                        <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#0077b6,#023e8a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;margin:0 auto 5px;">
+                            <i class="fa fa-clock-o"/>
+                        </div>
+                        <div style="font-size:20px;font-weight:900;color:#0077b6;line-height:1;"><t t-esc="state.monthStats.worked_hrs"/></div>
                         <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;">Hrs Worked</div>
                     </div>
+
                 </div>
             </div>
 
-            <!-- ── Section Tab Nav ─────────────────────────── -->
+            <!-- ── Segment Tabs ─────────────────────────── -->
             <div class="mobile360-segment" style="margin-bottom:18px;">
                 <button t-attf-class="mobile360-segment-btn {{state.activeSection === 'profile' ? 'active' : ''}}"
                     t-on-click="() => this.setSection('profile')">Profile</button>
                 <button t-attf-class="mobile360-segment-btn {{state.activeSection === 'attendance' ? 'active' : ''}}"
-                    t-on-click="() => this.setSection('attendance')">Attendance</button>
+                    t-on-click="() => this.setSection('attendance')">Attend.</button>
                 <button t-attf-class="mobile360-segment-btn {{state.activeSection === 'kpi' ? 'active' : ''}}"
                     t-on-click="() => this.setSection('kpi')">KPI</button>
                 <button t-attf-class="mobile360-segment-btn {{state.activeSection === 'collections' ? 'active' : ''}}"
-                    t-on-click="() => this.setSection('collections')">Collections</button>
+                    t-on-click="() => this.setSection('collections')">Collect.</button>
                 <button t-attf-class="mobile360-segment-btn {{state.activeSection === 'tickets' ? 'active' : ''}}"
                     t-on-click="() => this.setSection('tickets')">Tickets</button>
             </div>
@@ -87,8 +114,13 @@
                  PROFILE SECTION
                  ════════════════════════════════════════════ -->
             <t t-if="state.activeSection === 'profile'">
+
                 <t t-if="state.employee">
-                    <div class="mobile360-list">
+                    <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+                        <div style="width:3px;height:14px;border-radius:2px;background:linear-gradient(#7209b7,#3a0ca3);"/>
+                        Contact Info
+                    </div>
+                    <div class="mobile360-list" style="margin-bottom:20px;">
                         <t t-if="state.employee.work_email">
                             <div class="mobile360-list-item">
                                 <div class="mobile360-list-icon m-bg-primary"><i class="fa fa-envelope"/></div>
@@ -137,7 +169,8 @@
                     </div>
                 </t>
 
-                <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin:20px 0 12px;">
+                <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+                    <div style="width:3px;height:14px;border-radius:2px;background:linear-gradient(#4361ee,#7209b7);"/>
                     App Settings
                 </div>
                 <div class="mobile360-list">
@@ -169,7 +202,7 @@
                         <div class="mobile360-settings-icon m-bg-purple"><i class="fa fa-info-circle"/></div>
                         <div style="flex:1;">
                             <div class="mobile360-settings-label">About Employee 360</div>
-                            <div class="mobile360-settings-sub">v2.0 · Odoo 18</div>
+                            <div class="mobile360-settings-sub">v3.0 · Odoo 18</div>
                         </div>
                         <i class="fa fa-chevron-right mobile360-settings-arrow"/>
                     </div>
@@ -181,10 +214,13 @@
                  ════════════════════════════════════════════ -->
             <t t-if="state.activeSection === 'attendance'">
                 <t t-if="state.attLoading">
-                    <div class="mobile360-loading"><div class="mobile360-spinner"/></div>
+                    <div class="mobile360-loading" style="padding:48px 0;">
+                        <div class="mobile360-spinner"/>
+                        <span class="mobile360-loading-text">Loading attendance…</span>
+                    </div>
                 </t>
                 <t t-elif="!state.attendance.length">
-                    <div class="mobile360-empty" style="padding:40px 0;">
+                    <div class="mobile360-empty" style="padding:56px 0;">
                         <div class="mobile360-empty-icon" style="background:linear-gradient(135deg,#4361ee,#3a0ca3);color:#fff;">
                             <i class="fa fa-clock-o"/>
                         </div>
@@ -194,43 +230,54 @@
                 </t>
                 <t t-else="">
                     <t t-foreach="state.attendance" t-as="att" t-key="att.id">
-                        <div class="mobile360-attendance-card" style="margin-bottom:10px;">
-                            <div class="mobile360-attendance-header">
-                                <div style="width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0;"
-                                    t-attf-style="background:{{att.check_out ? 'linear-gradient(135deg,#4361ee,#3a0ca3)' : 'linear-gradient(135deg,#06d6a0,#019b72)'}};width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0;">
+                        <div class="mobile360-attendance-card" style="margin-bottom:12px;border-radius:18px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.06);border:1px solid #e2e8f0;">
+
+                            <!-- Card header row -->
+                            <div class="mobile360-attendance-header" style="padding:14px 14px 10px;">
+                                <div t-attf-style="width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0;background:{{att.check_out ? 'linear-gradient(135deg,#4361ee,#3a0ca3)' : 'linear-gradient(135deg,#06d6a0,#019b72)'}};box-shadow:0 4px 10px rgba(0,0,0,0.15);">
                                     <i t-attf-class="fa {{att.check_out ? 'fa-check-circle' : 'fa-play-circle'}}"/>
                                 </div>
-                                <div class="mobile360-attendance-info">
-                                    <div class="mobile360-attendance-status"><t t-esc="fmtDate(att.check_in)"/></div>
-                                    <div class="mobile360-attendance-time">
+                                <div class="mobile360-attendance-info" style="flex:1;padding-left:12px;">
+                                    <div style="font-size:14px;font-weight:800;color:#0f172a;">
+                                        <t t-esc="fmtDate(att.check_in)"/>
+                                    </div>
+                                    <div style="font-size:12px;color:#64748b;margin-top:2px;display:flex;align-items:center;gap:4px;">
+                                        <i class="fa fa-map-marker" style="color:#7209b7;font-size:10px;"/>
                                         <t t-esc="att.checkin_city or 'Location not recorded'"/>
                                     </div>
                                 </div>
                                 <div style="text-align:right;flex-shrink:0;">
-                                    <div style="font-size:16px;font-weight:900;color:#0f172a;">
+                                    <div style="font-size:17px;font-weight:900;color:#0f172a;">
                                         <t t-esc="fmtHours(att.worked_hours)"/>
                                     </div>
-                                    <div style="font-size:10px;color:#94a3b8;font-weight:600;margin-top:2px;">worked</div>
+                                    <div style="font-size:10px;color:#94a3b8;font-weight:700;margin-top:2px;text-transform:uppercase;letter-spacing:0.3px;">worked</div>
                                 </div>
                             </div>
-                            <div class="mobile360-attendance-times">
+
+                            <!-- Time row -->
+                            <div class="mobile360-attendance-times" style="background:#f8fafc;border-top:1px solid #f1f5f9;">
                                 <div class="mobile360-time-block">
-                                    <div class="mobile360-time-label">Check In</div>
+                                    <div class="mobile360-time-label">
+                                        <i class="fa fa-sign-in" style="color:#06d6a0;margin-right:3px;"/>Check In
+                                    </div>
                                     <div class="mobile360-time-value"><t t-esc="fmtTime(att.check_in)"/></div>
                                 </div>
-                                <div style="width:1px;background:#f1f5f9;margin:4px 0;"/>
+                                <div style="width:1px;background:#e2e8f0;margin:6px 0;"/>
                                 <div class="mobile360-time-block">
-                                    <div class="mobile360-time-label">Check Out</div>
+                                    <div class="mobile360-time-label">
+                                        <i class="fa fa-sign-out" style="color:#4361ee;margin-right:3px;"/>Check Out
+                                    </div>
                                     <div class="mobile360-time-value">
                                         <t t-if="att.check_out">
                                             <t t-esc="fmtTime(att.check_out)"/>
                                         </t>
                                         <t t-else="">
-                                            <span style="color:#06d6a0;font-weight:700;font-size:14px;">Active</span>
+                                            <span style="color:#06d6a0;font-weight:800;font-size:13px;">● Active</span>
                                         </t>
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </t>
                 </t>
@@ -241,10 +288,13 @@
                  ════════════════════════════════════════════ -->
             <t t-if="state.activeSection === 'kpi'">
                 <t t-if="state.kpiLoading">
-                    <div class="mobile360-loading"><div class="mobile360-spinner"/></div>
+                    <div class="mobile360-loading" style="padding:48px 0;">
+                        <div class="mobile360-spinner"/>
+                        <span class="mobile360-loading-text">Loading KPI data…</span>
+                    </div>
                 </t>
                 <t t-elif="!state.kpiTargets.length">
-                    <div class="mobile360-empty" style="padding:40px 0;">
+                    <div class="mobile360-empty" style="padding:56px 0;">
                         <div class="mobile360-empty-icon" style="background:linear-gradient(135deg,#f72585,#b5179e);color:#fff;">
                             <i class="fa fa-trophy"/>
                         </div>
@@ -256,54 +306,66 @@
                     <t t-foreach="state.kpiTargets" t-as="target" t-key="target.id">
 
                         <!-- Overall donut card -->
-                        <div style="background:#fff;border-radius:18px;border:1px solid #e2e8f0;padding:20px;margin-bottom:16px;display:flex;align-items:center;gap:18px;box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-                            <div style="position:relative;width:88px;height:88px;flex-shrink:0;">
-                                <svg width="88" height="88" viewBox="0 0 88 88">
-                                    <circle cx="44" cy="44" r="36" fill="none" stroke="#f1f5f9" stroke-width="7"/>
-                                    <circle cx="44" cy="44" r="36" fill="none"
+                        <div style="background:#fff;border-radius:20px;border:1px solid #e2e8f0;padding:20px;margin-bottom:16px;display:flex;align-items:center;gap:18px;box-shadow:0 6px 20px rgba(67,97,238,0.10);">
+                            <div style="position:relative;width:92px;height:92px;flex-shrink:0;">
+                                <svg width="92" height="92" viewBox="0 0 92 92">
+                                    <!-- Track -->
+                                    <circle cx="46" cy="46" r="38" fill="none" stroke="#f1f5f9" stroke-width="8"/>
+                                    <!-- Progress -->
+                                    <circle cx="46" cy="46" r="38" fill="none"
                                         t-attf-stroke="{{achievementColor(target.overall_achievement)}}"
-                                        stroke-width="7" stroke-linecap="round"
-                                        t-attf-stroke-dasharray="226.2"
-                                        t-attf-stroke-dashoffset="{{226.2 - (226.2 * Math.min(100, target.overall_achievement or 0) / 100)}}"
-                                        transform="rotate(-90 44 44)"/>
+                                        stroke-width="8" stroke-linecap="round"
+                                        stroke-dasharray="238.76"
+                                        t-attf-stroke-dashoffset="{{238.76 - (238.76 * Math.min(100, target.overall_achievement or 0) / 100)}}"
+                                        transform="rotate(-90 46 46)"/>
                                 </svg>
                                 <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                                    <div style="font-size:18px;font-weight:900;color:#0f172a;">
+                                    <div style="font-size:19px;font-weight:900;color:#0f172a;line-height:1;">
                                         <t t-esc="Math.round(target.overall_achievement or 0)"/>%
                                     </div>
-                                    <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.3px;">Overall</div>
+                                    <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Overall</div>
                                 </div>
                             </div>
                             <div style="flex:1;">
                                 <div style="font-size:16px;font-weight:800;color:#0f172a;">KPI Achievement</div>
                                 <div style="font-size:12px;color:#64748b;margin-top:4px;">
-                                    <t t-if="state.kpiPeriod"><t t-esc="state.kpiPeriod.name"/></t>
+                                    <t t-if="state.kpiPeriod">
+                                        <i class="fa fa-calendar-o" style="margin-right:4px;color:#7209b7;"/>
+                                        <t t-esc="state.kpiPeriod.name"/>
+                                    </t>
                                 </div>
-                                <span t-attf-class="mobile360-badge {{stateClass(target.state)}}" style="margin-top:10px;">
+                                <span t-attf-class="mobile360-badge {{stateClass(target.state)}}" style="margin-top:10px;display:inline-block;">
                                     <t t-esc="stateLabel(target.state)"/>
                                 </span>
                             </div>
                         </div>
 
-                        <!-- Individual KPI bars -->
+                        <!-- Individual KPI progress bars -->
+                        <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+                            <div style="width:3px;height:14px;border-radius:2px;background:linear-gradient(#f72585,#b5179e);"/>
+                            KPI Breakdown
+                        </div>
+
                         <t t-foreach="kpiItems(target)" t-as="kpi" t-key="kpi.label">
-                            <div class="mobile360-achievement" style="margin-bottom:12px;">
-                                <div class="mobile360-achievement-header">
-                                    <div class="mobile360-achievement-name"><t t-esc="kpi.label"/></div>
-                                    <div class="mobile360-achievement-pct" t-attf-style="color:{{kpi.color}};">
+                            <div class="mobile360-achievement" style="background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid #f1f5f9;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                                <div class="mobile360-achievement-header" style="margin-bottom:10px;">
+                                    <div class="mobile360-achievement-name" style="font-size:13px;font-weight:700;color:#0f172a;">
+                                        <t t-esc="kpi.label"/>
+                                    </div>
+                                    <div t-attf-style="font-size:15px;font-weight:900;color:{{kpi.color}};">
                                         <t t-esc="Math.round(kpi.pct or 0)"/>%
                                     </div>
                                 </div>
-                                <div class="mobile360-achievement-bar">
-                                    <div class="mobile360-achievement-fill"
-                                        t-attf-style="width:{{Math.min(100, kpi.pct or 0)}}%;background:{{kpi.color}};"/>
+                                <div style="height:8px;background:#f1f5f9;border-radius:6px;overflow:hidden;">
+                                    <div t-attf-style="height:100%;width:{{Math.min(100, kpi.pct or 0)}}%;background:{{kpi.color}};border-radius:6px;transition:width 0.6s cubic-bezier(0.4,0,0.2,1);"/>
                                 </div>
-                                <div class="mobile360-achievement-meta">
-                                    <span>Actual: <strong><t t-esc="kpi.actual or 0"/></strong></span>
-                                    <span>Target: <strong><t t-esc="kpi.target or 0"/></strong></span>
+                                <div class="mobile360-achievement-meta" style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;font-weight:600;margin-top:8px;">
+                                    <span>Actual: <strong style="color:#475569;"><t t-esc="kpi.actual or 0"/></strong></span>
+                                    <span>Target: <strong style="color:#475569;"><t t-esc="kpi.target or 0"/></strong></span>
                                 </div>
                             </div>
                         </t>
+
                     </t>
                 </t>
             </t>
@@ -313,10 +375,13 @@
                  ════════════════════════════════════════════ -->
             <t t-if="state.activeSection === 'collections'">
                 <t t-if="state.collLoading">
-                    <div class="mobile360-loading"><div class="mobile360-spinner"/></div>
+                    <div class="mobile360-loading" style="padding:48px 0;">
+                        <div class="mobile360-spinner"/>
+                        <span class="mobile360-loading-text">Loading collections…</span>
+                    </div>
                 </t>
                 <t t-elif="!state.collections.length">
-                    <div class="mobile360-empty" style="padding:40px 0;">
+                    <div class="mobile360-empty" style="padding:56px 0;">
                         <div class="mobile360-empty-icon" style="background:linear-gradient(135deg,#06d6a0,#019b72);color:#fff;">
                             <i class="fa fa-money"/>
                         </div>
@@ -325,33 +390,42 @@
                     </div>
                 </t>
                 <t t-else="">
+
                     <!-- Total banner -->
-                    <div style="background:linear-gradient(135deg,#06d6a0,#019b72);border-radius:16px;padding:18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;">
+                    <div style="background:linear-gradient(135deg,#06d6a0 0%,#019b72 100%);border-radius:18px;padding:20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;overflow:hidden;position:relative;box-shadow:0 6px 20px rgba(6,214,160,0.30);">
+                        <div class="mobile360-hero-decor" style="opacity:0.15;width:120px;height:120px;top:-40px;right:-20px;"/>
                         <div>
                             <div style="font-size:11px;color:rgba(255,255,255,0.75);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Total Collected This Month</div>
-                            <div style="font-size:28px;font-weight:900;color:#fff;margin-top:5px;line-height:1;">
+                            <div style="font-size:28px;font-weight:900;color:#fff;margin-top:6px;line-height:1;letter-spacing:-0.5px;">
                                 <t t-esc="fmtMoney(state.monthStats.collections)"/>
                             </div>
+                            <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:6px;">
+                                <t t-esc="state.collections.length"/> payments recorded
+                            </div>
                         </div>
-                        <div style="font-size:40px;color:rgba(255,255,255,0.25);">
+                        <div style="font-size:48px;color:rgba(255,255,255,0.2);flex-shrink:0;">
                             <i class="fa fa-money"/>
                         </div>
                     </div>
 
                     <t t-foreach="state.collections" t-as="coll" t-key="coll.id">
-                        <div class="mobile360-collect-card">
-                            <div class="mobile360-collect-icon">
+                        <div class="mobile360-collect-card" style="display:flex;align-items:center;gap:12px;background:#fff;border-radius:16px;padding:14px;margin-bottom:10px;border:1px solid #e2e8f0;box-shadow:0 3px 10px rgba(0,0,0,0.05);">
+                            <div class="mobile360-collect-icon" style="width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#06d6a0,#019b72);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0;box-shadow:0 4px 10px rgba(6,214,160,0.30);">
                                 <i t-attf-class="fa {{paymentModeIcon(coll.payment_mode)}}"/>
                             </div>
                             <div style="flex:1;min-width:0;">
                                 <div style="font-size:14px;font-weight:700;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                                     <t t-esc="coll.partner_id?.[1] || '—'"/>
                                 </div>
-                                <div style="font-size:12px;color:#64748b;margin-top:3px;">
-                                    <t t-esc="coll.payment_mode"/> · <t t-esc="coll.date"/>
+                                <div style="font-size:12px;color:#64748b;margin-top:3px;font-weight:600;">
+                                    <span style="background:#e0f2fe;color:#0277bd;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:700;margin-right:5px;">
+                                        <t t-esc="coll.payment_mode"/>
+                                    </span>
+                                    <i class="fa fa-calendar-o" style="margin-right:3px;color:#94a3b8;"/>
+                                    <t t-esc="coll.date"/>
                                 </div>
                                 <t t-if="coll.reference">
-                                    <div style="font-size:11px;color:#94a3b8;margin-top:2px;">
+                                    <div style="font-size:11px;color:#94a3b8;margin-top:3px;">
                                         Ref: <t t-esc="coll.reference"/>
                                     </div>
                                 </t>
@@ -360,12 +434,13 @@
                                 <div style="font-size:17px;font-weight:900;color:#019b72;">
                                     <t t-esc="fmtMoney(coll.amount)"/>
                                 </div>
-                                <span t-attf-class="mobile360-badge {{stateClass(coll.state)}}" style="margin-top:5px;">
+                                <span t-attf-class="mobile360-badge {{stateClass(coll.state)}}" style="margin-top:5px;display:inline-block;">
                                     <t t-esc="stateLabel(coll.state)"/>
                                 </span>
                             </div>
                         </div>
                     </t>
+
                 </t>
             </t>
 
@@ -374,10 +449,13 @@
                  ════════════════════════════════════════════ -->
             <t t-if="state.activeSection === 'tickets'">
                 <t t-if="state.tickLoading">
-                    <div class="mobile360-loading"><div class="mobile360-spinner"/></div>
+                    <div class="mobile360-loading" style="padding:48px 0;">
+                        <div class="mobile360-spinner"/>
+                        <span class="mobile360-loading-text">Loading tickets…</span>
+                    </div>
                 </t>
                 <t t-elif="!state.tickets.length">
-                    <div class="mobile360-empty" style="padding:40px 0;">
+                    <div class="mobile360-empty" style="padding:56px 0;">
                         <div class="mobile360-empty-icon" style="background:linear-gradient(135deg,#f77f00,#d62828);color:#fff;">
                             <i class="fa fa-ticket"/>
                         </div>
@@ -387,23 +465,27 @@
                 </t>
                 <t t-else="">
                     <t t-foreach="state.tickets" t-as="ticket" t-key="ticket.id">
-                        <div class="mobile360-card" style="margin-bottom:10px;position:relative;overflow:hidden;">
-                            <!-- Priority accent bar -->
-                            <div t-attf-style="position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px;background:{{ticket.priority === 'high' ? '#ef233c' : ticket.priority === 'medium' ? '#f77f00' : '#94a3b8'}};"/>
-                            <div class="mobile360-card-body" style="padding-left:16px;">
+                        <div style="background:#fff;border-radius:16px;margin-bottom:10px;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,0.06);border:1px solid #e2e8f0;display:flex;">
+
+                            <!-- Priority left accent bar -->
+                            <div t-attf-style="width:4px;border-radius:0;background:{{ticket.priority === 'high' ? '#ef233c' : ticket.priority === 'medium' ? '#f77f00' : '#94a3b8'}};flex-shrink:0;"/>
+
+                            <div style="flex:1;padding:14px 14px 14px 12px;">
                                 <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
                                     <div style="flex:1;min-width:0;">
-                                        <div style="font-size:14px;font-weight:700;color:#0f172a;">
+                                        <div style="font-size:14px;font-weight:700;color:#0f172a;line-height:1.35;margin-bottom:5px;">
                                             <t t-esc="ticket.subject"/>
                                         </div>
-                                        <div style="font-size:12px;color:#64748b;margin-top:4px;">
-                                            <t t-esc="ticket.category"/> ·
-                                            <i class="fa fa-calendar-o" style="margin:0 3px;"/>
+                                        <div style="font-size:12px;color:#64748b;font-weight:600;display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+                                            <span style="background:#f1f5f9;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:700;color:#475569;">
+                                                <t t-esc="ticket.category"/>
+                                            </span>
+                                            <i class="fa fa-calendar-o" style="color:#94a3b8;"/>
                                             <t t-esc="fmtDate(ticket.date)"/>
                                         </div>
                                         <t t-if="ticket.partner_id">
-                                            <div style="font-size:12px;color:#64748b;margin-top:2px;">
-                                                <i class="fa fa-building-o" style="margin-right:3px;"/>
+                                            <div style="font-size:12px;color:#64748b;margin-top:5px;display:flex;align-items:center;gap:4px;">
+                                                <i class="fa fa-building-o" style="color:#7209b7;font-size:11px;"/>
                                                 <t t-esc="ticket.partner_id?.[1]"/>
                                             </div>
                                         </t>
@@ -418,12 +500,13 @@
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </t>
                 </t>
             </t>
 
-            <div class="m-spacer-16"/>
+            <div style="height:24px;"/>
         </div>
     </t>
 </t>

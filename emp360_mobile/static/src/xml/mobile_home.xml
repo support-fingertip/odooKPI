@@ -2,8 +2,8 @@
 <templates xml:space="preserve">
 
 <!-- ============================================================
-     EMPLOYEE 360 — MOBILE HOME  v2.0
-     Field User + Manager dashboards
+     EMPLOYEE 360 — MOBILE HOME  v3.0
+     Field User dashboard with GPS location · Manager overview
      ============================================================ -->
 
 <t t-name="employee_mobile.MobileHome">
@@ -21,10 +21,12 @@
          ════════════════════════════════════════════════ -->
     <t t-elif="!isManager">
 
-        <!-- Hero Header -->
-        <div class="mobile360-hero" style="background:linear-gradient(150deg,#0b0c1e 0%,#161732 55%,#0f3460 100%);padding-bottom:40px;">
+        <!-- ── Hero Header ─────────────────────────────────── -->
+        <div class="mobile360-hero" style="background:linear-gradient(150deg,#0b0c1e 0%,#161732 50%,#0f3460 100%);padding-bottom:44px;">
             <div class="mobile360-hero-decor"/>
             <div class="mobile360-hero-decor-2"/>
+
+            <!-- Greeting -->
             <div class="mobile360-hero-greeting">
                 <i t-attf-class="fa {{greetingIcon}}"/>
                 <t t-esc="greeting"/>
@@ -32,64 +34,86 @@
             <div class="mobile360-hero-name"><t t-esc="employeeFirstName"/> 👋</div>
             <div class="mobile360-hero-date"><t t-esc="todayDateStr"/></div>
 
-            <!-- Attendance badge -->
-            <t t-if="state.attendance.checkedIn">
-                <div class="mobile360-hero-badge" style="background:rgba(6,214,160,0.18);border-color:rgba(6,214,160,0.4);">
-                    <span style="width:8px;height:8px;border-radius:50%;background:#06d6a0;animation:m-pulse 2s ease-in-out infinite;display:inline-block;"/>
-                    Checked-in at <t t-esc="fmtTime(state.attendance.checkIn)"/>
-                    <t t-if="state.attendance.workedHours">
-                        · <t t-esc="state.attendance.workedHours"/>
-                    </t>
-                </div>
-            </t>
-            <t t-else="">
-                <div class="mobile360-hero-badge" style="background:rgba(239,35,60,0.18);border-color:rgba(239,35,60,0.4);">
-                    <i class="fa fa-clock-o"/>
-                    Not checked in yet — tap Workday to start
-                </div>
-            </t>
+            <!-- Status chips row -->
+            <div class="mobile360-hero-chips-row">
+                <!-- Attendance badge -->
+                <t t-if="state.attendance.checkedIn">
+                    <div class="mobile360-hero-badge" style="background:rgba(6,214,160,0.2);border-color:rgba(6,214,160,0.4);">
+                        <span style="width:7px;height:7px;border-radius:50%;background:#06d6a0;animation:m-pulse 2s ease-in-out infinite;display:inline-block;flex-shrink:0;"/>
+                        In at <t t-esc="fmtTime(state.attendance.checkIn)"/>
+                        <t t-if="state.attendance.workedHours">
+                            · <strong><t t-esc="state.attendance.workedHours"/></strong>
+                        </t>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="mobile360-hero-badge" style="background:rgba(239,35,60,0.18);border-color:rgba(239,35,60,0.35);">
+                        <i class="fa fa-clock-o"/>
+                        Not checked in
+                    </div>
+                </t>
+
+                <!-- GPS Location chip -->
+                <t t-if="state.gpsStatus !== 'idle'">
+                    <div t-attf-class="mobile360-location-chip {{locationChipClass}}"
+                         t-on-click="_tryGetLocation">
+                        <i t-attf-class="fa {{locationIcon}}" style="flex-shrink:0;"/>
+                        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                            <t t-esc="locationText"/>
+                        </span>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="mobile360-location-chip gps-idle" t-on-click="_tryGetLocation">
+                        <i class="fa fa-map-marker" style="flex-shrink:0;"/>
+                        <span>Get location</span>
+                    </div>
+                </t>
+            </div>
         </div>
 
-        <!-- Active Visit Banner -->
+        <!-- ── Active Visit Banner ─────────────────────────── -->
         <t t-if="state.activeVisit">
-            <div class="mobile360-section" style="margin-top:-14px;padding-top:0;">
+            <div style="padding:0 16px;margin-top:-18px;">
                 <div class="mobile360-active-visit" t-on-click="() => this.navigateTo('today')">
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-                        <div>
-                            <div style="font-size:11px;color:rgba(255,255,255,0.75);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">ACTIVE VISIT</div>
-                            <div style="font-size:18px;font-weight:800;color:#fff;margin-top:4px;letter-spacing:-0.3px;">
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.6px;">Active Visit</div>
+                            <div style="font-size:18px;font-weight:800;color:#fff;margin-top:3px;letter-spacing:-0.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                                 <t t-esc="state.activeVisit.partner_id?.[1] || 'Customer'"/>
                             </div>
                             <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-top:4px;">
                                 <i class="fa fa-clock-o"/> Started <t t-esc="fmtTime(state.activeVisit.actual_start_time)"/>
                             </div>
                         </div>
-                        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;">
                             <div class="mobile360-pulse"/>
-                            <div style="font-size:10px;font-weight:800;color:#fff;letter-spacing:0.5px;">LIVE</div>
-                            <i class="fa fa-chevron-right" style="color:rgba(255,255,255,0.7);font-size:14px;"/>
+                            <div style="font-size:9px;font-weight:800;color:#fff;letter-spacing:0.6px;">LIVE</div>
+                            <i class="fa fa-chevron-right" style="color:rgba(255,255,255,0.6);font-size:13px;margin-top:2px;"/>
                         </div>
                     </div>
                 </div>
             </div>
         </t>
 
-        <!-- KPI Cards — This Month -->
-        <div class="mobile360-section" style="margin-top:16px;">
+        <!-- ── KPI Cards — This Month ──────────────────────── -->
+        <div class="mobile360-section" style="margin-top:20px;">
             <div class="mobile360-section-header">
-                <span class="mobile360-section-title">This Month</span>
+                <span class="mobile360-section-title-accent">This Month</span>
                 <button class="mobile360-section-link" t-on-click="() => this.navigateTo('visits')">View All →</button>
             </div>
+
             <div class="mobile360-kpi-grid">
-                <!-- Today Visits -->
+                <!-- Visits -->
                 <div class="mobile360-kpi-card blue" t-on-click="() => this.navigateTo('visits')">
                     <div class="mobile360-kpi-icon m-bg-primary"><i class="fa fa-map-marker"/></div>
                     <div class="mobile360-kpi-value"><t t-esc="state.kpi.visits_today"/></div>
-                    <div class="mobile360-kpi-label">Today</div>
+                    <div class="mobile360-kpi-label">Today's Visits</div>
                     <div class="mobile360-kpi-change up">
                         <i class="fa fa-calendar"/> <t t-esc="state.kpi.visits_month"/> this month
                     </div>
                 </div>
+
                 <!-- Beats -->
                 <div class="mobile360-kpi-card green" t-on-click="() => this.navigateTo('today')">
                     <div class="mobile360-kpi-icon m-bg-success"><i class="fa fa-road"/></div>
@@ -99,6 +123,7 @@
                         <i class="fa fa-percent"/> <t t-esc="beatProgressPct"/>% done
                     </div>
                 </div>
+
                 <!-- Orders -->
                 <div class="mobile360-kpi-card orange" t-on-click="() => this.navigateTo('orders')">
                     <div class="mobile360-kpi-icon m-bg-warning"><i class="fa fa-shopping-cart"/></div>
@@ -106,6 +131,7 @@
                     <div class="mobile360-kpi-label">Orders</div>
                     <div class="mobile360-kpi-change up"><i class="fa fa-arrow-up"/> Month</div>
                 </div>
+
                 <!-- Sales -->
                 <div class="mobile360-kpi-card purple" t-on-click="() => this.navigateTo('orders')">
                     <div class="mobile360-kpi-icon m-bg-purple"><i class="fa fa-rupee"/></div>
@@ -115,14 +141,14 @@
                 </div>
             </div>
 
-            <!-- Collections + KPI Achievement -->
+            <!-- Collections + KPI -->
             <div class="mobile360-kpi-grid" style="grid-template-columns:1fr 1fr;">
                 <div class="mobile360-kpi-card teal">
                     <div class="mobile360-kpi-icon m-bg-teal"><i class="fa fa-money"/></div>
                     <div class="mobile360-kpi-value" style="font-size:18px;"><t t-esc="fmtMoney(state.kpi.collections)"/></div>
                     <div class="mobile360-kpi-label">Collections</div>
                 </div>
-                <div class="mobile360-kpi-card">
+                <div class="mobile360-kpi-card" t-attf-style="border-top:3px solid {{achievementColor}};">
                     <div class="mobile360-kpi-icon" t-attf-style="background:linear-gradient(135deg,{{achievementColor}},{{achievementColor}}aa);">
                         <i class="fa fa-trophy"/>
                     </div>
@@ -134,9 +160,9 @@
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="mobile360-section" style="margin-top:4px;">
-            <div class="mobile360-section-title" style="margin-bottom:14px;">Quick Actions</div>
+        <!-- ── Quick Actions ───────────────────────────────── -->
+        <div class="mobile360-section" style="margin-top:8px;">
+            <div class="mobile360-section-title-accent" style="margin-bottom:16px;">Quick Actions</div>
             <div class="mobile360-quick-actions">
                 <button class="mobile360-quick-btn" t-on-click="() => this.navigateTo('today')">
                     <div class="mobile360-quick-icon m-bg-success"><i class="fa fa-play-circle"/></div>
@@ -157,33 +183,33 @@
             </div>
         </div>
 
-        <!-- Today's Beat -->
+        <!-- ── Today's Beat ────────────────────────────────── -->
         <t t-if="state.currentBeat">
-            <div class="mobile360-section" style="margin-top:4px;">
+            <div class="mobile360-section" style="margin-top:8px;">
                 <div class="mobile360-section-header">
-                    <span class="mobile360-section-title">Today's Beat</span>
+                    <span class="mobile360-section-title-accent">Today's Beat</span>
                     <button class="mobile360-section-link" t-on-click="() => this.navigateTo('today')">Open →</button>
                 </div>
                 <div class="mobile360-beat-card" t-on-click="() => this.navigateTo('today')">
-                    <div class="mobile360-hero-decor" style="opacity:0.5;"/>
+                    <div class="mobile360-hero-decor" style="opacity:0.4;"/>
                     <div class="mobile360-beat-header">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
                             <div class="mobile360-beat-name"><t t-esc="state.currentBeat.name"/></div>
-                            <span class="mobile360-badge" style="background:rgba(255,255,255,0.15);color:#fff;font-size:10px;">
+                            <span class="mobile360-badge" style="background:rgba(255,255,255,0.15);color:#fff;font-size:10px;border:1px solid rgba(255,255,255,0.2);">
                                 # <t t-esc="state.currentBeat.beat_number || '—'"/>
                             </span>
                         </div>
                         <div class="mobile360-beat-meta">
                             <i class="fa fa-users"/> <t t-esc="state.currentBeat.customer_count || 0"/> customers
-                            <span style="width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,0.4);display:inline-block;"/>
-                            <t t-esc="state.kpi.beats_completed"/> beat<t t-if="state.kpi.beats_completed !== 1">s</t> done
+                            <span style="width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,0.35);display:inline-block;"/>
+                            <t t-esc="state.kpi.beats_completed"/> beat<t t-if="state.kpi.beats_completed !== 1">s</t> done today
                         </div>
-                        <div class="mobile360-beat-progress" style="margin-top:12px;">
+                        <div class="mobile360-beat-progress" style="margin-top:14px;">
                             <div class="mobile360-beat-progress-bar" t-attf-style="width:{{beatProgressPct}}%;"/>
                         </div>
-                        <div style="display:flex;justify-content:space-between;margin-top:6px;">
+                        <div style="display:flex;justify-content:space-between;margin-top:7px;">
                             <span style="font-size:11px;color:rgba(255,255,255,0.6);">Progress</span>
-                            <span style="font-size:11px;font-weight:800;color:#06d6a0;"><t t-esc="beatProgressPct"/>%</span>
+                            <span style="font-size:12px;font-weight:800;color:#06d6a0;"><t t-esc="beatProgressPct"/>%</span>
                         </div>
                     </div>
                 </div>
@@ -199,21 +225,20 @@
     <t t-else="">
 
         <!-- Manager Hero -->
-        <div class="mobile360-manager-hero" style="background:linear-gradient(150deg,#0b0c1e 0%,#161732 55%,#0f3460 100%);padding-bottom:44px;">
+        <div class="mobile360-manager-hero" style="background:linear-gradient(150deg,#0b0c1e 0%,#161732 50%,#0f3460 100%);padding-bottom:48px;">
             <div class="mobile360-hero-decor"/>
+            <div class="mobile360-hero-decor-2"/>
             <div style="font-size:12px;color:rgba(255,255,255,0.6);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;">Manager Dashboard</div>
-            <div class="mobile360-hero-name" style="font-size:22px;margin-top:4px;">Team Overview</div>
+            <div class="mobile360-hero-name" style="font-size:24px;margin-top:4px;">Team Overview</div>
             <div class="mobile360-hero-date"><t t-esc="todayDateStr"/></div>
-            <div class="mobile360-team-live" style="margin-top:10px;">
-                <div class="mobile360-team-live-dot"/>
-                <span style="font-size:13px;color:rgba(255,255,255,0.9);font-weight:700;">
-                    <t t-esc="state.teamStats.active"/> active · <t t-esc="state.teamStats.total"/> total
-                </span>
+            <div class="mobile360-live-ring" style="margin-top:12px;">
+                <div style="width:7px;height:7px;border-radius:50%;background:#06d6a0;animation:m-pulse 2s ease-in-out infinite;flex-shrink:0;"/>
+                <t t-esc="state.teamStats.active"/> active · <t t-esc="state.teamStats.total"/> total
             </div>
         </div>
 
         <!-- Team KPI Grid -->
-        <div class="mobile360-section" style="margin-top:-16px;">
+        <div class="mobile360-section" style="margin-top:-20px;">
             <div class="mobile360-kpi-grid">
                 <div class="mobile360-kpi-card blue" t-on-click="() => this.navigateTo('team')">
                     <div class="mobile360-kpi-icon m-bg-primary"><i class="fa fa-users"/></div>
@@ -223,12 +248,12 @@
                 <div class="mobile360-kpi-card green" t-on-click="() => this.navigateTo('visits')">
                     <div class="mobile360-kpi-icon m-bg-success"><i class="fa fa-check-circle"/></div>
                     <div class="mobile360-kpi-value"><t t-esc="state.teamStats.visits_today"/></div>
-                    <div class="mobile360-kpi-label">Visits Done</div>
+                    <div class="mobile360-kpi-label">Visits Today</div>
                 </div>
                 <div class="mobile360-kpi-card orange" t-on-click="() => this.navigateTo('orders')">
                     <div class="mobile360-kpi-icon m-bg-warning"><i class="fa fa-shopping-cart"/></div>
                     <div class="mobile360-kpi-value"><t t-esc="state.teamStats.orders_today"/></div>
-                    <div class="mobile360-kpi-label">Orders</div>
+                    <div class="mobile360-kpi-label">Orders Today</div>
                 </div>
                 <div class="mobile360-kpi-card purple" t-on-click="() => this.navigateTo('team')">
                     <div class="mobile360-kpi-icon m-bg-purple"><i class="fa fa-rupee"/></div>
@@ -242,7 +267,7 @@
         <t t-if="state.topPerformers.length">
             <div class="mobile360-section" style="margin-top:4px;">
                 <div class="mobile360-section-header">
-                    <span class="mobile360-section-title">Top Performers</span>
+                    <span class="mobile360-section-title-accent">Top Performers</span>
                     <button class="mobile360-section-link" t-on-click="() => this.navigateTo('team')">See All →</button>
                 </div>
                 <div class="mobile360-list">
@@ -266,7 +291,7 @@
 
         <!-- Quick Actions (Manager) -->
         <div class="mobile360-section" style="margin-top:8px;">
-            <div class="mobile360-section-title" style="margin-bottom:14px;">Quick Actions</div>
+            <div class="mobile360-section-title-accent" style="margin-bottom:16px;">Quick Actions</div>
             <div class="mobile360-quick-actions">
                 <button class="mobile360-quick-btn" t-on-click="() => this.navigateTo('team')">
                     <div class="mobile360-quick-icon m-bg-primary"><i class="fa fa-users"/></div>

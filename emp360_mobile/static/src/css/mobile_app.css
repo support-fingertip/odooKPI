@@ -1979,3 +1979,287 @@
     0%, 100% { transform: translateY(0); }
     50%       { transform: translateY(-4px); }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   EMPLOYEE 360 v3.0 — DESIGN ENHANCEMENTS
+   Location chip · Improved nav · Glass cards · Modern polish
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Location Chip (Home Hero) ───────────────────────────────── */
+.mobile360-location-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: var(--m-r-pill);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    cursor: pointer;
+    transition: var(--m-t-fast);
+    border: 1px solid rgba(255,255,255,0.2);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mobile360-location-chip.gps-ok {
+    background: rgba(6,214,160,0.22);
+    color: rgba(255,255,255,0.95);
+}
+
+.mobile360-location-chip.gps-busy {
+    background: rgba(247,127,0,0.22);
+    color: rgba(255,255,255,0.9);
+}
+
+.mobile360-location-chip.gps-off {
+    background: rgba(239,35,60,0.22);
+    color: rgba(255,255,255,0.8);
+}
+
+.mobile360-location-chip.gps-idle {
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.75);
+}
+
+.mobile360-location-chip:active { transform: scale(0.96); }
+
+/* ── Bottom Nav v3 — Background pill for active tab ─────────── */
+/* Override the top-line indicator with a background pill */
+.mobile360-nav-item.active::before {
+    content: '';
+    position: absolute;
+    inset: 4px 8px auto 8px;
+    height: 100%;
+    max-height: 52px;
+    background: rgba(67,97,238,0.1);
+    border-radius: 14px;
+    top: 3px;
+    z-index: 0;
+}
+
+.mobile360-nav-item > * { position: relative; z-index: 1; }
+
+.mobile360-nav-item.active .mobile360-nav-icon {
+    transform: translateY(-1px) scale(1.12);
+}
+
+.mobile360-nav-item.active .mobile360-nav-label {
+    color: var(--m-primary);
+    font-weight: 700;
+}
+
+/* ── Hero Glass Stats Card ───────────────────────────────────── */
+.mobile360-hero-stat-card {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 16px;
+    padding: 14px 12px;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    flex: 1;
+}
+
+.mobile360-hero-stat-val {
+    font-size: 28px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+.mobile360-hero-stat-val.sm {
+    font-size: 18px;
+    letter-spacing: -0.5px;
+}
+
+.mobile360-hero-stat-lbl {
+    font-size: 10px;
+    color: rgba(255,255,255,0.72);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 5px;
+}
+
+/* ── Improved KPI Card variants ──────────────────────────────── */
+.mobile360-kpi-card.blue   { border-top: 3px solid #4361ee; }
+.mobile360-kpi-card.green  { border-top: 3px solid #06d6a0; }
+.mobile360-kpi-card.orange { border-top: 3px solid #f77f00; }
+.mobile360-kpi-card.purple { border-top: 3px solid #7209b7; }
+.mobile360-kpi-card.teal   { border-top: 3px solid #00b4d8; }
+.mobile360-kpi-card.red    { border-top: 3px solid #ef233c; }
+.mobile360-kpi-card.pink   { border-top: 3px solid #f72585; }
+
+.mobile360-kpi-card.blue::after,
+.mobile360-kpi-card.green::after,
+.mobile360-kpi-card.orange::after,
+.mobile360-kpi-card.purple::after,
+.mobile360-kpi-card.teal::after {
+    display: none; /* remove old pseudo-element gradient top line */
+}
+
+/* ── Today Screen Day Controls v3 ───────────────────────────── */
+.mobile360-day-action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 16px 16px;
+    margin-top: -16px;
+}
+
+.mobile360-day-action-row-single {
+    padding: 0 16px 16px;
+    margin-top: -16px;
+}
+
+/* ── Visit Card v3 — better stats row ───────────────────────── */
+.mobile360-visit-stats {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* ── Topbar Employee Chip ─────────────────────────────────────── */
+.mobile360-avatar-chip {
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    background: rgba(255,255,255,0.2);
+    border: 1.5px solid rgba(255,255,255,0.3);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+/* ── Animated active visit pulse ring ───────────────────────── */
+.mobile360-live-ring {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(6,214,160,0.18);
+    border: 1px solid rgba(6,214,160,0.4);
+    border-radius: var(--m-r-pill);
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.95);
+    letter-spacing: 0.5px;
+}
+
+/* ── Quick Action icon upgrade ───────────────────────────────── */
+.mobile360-quick-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+}
+
+.mobile360-quick-btn:active .mobile360-quick-icon {
+    transform: scale(0.92);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+/* ── Section title with left accent ─────────────────────────── */
+.mobile360-section-title-accent {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--m-text-h);
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mobile360-section-title-accent::before {
+    content: '';
+    width: 3px;
+    height: 16px;
+    border-radius: 2px;
+    background: var(--m-primary);
+    display: block;
+    flex-shrink: 0;
+}
+
+/* ── Profile hero upgrade ────────────────────────────────────── */
+.mobile360-profile-avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 28px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.3), 0 0 0 3px rgba(255,255,255,0.2);
+}
+
+/* ── Hero row for attendance chips ──────────────────────────── */
+.mobile360-hero-chips-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+/* ── Manager hero stats upgrade ─────────────────────────────── */
+.mobile360-mgr-stat-card {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 14px;
+    padding: 14px;
+    backdrop-filter: blur(6px);
+}
+
+.mobile360-mgr-stat-val {
+    font-size: 30px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+.mobile360-mgr-stat-val.sm { font-size: 20px; letter-spacing: -0.5px; }
+
+.mobile360-mgr-stat-lbl {
+    font-size: 10px;
+    color: rgba(255,255,255,0.68);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-top: 5px;
+}
+
+/* ── Beat card in workday v3 ─────────────────────────────────── */
+.mobile360-beat-card {
+    background: linear-gradient(135deg, #1a1b3a 0%, #0f3460 100%);
+    border: 1px solid rgba(67,97,238,0.3);
+    box-shadow: 0 8px 32px rgba(67,97,238,0.2);
+}
+
+/* ── Search bar in glass hero ────────────────────────────────── */
+.mobile360-search-bar-glass {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: var(--m-r-sm);
+    padding: 0 14px;
+    height: 44px;
+    backdrop-filter: blur(8px);
+    margin-bottom: 12px;
+    margin-top: 4px;
+}
+
+.mobile360-search-bar-glass .mobile360-search-icon { color: rgba(255,255,255,0.7); }
+.mobile360-search-bar-glass .mobile360-search-input {
+    color: #fff;
+    caret-color: #fff;
+}
+.mobile360-search-bar-glass .mobile360-search-input::placeholder { color: rgba(255,255,255,0.55); }
+
+/* ── Responsive — wider screens keep max-width look ─────────── */
+@media (min-width: 430px) {
+    .mobile360-overlay { max-width: 430px; margin: 0 auto; left: 0; right: 0; }
+}
+
+/* ── Smooth scroll indicator ─────────────────────────────────── */
+.mobile360-content::-webkit-scrollbar { display: none; }
+.mobile360-content { scrollbar-width: none; }
