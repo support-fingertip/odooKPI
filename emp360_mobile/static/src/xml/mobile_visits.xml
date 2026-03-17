@@ -26,15 +26,21 @@
             </div>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
                 <div style="background:rgba(255,255,255,0.15);border-radius:14px;padding:14px 10px;border:1px solid rgba(255,255,255,0.2);text-align:center;">
-                    <div style="font-size:26px;font-weight:900;color:#fff;line-height:1;"><t t-esc="state.summary.total"/></div>
+                    <div style="font-size:26px;font-weight:900;color:#fff;line-height:1;">
+                        <t t-esc="state.visits ? state.visits.length : 0"/>
+                    </div>
                     <div style="font-size:10px;color:rgba(255,255,255,0.75);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;margin-top:5px;">Total</div>
                 </div>
                 <div style="background:rgba(255,255,255,0.15);border-radius:14px;padding:14px 10px;border:1px solid rgba(255,255,255,0.2);text-align:center;">
-                    <div style="font-size:26px;font-weight:900;color:#fff;line-height:1;"><t t-esc="state.summary.completed"/></div>
+                    <div style="font-size:26px;font-weight:900;color:#fff;line-height:1;">
+                        <t t-esc="state.visits ? state.visits.filter(v => v.status === 'completed').length : 0"/>
+                    </div>
                     <div style="font-size:10px;color:rgba(255,255,255,0.75);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;margin-top:5px;">Done</div>
                 </div>
                 <div style="background:rgba(255,255,255,0.15);border-radius:14px;padding:14px 10px;border:1px solid rgba(255,255,255,0.2);text-align:center;">
-                    <div style="font-size:17px;font-weight:900;color:#fff;line-height:1;"><t t-esc="fmtMoney(state.summary.sales)"/></div>
+                    <div style="font-size:17px;font-weight:900;color:#fff;line-height:1;">
+                        <t t-esc="fmtMoney(state.visits ? state.visits.reduce((s,v) => s + (v.total_order_amount || 0), 0) : 0)"/>
+                    </div>
                     <div style="font-size:10px;color:rgba(255,255,255,0.75);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;margin-top:5px;">Sales</div>
                 </div>
             </div>

@@ -23,11 +23,14 @@ class VisitModelMobilePatch(models.Model):
         Store image required UNLESS mobile context bypasses it.
 
         Context flags that skip the check:
-          mobile_end_visit=True   — set by emp360.mobile.end_visit()
-          skip_image_check=True   — alternative flag (belt + suspenders)
+          mobile_end_visit=True              — set by emp360.mobile.end_visit()
+          skip_image_check=True              — alternative flag (belt + suspenders)
+          no_check_store_image_required=True — final fallback flag
         """
-        if (self.env.context.get('mobile_end_visit')
-                or self.env.context.get('skip_image_check')):
+        ctx = self.env.context
+        if (ctx.get('mobile_end_visit')
+                or ctx.get('skip_image_check')
+                or ctx.get('no_check_store_image_required')):
             return
 
         for record in self:
