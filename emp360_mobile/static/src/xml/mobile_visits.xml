@@ -273,6 +273,63 @@
                                     </div>
                                 </t>
 
+                                <!-- ── GPS Locations ────────────────────── -->
+                                <t t-if="state.visitDetail.checkin_latitude">
+                                    <div style="margin-top:18px;">
+                                        <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">
+                                            <i class="fa fa-map-marker" style="margin-right:5px;color:#4361ee;"/>GPS Locations
+                                        </div>
+
+                                        <!-- Check-in GPS -->
+                                        <div class="mobile360-gps-card">
+                                            <div class="mobile360-gps-card-header">
+                                                <div class="mobile360-gps-dot mobile360-gps-dot--checkin"/>
+                                                <span style="font-size:12px;font-weight:700;color:#0f172a;">Check-in Location</span>
+                                                <t t-if="state.visitDetail.geofence_valid !== false and state.visitDetail.geofence_valid !== undefined and state.visitDetail.geofence_valid !== null">
+                                                    <span t-attf-class="mobile360-badge {{state.visitDetail.geofence_valid ? 'success' : 'danger'}}" style="font-size:9px;margin-left:auto;">
+                                                        <i t-attf-class="fa {{state.visitDetail.geofence_valid ? 'fa-check' : 'fa-times'}}"/>
+                                                        <t t-esc="' ' + (state.visitDetail.geofence_valid ? 'Geofence OK' : 'Outside Zone')"/>
+                                                    </span>
+                                                </t>
+                                            </div>
+                                            <div class="mobile360-gps-coords">
+                                                <i class="fa fa-crosshairs" style="color:#4361ee;margin-right:5px;"/>
+                                                <span style="font-family:monospace;font-size:13px;color:#334155;">
+                                                    <t t-esc="state.visitDetail.checkin_latitude"/>°,
+                                                    <t t-esc="state.visitDetail.checkin_longitude"/>°
+                                                </span>
+                                            </div>
+                                            <a t-attf-href="https://maps.google.com/?q={{state.visitDetail.checkin_latitude}},{{state.visitDetail.checkin_longitude}}"
+                                                target="_blank" class="mobile360-gps-map-link">
+                                                <i class="fa fa-map-o" style="margin-right:5px;"/>Open in Google Maps
+                                                <i class="fa fa-external-link" style="margin-left:4px;font-size:10px;"/>
+                                            </a>
+                                        </div>
+
+                                        <!-- Check-out GPS -->
+                                        <t t-if="state.visitDetail.checkout_latitude">
+                                            <div class="mobile360-gps-card" style="margin-top:8px;">
+                                                <div class="mobile360-gps-card-header">
+                                                    <div class="mobile360-gps-dot mobile360-gps-dot--checkout"/>
+                                                    <span style="font-size:12px;font-weight:700;color:#0f172a;">Check-out Location</span>
+                                                </div>
+                                                <div class="mobile360-gps-coords">
+                                                    <i class="fa fa-crosshairs" style="color:#06d6a0;margin-right:5px;"/>
+                                                    <span style="font-family:monospace;font-size:13px;color:#334155;">
+                                                        <t t-esc="state.visitDetail.checkout_latitude"/>°,
+                                                        <t t-esc="state.visitDetail.checkout_longitude"/>°
+                                                    </span>
+                                                </div>
+                                                <a t-attf-href="https://maps.google.com/?q={{state.visitDetail.checkout_latitude}},{{state.visitDetail.checkout_longitude}}"
+                                                    target="_blank" class="mobile360-gps-map-link" style="color:#06d6a0;border-color:rgba(6,214,160,0.2);background:#f0fdf4;">
+                                                    <i class="fa fa-map-o" style="margin-right:5px;"/>Open in Google Maps
+                                                    <i class="fa fa-external-link" style="margin-left:4px;font-size:10px;"/>
+                                                </a>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+
                                 <!-- Collections sub-section -->
                                 <t t-if="state.visitDetail.collections and state.visitDetail.collections.length">
                                     <div style="margin-top:18px;">
