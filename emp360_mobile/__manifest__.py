@@ -1,6 +1,6 @@
 {
     "name": "Employee 360 Mobile",
-    "version": "18.0.1.0.5",
+    "version": "18.0.1.0.0",
     "summary": "PWA-ready Mobile App for Field Users & Managers — Android / iOS web app",
     "description": """
 Employee 360 Mobile Application
@@ -49,7 +49,6 @@ UI Highlights
             "emp360_mobile/static/src/css/mobile_app.css",
 
             # ── OWL Components (load order matters) ───────────────
-            "emp360_mobile/static/src/js/error_boundary.js",
             "emp360_mobile/static/src/js/mobile_home.js",
             "emp360_mobile/static/src/js/mobile_today.js",
             "emp360_mobile/static/src/js/mobile_visits.js",
@@ -71,5 +70,4 @@ UI Highlights
     "installable": True,
     "application": True,
     "auto_install": False,
-    "post_init_hook": "post_init_hook",
 }

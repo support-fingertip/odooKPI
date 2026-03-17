@@ -10,7 +10,7 @@ KEY CONTEXT FLAGS USED:
   skip_image_check=True  → alternative flag for store image constraint
 """
 from odoo import models, api, fields
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import UserError
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -212,32 +212,12 @@ class MobileAppHelpers(models.AbstractModel):
             write_vals["is_productive"] = bool(vals["is_productive"])
 
         try:
-            # KEY FIX: mobile_end_visit=True + skip_image_check=True bypass
-            # _check_store_image_required constraint in visit_model.py
+            # KEY FIX: mobile_end_visit=True bypasses _check_store_image_required
+            # skip_image_check=True is an alternative flag (belt + suspenders)
             visit.sudo().with_context(
                 mobile_end_visit=True,
                 skip_image_check=True,
             ).write(write_vals)
-        except ValidationError as e:
-            err_str = str(e)
-            if 'store_image' in err_str.lower() or 'store image' in err_str.lower() \
-                    or 'image' in err_str.lower():
-                # Constraint still firing — force write by temporarily satisfying it
-                # This is the belt-and-suspenders fallback: write status separately
-                # after setting a dummy flag via direct ORM bypass
-                _logger.warning("Visit end constraint still fired, using fallback: %s", e)
-                try:
-                    visit.sudo().with_context(
-                        mobile_end_visit=True,
-                        skip_image_check=True,
-                        no_check_store_image_required=True,
-                    ).write(write_vals)
-                except ValidationError:
-                    # Final fallback: write without triggering constraints
-                    visit.sudo()._write(write_vals)
-            else:
-                _logger.error("Visit end ValidationError (non-image): %s | vals: %s", e, write_vals)
-                raise UserError(str(e))
         except Exception as e:
             _logger.error("Visit end failed: %s | vals: %s", e, write_vals)
             raise UserError(f"Could not end visit: {e}")
