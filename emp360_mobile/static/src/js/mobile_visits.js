@@ -28,6 +28,7 @@ export class MobileVisits extends Component {
             filter: "all", statusFilter: "all", search: "",
             selectedVisit: null, showDetail: false,
             visitDetail: null, detailLoading: false,
+            summary: { total: 0, completed: 0, sales: 0 },
         });
         onWillStart(async () => { await this._load(); });
     }
@@ -42,6 +43,11 @@ export class MobileVisits extends Component {
             const visits = await this.orm.call("emp360.mobile", "get_visits",
                 [this.empId, this.isManager || false, domain, 50]);
             this.state.visits = visits;
+            this.state.summary = {
+                total: visits.length,
+                completed: visits.filter(v => v.status === "completed").length,
+                sales: visits.reduce((sum, v) => sum + (v.total_order_amount || 0), 0),
+            };
             this._applyFilters();
         } catch (e) { console.error("[Visits]", e); }
         finally { this.state.loading = false; }
