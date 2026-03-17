@@ -385,6 +385,8 @@ export class MobileToday extends Component {
         this.state.currentLineIdx = lineIdx;
         this.state.visitForm      = { storeImage: null, storeImageName: "", storeImagePreview: null };
         this.state.showStartVisitSheet = true;
+        // Auto-request GPS so map shows immediately
+        this._getLocation();
     }
 
     closeStartVisit() { this.state.showStartVisitSheet = false; }
@@ -455,6 +457,8 @@ export class MobileToday extends Component {
         if (!this.state.activeVisit) return;
         this.state.endVisitForm = { comments: "", isProductive: true };
         this.state.showEndVisitSheet = true;
+        // Auto-request GPS for checkout location map
+        this._getLocation();
     }
 
     closeEndVisit() { this.state.showEndVisitSheet = false; }
