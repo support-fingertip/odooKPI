@@ -455,7 +455,12 @@ export class MobileToday extends Component {
     // ── Visit End ─────────────────────────────────────────────────
     openEndVisit() {
         if (!this.state.activeVisit) return;
-        this.state.endVisitForm = { comments: "", isProductive: true };
+        // Auto-determine productive: Yes if any order was placed, No if none
+        const orderCount = this.state.activeVisit.order_count || 0;
+        this.state.endVisitForm = {
+            comments: "",
+            isProductive: orderCount > 0,  // auto-set: productive = has orders
+        };
         this.state.showEndVisitSheet = true;
         // Auto-request GPS for checkout location map
         this._getLocation();

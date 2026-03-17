@@ -513,16 +513,34 @@
         </div>
 
         <div class="mobile360-form-group">
-            <label class="mobile360-form-label">Productive Visit?</label>
-            <div style="display:flex;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <label class="mobile360-form-label" style="margin:0;">Productive Visit?</label>
+                <!-- Auto-detected hint -->
+                <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;"
+                    t-attf-style="background:{{(state.activeVisit and state.activeVisit.order_count) ? 'rgba(6,214,160,0.1)' : 'rgba(247,127,0,0.1)'}};color:{{(state.activeVisit and state.activeVisit.order_count) ? '#019b72' : '#f77f00'}};">
+                    <i class="fa fa-magic" style="margin-right:3px;"/>
+                    Auto-detected
+                </span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                 <button t-attf-class="mobile360-btn {{state.endVisitForm.isProductive ? 'mobile360-btn-success' : 'mobile360-btn-ghost'}}"
-                    style="flex:1;padding:10px;" t-on-click="() => this.state.endVisitForm.isProductive = true">
-                    <i class="fa fa-thumbs-up"/> Yes
+                    style="padding:12px;" t-on-click="() => this.state.endVisitForm.isProductive = true">
+                    <i class="fa fa-thumbs-up" style="margin-right:6px;"/> Yes — Productive
                 </button>
                 <button t-attf-class="mobile360-btn {{!state.endVisitForm.isProductive ? 'mobile360-btn-danger' : 'mobile360-btn-ghost'}}"
-                    style="flex:1;padding:10px;" t-on-click="() => this.state.endVisitForm.isProductive = false">
-                    <i class="fa fa-thumbs-down"/> No
+                    style="padding:12px;" t-on-click="() => this.state.endVisitForm.isProductive = false">
+                    <i class="fa fa-thumbs-down" style="margin-right:6px;"/> No — Unproductive
                 </button>
+            </div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:6px;">
+                <t t-if="state.activeVisit and state.activeVisit.order_count">
+                    <i class="fa fa-check-circle" style="color:#06d6a0;margin-right:3px;"/>
+                    <t t-esc="state.activeVisit.order_count"/> order(s) placed — marked productive automatically
+                </t>
+                <t t-else="">
+                    <i class="fa fa-info-circle" style="color:#94a3b8;margin-right:3px;"/>
+                    No orders placed — marked unproductive. You can override below.
+                </t>
             </div>
         </div>
 
