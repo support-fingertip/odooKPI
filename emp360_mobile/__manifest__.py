@@ -1,6 +1,6 @@
 {
     "name": "Employee 360 Mobile",
-    "version": "18.0.1.0.2",
+    "version": "18.0.1.0.3",
     "summary": "PWA-ready Mobile App for Field Users & Managers — Android / iOS web app",
     "description": """
 Employee 360 Mobile Application
