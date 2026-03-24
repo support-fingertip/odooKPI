@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- IR Sequence for BOQ reference numbers -->
+    <record id="seq_boq_boq" model="ir.sequence">
+        <field name="name">BOQ Reference</field>
+        <field name="code">boq.boq</field>
+        <field name="prefix">BOQ/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Default work categories -->
+    <record id="boq_category_electrical" model="boq.category">
+        <field name="name">Electrical</field>
+        <field name="code">electrical</field>
+        <field name="sequence">10</field>
+        <field name="color">4</field>
+        <field name="icon">fa-bolt</field>
+    </record>
+
+    <record id="boq_category_civil" model="boq.category">
+        <field name="name">Civil</field>
+        <field name="code">civil</field>
+        <field name="sequence">20</field>
+        <field name="color">6</field>
+        <field name="icon">fa-building</field>
+    </record>
+
+    <record id="boq_category_lighting" model="boq.category">
+        <field name="name">Lighting</field>
+        <field name="code">lighting</field>
+        <field name="sequence">30</field>
+        <field name="color">3</field>
+        <field name="icon">fa-lightbulb-o</field>
+    </record>
+
+    <record id="boq_category_plumbing" model="boq.category">
+        <field name="name">Plumbing</field>
+        <field name="code">plumbing</field>
+        <field name="sequence">40</field>
+        <field name="color">1</field>
+        <field name="icon">fa-tint</field>
+    </record>
+
+    <record id="boq_category_hvac" model="boq.category">
+        <field name="name">HVAC</field>
+        <field name="code">hvac</field>
+        <field name="sequence">50</field>
+        <field name="color">7</field>
+        <field name="icon">fa-snowflake-o</field>
+    </record>
+
+    <record id="boq_category_finishing" model="boq.category">
+        <field name="name">Finishing</field>
+        <field name="code">finishing</field>
+        <field name="sequence">60</field>
+        <field name="color">5</field>
+        <field name="icon">fa-paint-brush</field>
+    </record>
+
+</odoo>

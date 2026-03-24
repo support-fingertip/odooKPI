@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BOQ MANAGEMENT — Top-level Application Menu
+    ═══════════════════════════════════════════════════════════════ -->
+
+    <menuitem id="menu_boq_root"
+              name="BOQ Management"
+              sequence="80"
+              web_icon="boq_management,static/src/img/boq_icon.png"/>
+
+    <!-- Main -->
+    <menuitem id="menu_boq_main"
+              name="BOQ"
+              parent="menu_boq_root"
+              sequence="10"/>
+
+    <menuitem id="menu_boq_list"
+              name="Bills of Quantities"
+              parent="menu_boq_main"
+              action="action_boq_boq"
+              sequence="10"/>
+
+    <!-- Configuration -->
+    <menuitem id="menu_boq_config"
+              name="Configuration"
+              parent="menu_boq_root"
+              sequence="90"
+              groups="base.group_system"/>
+
+    <menuitem id="menu_boq_categories"
+              name="Work Categories"
+              parent="menu_boq_config"
+              action="action_boq_category"
+              sequence="10"/>
+
+</odoo>
