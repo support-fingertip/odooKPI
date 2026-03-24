@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BOQ ORDER LINE — List View (standalone)
+    ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_boq_order_line_list" model="ir.ui.view">
+        <field name="name">boq.order.line.list</field>
+        <field name="model">boq.order.line</field>
+        <field name="arch" type="xml">
+            <list string="BOQ Lines" decoration-muted="product_type == 'other'">
+                <field name="sequence" widget="handle"/>
+                <field name="boq_id"/>
+                <field name="category_id"/>
+                <field name="product_id"/>
+                <field name="product_name"/>
+                <field name="product_type" widget="badge"
+                       decoration-success="product_type == 'material'"
+                       decoration-info="product_type == 'labour'"
+                       decoration-warning="product_type == 'equipment'"
+                       decoration-danger="product_type == 'subcontract'"/>
+                <field name="qty"/>
+                <field name="uom_id" optional="show"/>
+                <field name="unit_price"/>
+                <field name="subtotal" sum="Total"/>
+                <field name="notes" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BOQ ORDER LINE — Form View (inline / popup)
+    ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_boq_order_line_form" model="ir.ui.view">
+        <field name="name">boq.order.line.form</field>
+        <field name="model">boq.order.line</field>
+        <field name="arch" type="xml">
+            <form string="BOQ Line">
+                <group>
+                    <group string="Product">
+                        <field name="product_id"/>
+                        <field name="product_name"/>
+                        <field name="product_type"/>
+                        <field name="category_id"/>
+                    </group>
+                    <group string="Quantity &amp; Price">
+                        <field name="qty"/>
+                        <field name="uom_id"/>
+                        <field name="unit_price"/>
+                        <field name="subtotal"/>
+                    </group>
+                </group>
+                <field name="notes" placeholder="Additional notes…"/>
+            </form>
+        </field>
+    </record>
+
+</odoo>

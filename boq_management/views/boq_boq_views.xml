@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         INLINE LIST template — reused per category tab
+    ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BOQ — Form View  (MAIN)
+    ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_boq_boq_form" model="ir.ui.view">
+        <field name="name">boq.boq.form</field>
+        <field name="model">boq.boq</field>
+        <field name="arch" type="xml">
+            <form string="Bill of Quantities" class="boq_form">
+
+                <!-- ── Status bar ─────────────────────────────────── -->
+                <header>
+                    <button name="action_confirm" string="Confirm"
+                            type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_done" string="Mark as Done"
+                            type="object" class="btn-primary"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_cancel" string="Cancel"
+                            type="object" class="btn-secondary"
+                            invisible="state in ('done', 'cancelled')"/>
+                    <button name="action_draft" string="Reset to Draft"
+                            type="object" class="btn-secondary"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,done"/>
+                </header>
+
+                <sheet>
+                    <!-- ── Smart Buttons ──────────────────────────── -->
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_view_lines"
+                                class="oe_stat_button" icon="fa-list">
+                            <field name="line_ids" widget="statinfo"
+                                   string="Lines" nolabel="1"/>
+                        </button>
+                    </div>
+
+                    <!-- ── BOQ Banner ─────────────────────────────── -->
+                    <div class="boq_header_banner">
+                        <div class="boq_banner_icon">
+                            <i class="fa fa-calculator fa-3x"/>
+                        </div>
+                        <div class="boq_banner_title">
+                            <div class="oe_title">
+                                <label for="name" string="BOQ Reference"/>
+                                <h1>
+                                    <field name="name" readonly="1" class="boq_ref"/>
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Core info ──────────────────────────────── -->
+                    <group class="boq_core_info">
+                        <group string="Customer &amp; Project">
+                            <field name="partner_id"
+                                   options="{'no_create_edit': True}"
+                                   widget="many2one"
+                                   placeholder="Select customer…"/>
+                            <field name="project_name" placeholder="Project / Contract name"/>
+                            <field name="project_location" placeholder="Site address / GPS"/>
+                            <field name="date"/>
+                        </group>
+                        <group string="Details">
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id" options="{'no_create': True}"/>
+                            <field name="total_amount" widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"
+                                   readonly="1" class="boq_grand_total"/>
+                        </group>
+                    </group>
+
+                    <!-- ═══════════════════════════════════════════
+                         CATEGORY SELECTOR — controls tab visibility
+                    ═══════════════════════════════════════════ -->
+                    <div class="boq_category_selector">
+                        <div class="boq_selector_label">
+                            <i class="fa fa-tags"/> Work Categories
+                            <span class="text-muted small ms-2">
+                                Select the categories of work to activate their tabs below
+                            </span>
+                        </div>
+                        <field name="category_ids"
+                               widget="many2many_tags"
+                               options="{'color_field': 'color', 'no_create_edit': True}"
+                               placeholder="Click to add work categories…"
+                               class="boq_cat_tags"/>
+                    </div>
+
+                    <!-- ═══════════════════════════════════════════
+                         NOTEBOOK TABS — one per category
+                         invisible="not show_xxx" hides the tab
+                         when that category is not selected
+                    ═══════════════════════════════════════════ -->
+                    <notebook class="boq_notebook">
+
+                        <!-- ── ELECTRICAL ──────────────────────── -->
+                        <page string="⚡ Electrical" name="electrical"
+                              invisible="not show_electrical">
+                            <div class="boq_tab_header boq_tab_electrical">
+                                <i class="fa fa-bolt fa-lg"/> Electrical Works
+                                <span class="boq_tab_total">
+                                    Total: <field name="electrical_total"
+                                                  widget="monetary"
+                                                  options="{'currency_field': 'currency_id'}"
+                                                  readonly="1" nolabel="1"/>
+                                </span>
+                            </div>
+                            <field name="electrical_line_ids"
+                                   context="{'default_category_id': ref('boq_management.boq_category_electrical')}"
+                                   widget="one2many"
+                                   mode="list">
+                                <list string="Electrical Lines"
+                                      editable="bottom"
+                                      class="boq_line_table">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id" required="1"
+                                           options="{'no_create_edit': False}"/>
+                                    <field name="product_name"/>
+                                    <field name="product_type" widget="select"/>
+                                    <field name="qty"/>
+                                    <field name="uom_id" optional="show" readonly="1"/>
+                                    <field name="unit_price"/>
+                                    <field name="subtotal" readonly="1" sum="Subtotal"/>
+                                    <field name="notes" optional="hide"/>
+                                    <field name="category_id" column_invisible="True"
+                                           required="1"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- ── CIVIL ───────────────────────────── -->
+                        <page string="🏗️ Civil" name="civil"
+                              invisible="not show_civil">
+                            <div class="boq_tab_header boq_tab_civil">
+                                <i class="fa fa-building fa-lg"/> Civil Works
+                                <span class="boq_tab_total">
+                                    Total: <field name="civil_total"
+                                                  widget="monetary"
+                                                  options="{'currency_field': 'currency_id'}"
+                                                  readonly="1" nolabel="1"/>
+                                </span>
+                            </div>
+                            <field name="civil_line_ids"
+                                   context="{'default_category_id': ref('boq_management.boq_category_civil')}"
+                                   widget="one2many"
+                                   mode="list">
+                                <list string="Civil Lines"
+                                      editable="bottom"
+                                      class="boq_line_table">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id" required="1"/>
+                                    <field name="product_name"/>
+                                    <field name="product_type" widget="select"/>
+                                    <field name="qty"/>
+                                    <field name="uom_id" optional="show" readonly="1"/>
+                                    <field name="unit_price"/>
+                                    <field name="subtotal" readonly="1" sum="Subtotal"/>
+                                    <field name="notes" optional="hide"/>
+                                    <field name="category_id" column_invisible="True"
+                                           required="1"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- ── LIGHTING ─────────────────────────── -->
+                        <page string="💡 Lighting" name="lighting"
+                              invisible="not show_lighting">
+                            <div class="boq_tab_header boq_tab_lighting">
+                                <i class="fa fa-lightbulb-o fa-lg"/> Lighting Works
+                                <span class="boq_tab_total">
+                                    Total: <field name="lighting_total"
+                                                  widget="monetary"
+                                                  options="{'currency_field': 'currency_id'}"
+                                                  readonly="1" nolabel="1"/>
+                                </span>
+                            </div>
+                            <field name="lighting_line_ids"
+                                   context="{'default_category_id': ref('boq_management.boq_category_lighting')}"
+                                   widget="one2many"
+                                   mode="list">
+                                <list string="Lighting Lines"
+                                      editable="bottom"
+                                      class="boq_line_table">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id" required="1"/>
+                                    <field name="product_name"/>
+                                    <field name="product_type" widget="select"/>
+                                    <field name="qty"/>
+                                    <field name="uom_id" optional="show" readonly="1"/>
+                                    <field name="unit_price"/>
+                                    <field name="subtotal" readonly="1" sum="Subtotal"/>
+                                    <field name="notes" optional="hide"/>
+                                    <field name="category_id" column_invisible="True"
+                                           required="1"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- ── PLUMBING ─────────────────────────── -->
+                        <page string="🔧 Plumbing" name="plumbing"
+                              invisible="not show_plumbing">
+                            <div class="boq_tab_header boq_tab_plumbing">
+                                <i class="fa fa-tint fa-lg"/> Plumbing Works
+                                <span class="boq_tab_total">
+                                    Total: <field name="plumbing_total"
+                                                  widget="monetary"
+                                                  options="{'currency_field': 'currency_id'}"
+                                                  readonly="1" nolabel="1"/>
+                                </span>
+                            </div>
+                            <field name="plumbing_line_ids"
+                                   context="{'default_category_id': ref('boq_management.boq_category_plumbing')}"
+                                   widget="one2many"
+                                   mode="list">
+                                <list string="Plumbing Lines"
+                                      editable="bottom"
+                                      class="boq_line_table">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id" required="1"/>
+                                    <field name="product_name"/>
+                                    <field name="product_type" widget="select"/>
+                                    <field name="qty"/>
+                                    <field name="uom_id" optional="show" readonly="1"/>
+                                    <field name="unit_price"/>
+                                    <field name="subtotal" readonly="1" sum="Subtotal"/>
+                                    <field name="notes" optional="hide"/>
+                                    <field name="category_id" column_invisible="True"
+                                           required="1"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- ── HVAC ─────────────────────────────── -->
+                        <page string="❄️ HVAC" name="hvac"
+                              invisible="not show_hvac">
+                            <div class="boq_tab_header boq_tab_hvac">
+                                <i class="fa fa-snowflake-o fa-lg"/> HVAC Works
+                                <span class="boq_tab_total">
+                                    Total: <field name="hvac_total"
+                                                  widget="monetary"
+                                                  options="{'currency_field': 'currency_id'}"
+                                                  readonly="1" nolabel="1"/>
+                                </span>
+                            </div>
+                            <field name="hvac_line_ids"
+                                   context="{'default_category_id': ref('boq_management.boq_category_hvac')}"
+                                   widget="one2many"
+                                   mode="list">
+                                <list string="HVAC Lines"
+                                      editable="bottom"
+                                      class="boq_line_table">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id" required="1"/>
+                                    <field name="product_name"/>
+                                    <field name="product_type" widget="select"/>
+                                    <field name="qty"/>
+                                    <field name="uom_id" optional="show" readonly="1"/>
+                                    <field name="unit_price"/>
+                                    <field name="subtotal" readonly="1" sum="Subtotal"/>
+                                    <field name="notes" optional="hide"/>
+                                    <field name="category_id" column_invisible="True"
+                                           required="1"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- ── FINISHING ────────────────────────── -->
+                        <page string="🎨 Finishing" name="finishing"
+                              invisible="not show_finishing">
+                            <div class="boq_tab_header boq_tab_finishing">
+                                <i class="fa fa-paint-brush fa-lg"/> Finishing Works
+                                <span class="boq_tab_total">
+                                    Total: <field name="finishing_total"
+                                                  widget="monetary"
+                                                  options="{'currency_field': 'currency_id'}"
+                                                  readonly="1" nolabel="1"/>
+                                </span>
+                            </div>
+                            <field name="finishing_line_ids"
+                                   context="{'default_category_id': ref('boq_management.boq_category_finishing')}"
+                                   widget="one2many"
+                                   mode="list">
+                                <list string="Finishing Lines"
+                                      editable="bottom"
+                                      class="boq_line_table">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id" required="1"/>
+                                    <field name="product_name"/>
+                                    <field name="product_type" widget="select"/>
+                                    <field name="qty"/>
+                                    <field name="uom_id" optional="show" readonly="1"/>
+                                    <field name="unit_price"/>
+                                    <field name="subtotal" readonly="1" sum="Subtotal"/>
+                                    <field name="notes" optional="hide"/>
+                                    <field name="category_id" column_invisible="True"
+                                           required="1"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- ── NOTES TAB ─────────────────────────── -->
+                        <page string="📝 Notes" name="notes_tab">
+                            <field name="notes" placeholder="Internal notes, special instructions…"/>
+                        </page>
+
+                    </notebook>
+
+                    <!-- ── Grand Total footer strip ───────────────── -->
+                    <div class="boq_grand_total_strip">
+                        <div class="boq_total_grid">
+                            <div class="boq_total_item boq_tab_electrical"
+                                 invisible="not show_electrical">
+                                <span class="boq_total_label">⚡ Electrical</span>
+                                <field name="electrical_total" widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       readonly="1" nolabel="1"/>
+                            </div>
+                            <div class="boq_total_item boq_tab_civil"
+                                 invisible="not show_civil">
+                                <span class="boq_total_label">🏗 Civil</span>
+                                <field name="civil_total" widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       readonly="1" nolabel="1"/>
+                            </div>
+                            <div class="boq_total_item boq_tab_lighting"
+                                 invisible="not show_lighting">
+                                <span class="boq_total_label">💡 Lighting</span>
+                                <field name="lighting_total" widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       readonly="1" nolabel="1"/>
+                            </div>
+                            <div class="boq_total_item boq_tab_plumbing"
+                                 invisible="not show_plumbing">
+                                <span class="boq_total_label">🔧 Plumbing</span>
+                                <field name="plumbing_total" widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       readonly="1" nolabel="1"/>
+                            </div>
+                            <div class="boq_total_item boq_tab_hvac"
+                                 invisible="not show_hvac">
+                                <span class="boq_total_label">❄️ HVAC</span>
+                                <field name="hvac_total" widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       readonly="1" nolabel="1"/>
+                            </div>
+                            <div class="boq_total_item boq_tab_finishing"
+                                 invisible="not show_finishing">
+                                <span class="boq_total_label">🎨 Finishing</span>
+                                <field name="finishing_total" widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       readonly="1" nolabel="1"/>
+                            </div>
+                        </div>
+                        <div class="boq_grand_total_row">
+                            <span class="boq_grand_label">GRAND TOTAL</span>
+                            <field name="total_amount" widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"
+                                   readonly="1" nolabel="1"
+                                   class="boq_grand_value"/>
+                            <field name="currency_id" invisible="1"/>
+                        </div>
+                    </div>
+
+                </sheet>
+
+                <!-- Chatter -->
+                <chatter/>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BOQ — List View
+    ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_boq_boq_list" model="ir.ui.view">
+        <field name="name">boq.boq.list</field>
+        <field name="model">boq.boq</field>
+        <field name="arch" type="xml">
+            <list string="Bills of Quantities"
+                  decoration-success="state == 'done'"
+                  decoration-info="state == 'confirmed'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="project_name"/>
+                <field name="date"/>
+                <field name="category_ids" widget="many2many_tags"
+                       options="{'color_field': 'color'}"/>
+                <field name="total_amount" sum="Grand Total"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-info="state == 'confirmed'"
+                       decoration-warning="state == 'draft'"
+                       decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BOQ — Kanban View
+    ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_boq_boq_kanban" model="ir.ui.view">
+        <field name="name">boq.boq.kanban</field>
+        <field name="model">boq.boq</field>
+        <field name="arch" type="xml">
+            <kanban class="boq_kanban" default_group_by="state"
+                    quick_create="false">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="project_name"/>
+                <field name="date"/>
+                <field name="state"/>
+                <field name="total_amount"/>
+                <field name="currency_id"/>
+                <field name="category_ids"/>
+                <templates>
+                    <t t-name="card" class="boq_kanban_card">
+                        <div class="boq_card_header">
+                            <span class="boq_card_ref fw-bold">
+                                <field name="name"/>
+                            </span>
+                            <field name="state" widget="label_selection"
+                                   options="{'classes': {'draft': 'secondary', 'confirmed': 'info', 'done': 'success', 'cancelled': 'danger'}}"/>
+                        </div>
+                        <div class="boq_card_body">
+                            <div class="boq_card_customer">
+                                <i class="fa fa-user-o me-1 text-muted"/>
+                                <field name="partner_id"/>
+                            </div>
+                            <div class="boq_card_project" invisible="not project_name">
+                                <i class="fa fa-briefcase me-1 text-muted"/>
+                                <field name="project_name"/>
+                            </div>
+                            <div class="boq_card_date">
+                                <i class="fa fa-calendar me-1 text-muted"/>
+                                <field name="date"/>
+                            </div>
+                        </div>
+                        <div class="boq_card_categories">
+                            <field name="category_ids" widget="many2many_tags"
+                                   options="{'color_field': 'color'}"/>
+                        </div>
+                        <div class="boq_card_footer">
+                            <span class="boq_card_total_label text-muted small">Total</span>
+                            <span class="boq_card_total_value fw-bold text-primary">
+                                <field name="total_amount" widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                            </span>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BOQ — Search View
+    ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_boq_boq_search" model="ir.ui.view">
+        <field name="name">boq.boq.search</field>
+        <field name="model">boq.boq</field>
+        <field name="arch" type="xml">
+            <search string="Search BOQ">
+                <field name="name" string="Reference"/>
+                <field name="partner_id"/>
+                <field name="project_name"/>
+                <field name="category_ids"/>
+                <separator/>
+                <filter string="Draft" name="draft" domain="[('state','=','draft')]"/>
+                <filter string="Confirmed" name="confirmed" domain="[('state','=','confirmed')]"/>
+                <filter string="Done" name="done" domain="[('state','=','done')]"/>
+                <filter string="Cancelled" name="cancelled" domain="[('state','=','cancelled')]"/>
+                <separator/>
+                <filter string="My BOQs" name="my_boqs"
+                        domain="[('create_uid','=',uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Customer" name="group_partner"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter string="Status" name="group_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="Category" name="group_category"
+                            context="{'group_by': 'category_ids'}"/>
+                    <filter string="Date" name="group_date"
+                            context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BOQ — Window Action
+    ═══════════════════════════════════════════════════════════════ -->
+    <record id="action_boq_boq" model="ir.actions.act_window">
+        <field name="name">Bills of Quantities</field>
+        <field name="res_model">boq.boq</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_boq_boq_search"/>
+        <field name="context">{'search_default_draft': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Bill of Quantities!
+            </p>
+            <p>
+                Link a BOQ to a customer, select work categories and
+                start adding product lines per category tab.
+            </p>
+        </field>
+    </record>
+
+</odoo>

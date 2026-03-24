@@ -1,0 +1,379 @@
+/* =====================================================================
+   BOQ MANAGEMENT — Custom Styles for Odoo 18
+   Beautiful, modern, user-friendly UI
+   ===================================================================== */
+
+/* ── CSS Variables ───────────────────────────────────────────────────── */
+:root {
+    --boq-primary:        #2563eb;
+    --boq-primary-light:  #dbeafe;
+    --boq-electrical:     #f59e0b;
+    --boq-electrical-bg:  #fffbeb;
+    --boq-civil:          #6b7280;
+    --boq-civil-bg:       #f9fafb;
+    --boq-lighting:       #eab308;
+    --boq-lighting-bg:    #fefce8;
+    --boq-plumbing:       #3b82f6;
+    --boq-plumbing-bg:    #eff6ff;
+    --boq-hvac:           #06b6d4;
+    --boq-hvac-bg:        #ecfeff;
+    --boq-finishing:      #8b5cf6;
+    --boq-finishing-bg:   #f5f3ff;
+    --boq-shadow-sm:      0 1px 3px rgba(0,0,0,0.10), 0 1px 2px rgba(0,0,0,0.06);
+    --boq-shadow-md:      0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+    --boq-radius:         12px;
+    --boq-radius-sm:      8px;
+}
+
+/* ── Form wrapper ────────────────────────────────────────────────────── */
+.boq_form .o_form_sheet {
+    background: #f8fafc;
+}
+
+/* ── Banner ──────────────────────────────────────────────────────────── */
+.boq_header_banner {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #0ea5e9 100%);
+    border-radius: var(--boq-radius);
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--boq-shadow-md);
+    color: #fff;
+}
+
+.boq_banner_icon {
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #fff;
+}
+
+.boq_banner_title .oe_title label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.75);
+    font-weight: 600;
+}
+
+.boq_banner_title .oe_title h1 .boq_ref {
+    color: #fff !important;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+/* ── Core info group ─────────────────────────────────────────────────── */
+.boq_core_info {
+    background: #fff;
+    border-radius: var(--boq-radius);
+    padding: 1.25rem 1.5rem !important;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--boq-shadow-sm);
+    border: 1px solid #e2e8f0;
+}
+
+.boq_grand_total {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: var(--boq-primary) !important;
+}
+
+/* ── Category selector ───────────────────────────────────────────────── */
+.boq_category_selector {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 2px dashed #bae6fd;
+    border-radius: var(--boq-radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: border-color 0.2s;
+}
+
+.boq_category_selector:hover {
+    border-color: var(--boq-primary);
+}
+
+.boq_selector_label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0369a1;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.boq_cat_tags .badge,
+.boq_cat_tags .o_tag {
+    font-size: 0.825rem !important;
+    padding: 0.35em 0.75em !important;
+    border-radius: 20px !important;
+    font-weight: 600;
+}
+
+/* ── Notebook / tabs ─────────────────────────────────────────────────── */
+.boq_notebook .nav-tabs {
+    border-bottom: 2px solid #e2e8f0;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.boq_notebook .nav-tabs .nav-link {
+    border-radius: var(--boq-radius-sm) var(--boq-radius-sm) 0 0 !important;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.6rem 1.1rem;
+    color: #64748b;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.boq_notebook .nav-tabs .nav-link:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.boq_notebook .nav-tabs .nav-link.active {
+    background: #fff;
+    color: var(--boq-primary);
+    border-color: #e2e8f0 #e2e8f0 #fff;
+    border-bottom: 2px solid var(--boq-primary);
+}
+
+.boq_notebook .tab-pane {
+    background: #fff;
+    border-radius: 0 var(--boq-radius) var(--boq-radius) var(--boq-radius);
+    border: 1px solid #e2e8f0;
+    padding: 1.25rem;
+    box-shadow: var(--boq-shadow-sm);
+}
+
+/* ── Tab header strips ───────────────────────────────────────────────── */
+.boq_tab_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-radius: var(--boq-radius-sm);
+    margin-bottom: 1rem;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+}
+
+.boq_tab_header .boq_tab_total {
+    font-size: 0.875rem;
+    font-weight: 600;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* Per-category colour themes */
+.boq_tab_electrical  { background: var(--boq-electrical-bg);  color: #92400e; border-left: 4px solid var(--boq-electrical); }
+.boq_tab_civil       { background: var(--boq-civil-bg);       color: #374151; border-left: 4px solid var(--boq-civil); }
+.boq_tab_lighting    { background: var(--boq-lighting-bg);    color: #78350f; border-left: 4px solid var(--boq-lighting); }
+.boq_tab_plumbing    { background: var(--boq-plumbing-bg);    color: #1e3a8a; border-left: 4px solid var(--boq-plumbing); }
+.boq_tab_hvac        { background: var(--boq-hvac-bg);        color: #164e63; border-left: 4px solid var(--boq-hvac); }
+.boq_tab_finishing   { background: var(--boq-finishing-bg);   color: #4c1d95; border-left: 4px solid var(--boq-finishing); }
+
+/* ── Order line table ────────────────────────────────────────────────── */
+.boq_line_table thead th {
+    background: #f8fafc;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    font-weight: 700;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 0.65rem 0.75rem;
+}
+
+.boq_line_table tbody tr:hover td {
+    background: #f0f9ff !important;
+}
+
+.boq_line_table tbody tr td {
+    vertical-align: middle;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.9rem;
+}
+
+.boq_line_table tfoot td {
+    font-weight: 700;
+    font-size: 0.925rem;
+    background: #f8fafc;
+    border-top: 2px solid #e2e8f0;
+}
+
+/* ── Grand total footer strip ────────────────────────────────────────── */
+.boq_grand_total_strip {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-radius: var(--boq-radius);
+    padding: 1.5rem 2rem;
+    margin-top: 1.5rem;
+    box-shadow: var(--boq-shadow-md);
+    color: #fff;
+}
+
+.boq_total_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.boq_total_item {
+    border-radius: var(--boq-radius-sm);
+    padding: 0.6rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    background: rgba(255,255,255,0.08);
+}
+
+.boq_total_label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-weight: 600;
+    opacity: 0.7;
+}
+
+.boq_grand_total_row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    padding-top: 1rem;
+}
+
+.boq_grand_label {
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    color: rgba(255,255,255,0.7);
+}
+
+.boq_grand_value {
+    font-size: 2rem !important;
+    font-weight: 800 !important;
+    color: #34d399 !important;
+    letter-spacing: -0.03em;
+}
+
+/* ── Kanban card ─────────────────────────────────────────────────────── */
+.boq_kanban_card {
+    border-radius: var(--boq-radius) !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: var(--boq-shadow-sm) !important;
+    transition: transform 0.15s, box-shadow 0.15s;
+    overflow: hidden;
+}
+
+.boq_kanban_card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--boq-shadow-md) !important;
+}
+
+.boq_card_header {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    padding: 0.85rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.boq_card_ref {
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.boq_card_body {
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.boq_card_categories {
+    padding: 0.5rem 1rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.boq_card_footer {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.boq_card_total_value {
+    font-size: 1.1rem;
+}
+
+/* ── Category Kanban ─────────────────────────────────────────────────── */
+.boq_cat_card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.boq_cat_icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: var(--boq-primary-light);
+    color: var(--boq-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.boq_cat_info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+/* ── Stat button badge ───────────────────────────────────────────────── */
+.o_field_widget .boq_grand_total {
+    color: var(--boq-primary);
+}
+
+/* ── Responsive tweaks ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .boq_header_banner {
+        flex-direction: column;
+        text-align: center;
+    }
+    .boq_total_grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .boq_grand_total_row {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.5rem;
+    }
+    .boq_grand_value {
+        font-size: 1.5rem !important;
+    }
+}
