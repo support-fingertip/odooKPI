@@ -604,9 +604,27 @@
     <field name="model">boq.boq</field>
     <field name="arch" type="xml">
         <search string="Search BOQ">
-            <field name="name" string="Reference"/>
-            <field name="partner_id"/>
-            <field name="state"/>
+            <field name="name" string="Reference"
+                   filter_domain="['|', ('name', 'ilike', self), ('project_name', 'ilike', self)]"/>
+            <field name="partner_id" operator="child_of"/>
+            <field name="project_name"/>
+            <field name="user_id" string="Assigned To" domain="[('share', '=', False)]"/>
+            <filter name="my_boqs" string="My BOQs" domain="[('user_id', '=', uid)]"/>
+            <separator/>
+            <filter name="draft"     string="Draft"     domain="[('state', '=', 'draft')]"/>
+            <filter name="submitted" string="Submitted" domain="[('state', '=', 'submitted')]"/>
+            <filter name="approved"  string="Approved"  domain="[('state', '=', 'approved')]"/>
+            <filter name="done"      string="Done"      domain="[('state', '=', 'done')]"/>
+            <separator/>
+            <filter name="urgent" string="Urgent" domain="[('priority', '=', '1')]"/>
+            <separator/>
+            <filter name="boq_date" string="BOQ Date" date="date"/>
+            <group>
+                <filter string="Customer"    name="grp_partner" context="{'group_by': 'partner_id'}"/>
+                <filter string="Status"      name="grp_state"   context="{'group_by': 'state'}"/>
+                <filter string="Assigned To" name="grp_user"    context="{'group_by': 'user_id'}"/>
+                <filter string="BOQ Date"    name="grp_month"   context="{'group_by': 'date:month'}"/>
+            </group>
         </search>
     </field>
 </record>
