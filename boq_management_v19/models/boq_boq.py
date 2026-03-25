@@ -128,6 +128,14 @@ class BoqBoq(models.Model):
     show_hvac       = fields.Boolean(compute='_compute_tab_flags')
     show_finishing  = fields.Boolean(compute='_compute_tab_flags')
 
+    # Per-category reference fields used in view context for default_category_id
+    electrical_category_id = fields.Many2one('boq.category', compute='_compute_category_refs')
+    civil_category_id      = fields.Many2one('boq.category', compute='_compute_category_refs')
+    lighting_category_id   = fields.Many2one('boq.category', compute='_compute_category_refs')
+    plumbing_category_id   = fields.Many2one('boq.category', compute='_compute_category_refs')
+    hvac_category_id       = fields.Many2one('boq.category', compute='_compute_category_refs')
+    finishing_category_id  = fields.Many2one('boq.category', compute='_compute_category_refs')
+
     @api.depends('category_ids')
     def _compute_tab_flags(self):
         for rec in self:
@@ -138,6 +146,17 @@ class BoqBoq(models.Model):
             rec.show_plumbing   = 'plumbing'   in codes
             rec.show_hvac       = 'hvac'       in codes
             rec.show_finishing  = 'finishing'  in codes
+
+    def _compute_category_refs(self):
+        cats = {c.code: c for c in self.env['boq.category'].search([])}
+        empty = self.env['boq.category']
+        for rec in self:
+            rec.electrical_category_id = cats.get('electrical', empty)
+            rec.civil_category_id      = cats.get('civil',      empty)
+            rec.lighting_category_id   = cats.get('lighting',   empty)
+            rec.plumbing_category_id   = cats.get('plumbing',   empty)
+            rec.hvac_category_id       = cats.get('hvac',       empty)
+            rec.finishing_category_id  = cats.get('finishing',  empty)
 
     # ═══════════════════════════════════════════════════════════════════════
     # ORDER LINES — one domain-filtered O2M per category tab

@@ -248,7 +248,7 @@
                             </div>
                         </div>
                         <field name="electrical_line_ids"
-                               context="{'default_category_id': ref('boq_management_v19.boq_cat_electrical')}"
+                               context="{'default_category_id': electrical_category_id}"
                                mode="list">
                             <list editable="bottom" class="boq_line_table">
                                 <field name="sequence" widget="handle"/>
@@ -285,7 +285,7 @@
                             </div>
                         </div>
                         <field name="civil_line_ids"
-                               context="{'default_category_id': ref('boq_management_v19.boq_cat_civil')}"
+                               context="{'default_category_id': civil_category_id}"
                                mode="list">
                             <list editable="bottom" class="boq_line_table">
                                 <field name="sequence" widget="handle"/>
@@ -321,7 +321,7 @@
                             </div>
                         </div>
                         <field name="lighting_line_ids"
-                               context="{'default_category_id': ref('boq_management_v19.boq_cat_lighting')}"
+                               context="{'default_category_id': lighting_category_id}"
                                mode="list">
                             <list editable="bottom" class="boq_line_table">
                                 <field name="sequence" widget="handle"/>
@@ -357,7 +357,7 @@
                             </div>
                         </div>
                         <field name="plumbing_line_ids"
-                               context="{'default_category_id': ref('boq_management_v19.boq_cat_plumbing')}"
+                               context="{'default_category_id': plumbing_category_id}"
                                mode="list">
                             <list editable="bottom" class="boq_line_table">
                                 <field name="sequence" widget="handle"/>
@@ -393,7 +393,7 @@
                             </div>
                         </div>
                         <field name="hvac_line_ids"
-                               context="{'default_category_id': ref('boq_management_v19.boq_cat_hvac')}"
+                               context="{'default_category_id': hvac_category_id}"
                                mode="list">
                             <list editable="bottom" class="boq_line_table">
                                 <field name="sequence" widget="handle"/>
@@ -429,7 +429,7 @@
                             </div>
                         </div>
                         <field name="finishing_line_ids"
-                               context="{'default_category_id': ref('boq_management_v19.boq_cat_finishing')}"
+                               context="{'default_category_id': finishing_category_id}"
                                mode="list">
                             <list editable="bottom" class="boq_line_table">
                                 <field name="sequence" widget="handle"/>
