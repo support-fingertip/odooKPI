@@ -544,17 +544,16 @@
 }
 
 /* ── PRODUCT NAME — maximum readability ── */
-/* product_id column (many2one link) — target both td[name] and .o_data_cell[name] */
-.boq_line_table td[name="product_id"] .o_field_widget,
-.boq_line_table td[name="product_id"] .o_field_many2one,
-.boq_line_table td[name="product_id"] .o_form_uri,
-.boq_line_table td[name="product_id"] span,
-.boq_line_table td[name="product_id"] a,
-.boq_line_table .o_data_cell[name="product_id"] .o_field_widget,
-.boq_line_table .o_data_cell[name="product_id"] .o_field_many2one,
-.boq_line_table .o_data_cell[name="product_id"] .o_form_uri,
-.boq_line_table .o_data_cell[name="product_id"] span,
-.boq_line_table .o_data_cell[name="product_id"] a {
+/*
+ * IMPORTANT: Only target .o_form_uri (the read-only rendered link) and
+ * direct field containers. Do NOT use broad "span" / "a" selectors here —
+ * they bleed into the many2one autocomplete dropdown popup and make the
+ * suggestion list unreadable.
+ */
+
+/* product_id — read-only displayed value (o_form_uri is the link Odoo renders) */
+.boq_line_table td[name="product_id"] > .o_field_widget > .o_form_uri,
+.boq_line_table .o_data_cell[name="product_id"] > .o_field_widget > .o_form_uri {
   color: var(--boq-primary) !important;
   font-weight: 700 !important;
   font-size: 0.9rem !important;
@@ -562,17 +561,36 @@
   text-decoration: none !important;
 }
 
-/* product_name column (Char description) */
-.boq_line_table td[name="product_name"] .o_field_widget,
-.boq_line_table td[name="product_name"] span,
-.boq_line_table td[name="product_name"] input,
-.boq_line_table .o_data_cell[name="product_name"] .o_field_widget,
-.boq_line_table .o_data_cell[name="product_name"] span,
-.boq_line_table .o_data_cell[name="product_name"] input {
+/* product_name column (Char description) — only the rendered read-only span */
+.boq_line_table td[name="product_name"] > .o_field_widget > span,
+.boq_line_table .o_data_cell[name="product_name"] > .o_field_widget > span {
   color: var(--boq-text-secondary) !important;
   font-weight: 600 !important;
   font-size: 0.85rem !important;
   -webkit-text-fill-color: var(--boq-text-secondary) !important;
+}
+
+/* ── AUTOCOMPLETE / MANY2ONE DROPDOWN — always readable dark text ──
+ * Override any inherited color so dropdown suggestions are never blue.
+ * These selectors target the popup that floats outside the table.
+ */
+.o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item,
+.o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item a,
+.o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item span,
+.o_field_many2one .dropdown-menu .dropdown-item,
+.o_field_many2one .dropdown-menu .dropdown-item span,
+.o_field_many2one_selection .dropdown-menu .dropdown-item,
+.o_field_many2one_selection .dropdown-menu .dropdown-item span {
+  color: #1e293b !important;
+  -webkit-text-fill-color: #1e293b !important;
+  font-weight: 500 !important;
+}
+
+.o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item:hover,
+.o_field_many2one .dropdown-menu .dropdown-item:hover {
+  background: var(--boq-primary-light) !important;
+  color: var(--boq-primary) !important;
+  -webkit-text-fill-color: var(--boq-primary) !important;
 }
 
 /* Input text inside editable cells */
@@ -590,23 +608,24 @@
   -webkit-text-fill-color: var(--boq-text-primary) !important;
 }
 
-/* product_id + product_name in selected row — keep them vivid even when editing */
-.boq_line_table tbody tr.o_selected_row td[name="product_id"] .o_form_uri,
-.boq_line_table tbody tr.o_selected_row td[name="product_id"] a,
-.boq_line_table tbody tr.o_selected_row td[name="product_id"] span,
-.boq_line_table tbody tr.o_selected_row td[name="product_id"] input,
-.boq_line_table tbody tr.o_selected_row .o_data_cell[name="product_id"] .o_form_uri,
-.boq_line_table tbody tr.o_selected_row .o_data_cell[name="product_id"] a,
-.boq_line_table tbody tr.o_selected_row .o_data_cell[name="product_id"] span,
-.boq_line_table tbody tr.o_selected_row .o_data_cell[name="product_id"] input {
+/* product_id in selected/editing row — keep the form_uri link vivid */
+.boq_line_table tbody tr.o_selected_row td[name="product_id"] > .o_field_widget > .o_form_uri,
+.boq_line_table tbody tr.o_selected_row .o_data_cell[name="product_id"] > .o_field_widget > .o_form_uri {
   color: var(--boq-primary) !important;
   font-weight: 700 !important;
   -webkit-text-fill-color: var(--boq-primary) !important;
 }
 
-/* Non-editable field values (read-only links and spans) */
-.boq_line_table .o_field_widget .o_form_uri,
-.boq_line_table .o_field_widget span:not(.o_arrow):not(.boq_tab_badge) {
+/* product_id input while typing (search box inside the many2one) */
+.boq_line_table tbody tr.o_selected_row td[name="product_id"] input,
+.boq_line_table tbody tr.o_selected_row .o_data_cell[name="product_id"] input {
+  color: var(--boq-text-primary) !important;
+  -webkit-text-fill-color: var(--boq-text-primary) !important;
+  font-weight: 600 !important;
+}
+
+/* Non-editable field values — only target direct children to avoid dropdown bleed */
+.boq_line_table .o_field_widget > .o_form_uri {
   color: var(--boq-text-primary) !important;
 }
 
