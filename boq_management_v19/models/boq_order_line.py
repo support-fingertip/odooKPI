@@ -72,11 +72,6 @@ class BoqOrderLine(models.Model):
         readonly=False,
         precompute=True,
     )
-    uom_category_id = fields.Many2one(
-        related='product_id.uom_id.category_id',
-        string='UoM Category',
-    )
-
     # ── Quantity & Price ──────────────────────────────────────────────────
     qty = fields.Float(
         string='Quantity',
