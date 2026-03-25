@@ -147,6 +147,7 @@ class BoqBoq(models.Model):
             rec.show_hvac       = 'hvac'       in codes
             rec.show_finishing  = 'finishing'  in codes
 
+    @api.depends('category_ids')
     def _compute_category_refs(self):
         cats = {c.code: c for c in self.env['boq.category'].search([])}
         empty = self.env['boq.category']

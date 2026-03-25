@@ -79,6 +79,7 @@ class BoqCategory(models.Model):
         for rec in self:
             rec.tag_color_class = color_map.get(rec.color, 'boq_tag_grey')
 
+    @api.depends()
     def _compute_boq_count(self):
         Line = self.env['boq.order.line']
         for rec in self:
