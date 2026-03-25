@@ -423,15 +423,39 @@
   padding: 0.5rem 0.75rem !important;
   border-bottom: 1px solid #f1f5f9 !important;
   font-size: 0.875rem !important;
+  color: #1e293b !important;
   transition: background 0.1s;
 }
 
 .boq_line_table tbody tr:hover td {
   background: #eff6ff !important;
+  color: #1e293b !important;
 }
 
 .boq_line_table tbody tr.o_selected_row td {
   background: #dbeafe !important;
+  color: #1e293b !important;
+}
+
+/* Force inputs, spans and field widgets inside editable rows to always show dark text */
+.boq_line_table tbody tr.o_selected_row td input,
+.boq_line_table tbody tr.o_selected_row td textarea,
+.boq_line_table tbody tr.o_selected_row td .o_field_widget,
+.boq_line_table tbody tr.o_selected_row td .o_field_widget span,
+.boq_line_table tbody tr.o_selected_row td .o_field_many2one input,
+.boq_line_table tbody tr.o_selected_row td .o_field_char input,
+.boq_line_table tbody tr.o_selected_row td .o_field_float input,
+.boq_line_table tbody tr.o_selected_row td .o_field_monetary input,
+.boq_line_table tbody tr.o_selected_row td .o_input {
+  color: #1e293b !important;
+  background: transparent !important;
+  -webkit-text-fill-color: #1e293b !important;
+}
+
+/* Non-editable / readonly field values in all rows */
+.boq_line_table .o_field_widget .o_form_uri,
+.boq_line_table .o_field_widget span:not(.o_arrow) {
+  color: #1e293b !important;
 }
 
 .boq_line_table tfoot td {
