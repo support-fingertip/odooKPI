@@ -59,18 +59,16 @@
   border-radius: var(--boq-r-lg);
   box-shadow: var(--boq-shadow-lg);
   border: 1px solid #e2e8f0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* ── Reference number ──────────────────────────────────────────────────── */
 .boq_ref_number {
   font-size: 2rem !important;
   font-weight: 800 !important;
-  background: linear-gradient(135deg, var(--boq-blue-dark), var(--boq-blue-mid));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--boq-blue) !important;
   letter-spacing: -0.03em;
+  line-height: 1.2;
 }
 
 .boq_project_title {
@@ -96,7 +94,7 @@
   margin-bottom: 1.25rem;
   box-shadow: var(--boq-shadow-sm);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .boq_hero_card::before {
