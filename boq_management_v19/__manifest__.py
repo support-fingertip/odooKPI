@@ -25,7 +25,6 @@
         'product',
         'contacts',
         'web',
-        'web_enterprise',
         'uom',
     ],
     'data': [
