@@ -403,11 +403,9 @@
 .boq_band_finishing  { background: var(--boq-finish-bg); color: #4c1d95; border-left: 4px solid var(--boq-finish); }
 
 /* ── Order Line Table ──────────────────────────────────────────────────── */
-.boq_line_table {
-  border-top: none !important;
-}
 
-.boq_line_table thead tr th {
+/* Table header */
+.boq_enterprise_form .o_field_one2many thead tr th {
   background: #f8fafc !important;
   color: #64748b !important;
   font-size: 0.72rem !important;
@@ -418,10 +416,12 @@
   padding: 0.65rem 0.75rem !important;
 }
 
-/* Normal rows — explicit white so no dark background leaks through */
-.boq_line_table tbody tr,
-.boq_line_table tbody tr td {
-  background: #fff !important;
+/* Normal rows — explicit white background to override any Odoo dark row style */
+.boq_enterprise_form .o_field_one2many tbody tr {
+  background: #ffffff !important;
+}
+.boq_enterprise_form .o_field_one2many tbody tr td {
+  background: #ffffff !important;
   color: #1e293b !important;
   vertical-align: middle !important;
   padding: 0.5rem 0.75rem !important;
@@ -431,38 +431,42 @@
 }
 
 /* Hover */
-.boq_line_table tbody tr:hover,
-.boq_line_table tbody tr:hover td {
+.boq_enterprise_form .o_field_one2many tbody tr:hover td {
   background: #eff6ff !important;
   color: #1e293b !important;
 }
 
-/* Selected / editing row */
-.boq_line_table tbody tr.o_selected_row,
-.boq_line_table tbody tr.o_selected_row td {
+/* Editing row */
+.boq_enterprise_form .o_field_one2many tbody tr.o_selected_row td {
   background: #dbeafe !important;
   color: #1e293b !important;
 }
 
-/* All inputs and field text inside every row — always dark */
-.boq_line_table tbody td input,
-.boq_line_table tbody td textarea,
-.boq_line_table tbody td .o_input,
-.boq_line_table tbody td .o_field_widget,
-.boq_line_table tbody td .o_field_widget span,
-.boq_line_table tbody td .o_field_widget input,
-.boq_line_table tbody td .o_form_uri {
+/* All text inside rows — always dark and readable */
+.boq_enterprise_form .o_field_one2many tbody td .o_field_widget,
+.boq_enterprise_form .o_field_one2many tbody td .o_field_widget span,
+.boq_enterprise_form .o_field_one2many tbody td .o_field_widget input,
+.boq_enterprise_form .o_field_one2many tbody td .o_form_uri,
+.boq_enterprise_form .o_field_one2many tbody td input,
+.boq_enterprise_form .o_field_one2many tbody td .o_input {
   color: #1e293b !important;
   -webkit-text-fill-color: #1e293b !important;
 }
 
-.boq_line_table tfoot td {
+/* Footer / sum row */
+.boq_enterprise_form .o_field_one2many tfoot td {
   background: #f8fafc !important;
   color: #1e293b !important;
   font-weight: 700 !important;
   font-size: 0.875rem !important;
   border-top: 2px solid #e2e8f0 !important;
   padding: 0.6rem 0.75rem !important;
+}
+
+/* "Add a line" footer row */
+.boq_enterprise_form .o_field_one2many .o_field_x2many_list_row_add td {
+  background: #ffffff !important;
+  color: #2563eb !important;
 }
 
 /* ── Kanban View ───────────────────────────────────────────────────────── */
