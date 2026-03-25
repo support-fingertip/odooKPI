@@ -608,7 +608,6 @@
             <field name="partner_id"/>
             <field name="project_name"/>
             <field name="user_id"/>
-            <field name="category_ids"/>
             <separator/>
             <filter string="My BOQs" name="my_boqs"
                     domain="[('user_id','=',uid)]"/>
@@ -622,9 +621,6 @@
                     domain="[('state','=','done')]"/>
             <filter string="Urgent"    name="urgent"
                     domain="[('priority','=','1')]"/>
-            <separator/>
-            <filter string="This Month" name="this_month"
-                    domain="[('date','&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
             <group expand="0" string="Group By">
                 <filter string="Customer"  name="grp_partner"
                         context="{'group_by': 'partner_id'}"/>
