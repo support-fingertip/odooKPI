@@ -624,14 +624,12 @@
                     domain="[('priority','=','1')]"/>
             <separator/>
             <filter string="This Month" name="this_month"
-                    domain="[('date','&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d'))]"/>
+                    domain="[('date','&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
             <group expand="0" string="Group By">
                 <filter string="Customer"  name="grp_partner"
                         context="{'group_by': 'partner_id'}"/>
                 <filter string="Status"    name="grp_state"
                         context="{'group_by': 'state'}"/>
-                <filter string="Category"  name="grp_cat"
-                        context="{'group_by': 'category_ids'}"/>
                 <filter string="Assigned To" name="grp_user"
                         context="{'group_by': 'user_id'}"/>
                 <filter string="Month"     name="grp_month"
