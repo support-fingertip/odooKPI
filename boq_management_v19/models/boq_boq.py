@@ -238,7 +238,12 @@ class BoqBoq(models.Model):
         precompute=True,
     )
 
-    @api.depends('line_ids.subtotal', 'line_ids.category_id')
+    @api.depends(
+        'line_ids.subtotal', 'line_ids.category_id',
+        'electrical_line_ids.subtotal', 'civil_line_ids.subtotal',
+        'lighting_line_ids.subtotal', 'plumbing_line_ids.subtotal',
+        'hvac_line_ids.subtotal', 'finishing_line_ids.subtotal',
+    )
     def _compute_totals(self):
         for rec in self:
             lines = rec.line_ids
