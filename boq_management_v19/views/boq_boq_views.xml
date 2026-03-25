@@ -251,18 +251,18 @@
                                context="{'default_category_id': electrical_category_id}"
                                mode="list">
                             <list editable="bottom" class="boq_line_table">
-                                <field name="sequence" widget="handle"/>
-                                <field name="product_id" required="1"
+                                <field name="sequence" widget="handle" string="#"/>
+                                <field name="product_id" required="1" string="Product"
                                        options="{'no_create_edit': False}"/>
-                                <field name="product_name"/>
-                                <field name="product_type"/>
-                                <field name="qty"/>
-                                <field name="uom_id" readonly="1" optional="show"/>
-                                <field name="unit_price"/>
-                                <field name="discount" optional="hide"/>
-                                <field name="subtotal" readonly="1" sum="Subtotal"/>
+                                <field name="product_name" string="Description"/>
+                                <field name="product_type" string="Type"/>
+                                <field name="qty" string="Qty"/>
+                                <field name="uom_id" string="Unit" readonly="1" optional="show"/>
+                                <field name="unit_price" string="Unit Price"/>
+                                <field name="discount" string="Disc %" optional="hide"/>
+                                <field name="subtotal" string="Subtotal" readonly="1" sum="Tab Total"/>
                                 <field name="currency_id" column_invisible="True"/>
-                                <field name="notes" optional="hide"/>
+                                <field name="notes" string="Notes" optional="hide"/>
                                 <field name="category_id" column_invisible="True" required="1"/>
                             </list>
                         </field>
@@ -288,17 +288,17 @@
                                context="{'default_category_id': civil_category_id}"
                                mode="list">
                             <list editable="bottom" class="boq_line_table">
-                                <field name="sequence" widget="handle"/>
-                                <field name="product_id" required="1"/>
-                                <field name="product_name"/>
-                                <field name="product_type"/>
-                                <field name="qty"/>
-                                <field name="uom_id" readonly="1" optional="show"/>
-                                <field name="unit_price"/>
-                                <field name="discount" optional="hide"/>
-                                <field name="subtotal" readonly="1" sum="Subtotal"/>
+                                <field name="sequence" widget="handle" string="#"/>
+                                <field name="product_id" required="1" string="Product"/>
+                                <field name="product_name" string="Description"/>
+                                <field name="product_type" string="Type"/>
+                                <field name="qty" string="Qty"/>
+                                <field name="uom_id" string="Unit" readonly="1" optional="show"/>
+                                <field name="unit_price" string="Unit Price"/>
+                                <field name="discount" string="Disc %" optional="hide"/>
+                                <field name="subtotal" string="Subtotal" readonly="1" sum="Tab Total"/>
                                 <field name="currency_id" column_invisible="True"/>
-                                <field name="notes" optional="hide"/>
+                                <field name="notes" string="Notes" optional="hide"/>
                                 <field name="category_id" column_invisible="True" required="1"/>
                             </list>
                         </field>
@@ -324,17 +324,17 @@
                                context="{'default_category_id': lighting_category_id}"
                                mode="list">
                             <list editable="bottom" class="boq_line_table">
-                                <field name="sequence" widget="handle"/>
-                                <field name="product_id" required="1"/>
-                                <field name="product_name"/>
-                                <field name="product_type"/>
-                                <field name="qty"/>
-                                <field name="uom_id" readonly="1" optional="show"/>
-                                <field name="unit_price"/>
-                                <field name="discount" optional="hide"/>
-                                <field name="subtotal" readonly="1" sum="Subtotal"/>
+                                <field name="sequence" widget="handle" string="#"/>
+                                <field name="product_id" required="1" string="Product"/>
+                                <field name="product_name" string="Description"/>
+                                <field name="product_type" string="Type"/>
+                                <field name="qty" string="Qty"/>
+                                <field name="uom_id" string="Unit" readonly="1" optional="show"/>
+                                <field name="unit_price" string="Unit Price"/>
+                                <field name="discount" string="Disc %" optional="hide"/>
+                                <field name="subtotal" string="Subtotal" readonly="1" sum="Tab Total"/>
                                 <field name="currency_id" column_invisible="True"/>
-                                <field name="notes" optional="hide"/>
+                                <field name="notes" string="Notes" optional="hide"/>
                                 <field name="category_id" column_invisible="True" required="1"/>
                             </list>
                         </field>
@@ -360,17 +360,17 @@
                                context="{'default_category_id': plumbing_category_id}"
                                mode="list">
                             <list editable="bottom" class="boq_line_table">
-                                <field name="sequence" widget="handle"/>
-                                <field name="product_id" required="1"/>
-                                <field name="product_name"/>
-                                <field name="product_type"/>
-                                <field name="qty"/>
-                                <field name="uom_id" readonly="1" optional="show"/>
-                                <field name="unit_price"/>
-                                <field name="discount" optional="hide"/>
-                                <field name="subtotal" readonly="1" sum="Subtotal"/>
+                                <field name="sequence" widget="handle" string="#"/>
+                                <field name="product_id" required="1" string="Product"/>
+                                <field name="product_name" string="Description"/>
+                                <field name="product_type" string="Type"/>
+                                <field name="qty" string="Qty"/>
+                                <field name="uom_id" string="Unit" readonly="1" optional="show"/>
+                                <field name="unit_price" string="Unit Price"/>
+                                <field name="discount" string="Disc %" optional="hide"/>
+                                <field name="subtotal" string="Subtotal" readonly="1" sum="Tab Total"/>
                                 <field name="currency_id" column_invisible="True"/>
-                                <field name="notes" optional="hide"/>
+                                <field name="notes" string="Notes" optional="hide"/>
                                 <field name="category_id" column_invisible="True" required="1"/>
                             </list>
                         </field>
@@ -396,17 +396,17 @@
                                context="{'default_category_id': hvac_category_id}"
                                mode="list">
                             <list editable="bottom" class="boq_line_table">
-                                <field name="sequence" widget="handle"/>
-                                <field name="product_id" required="1"/>
-                                <field name="product_name"/>
-                                <field name="product_type"/>
-                                <field name="qty"/>
-                                <field name="uom_id" readonly="1" optional="show"/>
-                                <field name="unit_price"/>
-                                <field name="discount" optional="hide"/>
-                                <field name="subtotal" readonly="1" sum="Subtotal"/>
+                                <field name="sequence" widget="handle" string="#"/>
+                                <field name="product_id" required="1" string="Product"/>
+                                <field name="product_name" string="Description"/>
+                                <field name="product_type" string="Type"/>
+                                <field name="qty" string="Qty"/>
+                                <field name="uom_id" string="Unit" readonly="1" optional="show"/>
+                                <field name="unit_price" string="Unit Price"/>
+                                <field name="discount" string="Disc %" optional="hide"/>
+                                <field name="subtotal" string="Subtotal" readonly="1" sum="Tab Total"/>
                                 <field name="currency_id" column_invisible="True"/>
-                                <field name="notes" optional="hide"/>
+                                <field name="notes" string="Notes" optional="hide"/>
                                 <field name="category_id" column_invisible="True" required="1"/>
                             </list>
                         </field>
@@ -432,17 +432,17 @@
                                context="{'default_category_id': finishing_category_id}"
                                mode="list">
                             <list editable="bottom" class="boq_line_table">
-                                <field name="sequence" widget="handle"/>
-                                <field name="product_id" required="1"/>
-                                <field name="product_name"/>
-                                <field name="product_type"/>
-                                <field name="qty"/>
-                                <field name="uom_id" readonly="1" optional="show"/>
-                                <field name="unit_price"/>
-                                <field name="discount" optional="hide"/>
-                                <field name="subtotal" readonly="1" sum="Subtotal"/>
+                                <field name="sequence" widget="handle" string="#"/>
+                                <field name="product_id" required="1" string="Product"/>
+                                <field name="product_name" string="Description"/>
+                                <field name="product_type" string="Type"/>
+                                <field name="qty" string="Qty"/>
+                                <field name="uom_id" string="Unit" readonly="1" optional="show"/>
+                                <field name="unit_price" string="Unit Price"/>
+                                <field name="discount" string="Disc %" optional="hide"/>
+                                <field name="subtotal" string="Subtotal" readonly="1" sum="Tab Total"/>
                                 <field name="currency_id" column_invisible="True"/>
-                                <field name="notes" optional="hide"/>
+                                <field name="notes" string="Notes" optional="hide"/>
                                 <field name="category_id" column_invisible="True" required="1"/>
                             </list>
                         </field>
