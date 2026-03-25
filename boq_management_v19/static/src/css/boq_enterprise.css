@@ -1,192 +1,238 @@
 /* =========================================================================
    BOQ MANAGEMENT — Enterprise UI Stylesheet  (Odoo 19 / Bootstrap 5.3)
+   Redesigned: vibrant colors, high-contrast product names, readable tables
    ========================================================================= */
 
 /* ── Design Tokens ─────────────────────────────────────────────────────── */
 :root {
-  /* Brand palette */
-  --boq-blue-dark:    #1e3a8a;
-  --boq-blue:         #2563eb;
-  --boq-blue-mid:     #3b82f6;
-  --boq-blue-light:   #dbeafe;
-  --boq-blue-pale:    #eff6ff;
+  /* ── Primary brand ── */
+  --boq-primary:        #0f4c81;   /* deep ocean blue */
+  --boq-primary-mid:    #1a6fb5;
+  --boq-primary-light:  #e8f4fd;
+  --boq-primary-pale:   #f0f8ff;
 
-  /* Category accent colours */
-  --boq-elec:         #f59e0b;
-  --boq-elec-bg:      #fffbeb;
-  --boq-elec-border:  #fcd34d;
+  /* ── Accent ── */
+  --boq-accent:         #e67e22;   /* warm amber / orange */
+  --boq-accent-light:   #fef3e2;
 
-  --boq-civil:        #6b7280;
-  --boq-civil-bg:     #f9fafb;
-  --boq-civil-border: #d1d5db;
+  /* ── Success (totals) ── */
+  --boq-green:          #16a34a;
+  --boq-green-light:    #dcfce7;
+  --boq-green-bright:   #22c55e;
 
-  --boq-light:        #eab308;
-  --boq-light-bg:     #fefce8;
-  --boq-light-border: #fde047;
+  /* ── Text hierarchy ── */
+  --boq-text-primary:   #0a1628;   /* near black — used for product names */
+  --boq-text-secondary: #374151;
+  --boq-text-muted:     #6b7280;
 
-  --boq-plumb:        #3b82f6;
-  --boq-plumb-bg:     #eff6ff;
-  --boq-plumb-border: #93c5fd;
+  /* ── Category accent colours — vivid & distinct ── */
+  --boq-elec:           #d97706;   /* amber-600 */
+  --boq-elec-dark:      #92400e;
+  --boq-elec-bg:        #fffbeb;
+  --boq-elec-row:       #fef9ee;
+  --boq-elec-border:    #fbbf24;
+  --boq-elec-header:    #b45309;
 
-  --boq-hvac:         #06b6d4;
-  --boq-hvac-bg:      #ecfeff;
-  --boq-hvac-border:  #67e8f9;
+  --boq-civil:          #4b5563;   /* slate-600 */
+  --boq-civil-dark:     #1f2937;
+  --boq-civil-bg:       #f3f4f6;
+  --boq-civil-row:      #f9fafb;
+  --boq-civil-border:   #9ca3af;
+  --boq-civil-header:   #374151;
 
-  --boq-finish:       #8b5cf6;
-  --boq-finish-bg:    #f5f3ff;
-  --boq-finish-border:#c4b5fd;
+  --boq-light:          #ca8a04;   /* yellow-600 */
+  --boq-light-dark:     #713f12;
+  --boq-light-bg:       #fefce8;
+  --boq-light-row:      #fffde7;
+  --boq-light-border:   #facc15;
+  --boq-light-header:   #854d0e;
 
-  /* Shadows */
-  --boq-shadow-xs: 0 1px 2px rgba(0,0,0,.06);
-  --boq-shadow-sm: 0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
-  --boq-shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
-  --boq-shadow-lg: 0 10px 15px rgba(0,0,0,.08), 0 4px 6px rgba(0,0,0,.05);
+  --boq-plumb:          #2563eb;   /* blue-600 */
+  --boq-plumb-dark:     #1e3a8a;
+  --boq-plumb-bg:       #eff6ff;
+  --boq-plumb-row:      #f0f7ff;
+  --boq-plumb-border:   #60a5fa;
+  --boq-plumb-header:   #1d4ed8;
 
-  /* Radius */
+  --boq-hvac:           #0891b2;   /* cyan-600 */
+  --boq-hvac-dark:      #164e63;
+  --boq-hvac-bg:        #ecfeff;
+  --boq-hvac-row:       #f0fdfe;
+  --boq-hvac-border:    #22d3ee;
+  --boq-hvac-header:    #0e7490;
+
+  --boq-finish:         #7c3aed;   /* violet-600 */
+  --boq-finish-dark:    #4c1d95;
+  --boq-finish-bg:      #f5f3ff;
+  --boq-finish-row:     #faf5ff;
+  --boq-finish-border:  #a78bfa;
+  --boq-finish-header:  #6d28d9;
+
+  /* ── Shadows ── */
+  --boq-shadow-xs: 0 1px 2px rgba(0,0,0,.07);
+  --boq-shadow-sm: 0 2px 4px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
+  --boq-shadow-md: 0 6px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.07);
+  --boq-shadow-lg: 0 12px 24px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.06);
+
+  /* ── Radius ── */
   --boq-r-sm: 8px;
-  --boq-r:    12px;
-  --boq-r-lg: 18px;
+  --boq-r:    14px;
+  --boq-r-lg: 20px;
 
-  /* Transitions */
+  /* ── Transition ── */
   --boq-transition: all 0.18s cubic-bezier(.4,0,.2,1);
 }
 
-/* ── Form wrapper ──────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   FORM WRAPPER
+   ───────────────────────────────────────────────────────────────────────── */
 .boq_enterprise_form .o_form_sheet_bg {
-  background: linear-gradient(160deg, #f0f4ff 0%, #f8fafc 50%, #f0fdf4 100%);
+  background: linear-gradient(150deg, #e8f4fd 0%, #f5f3ff 50%, #ecfdf5 100%);
+  min-height: 100vh;
 }
+
 .boq_enterprise_form .o_form_sheet {
   border-radius: var(--boq-r-lg);
   box-shadow: var(--boq-shadow-lg);
-  border: 1px solid #e2e8f0;
+  border: 1px solid #cbd5e1;
   overflow: visible;
+  background: #ffffff;
 }
 
-/* ── Reference number ──────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   TITLE AREA
+   ───────────────────────────────────────────────────────────────────────── */
 .boq_ref_number {
-  font-size: 2rem !important;
-  font-weight: 800 !important;
-  color: var(--boq-blue) !important;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
+  font-size: 2.2rem !important;
+  font-weight: 900 !important;
+  color: var(--boq-primary) !important;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+  text-shadow: 0 1px 0 rgba(255,255,255,.8);
 }
 
 .boq_project_title {
   font-size: 1.1rem;
-  color: #64748b;
+  color: var(--boq-text-secondary);
   font-weight: 500;
-  margin-top: 0.25rem;
+  margin-top: 0.3rem;
 }
 .boq_project_inline {
-  color: #475569 !important;
+  color: var(--boq-primary-mid) !important;
   font-weight: 600;
 }
 
-/* ── Hero Card ──────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   HERO CARD — customer + project details
+   ───────────────────────────────────────────────────────────────────────── */
 .boq_hero_card {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0;
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
-  border: none;
+  background: linear-gradient(130deg, #0f4c81 0%, #1a6fb5 55%, #0ea5e9 100%);
   border-radius: var(--boq-r);
   padding: 0;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
   box-shadow: var(--boq-shadow-lg);
-  position: relative;
   overflow: hidden;
+  position: relative;
 }
 
-.boq_hero_card::before {
-  display: none;
+/* decorative circle */
+.boq_hero_card::after {
+  content: "";
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  pointer-events: none;
 }
 
 .boq_hero_left {
   display: flex;
-  gap: 1rem;
+  gap: 1.1rem;
   align-items: flex-start;
-  padding: 1.5rem 1.75rem;
-  background: rgba(255,255,255,0.06);
-  border-right: 1px solid rgba(255,255,255,0.12);
+  padding: 1.75rem 2rem;
+  background: rgba(0,0,0,0.08);
+  border-right: 1px solid rgba(255,255,255,0.15);
 }
 
 .boq_hero_icon {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: var(--boq-r-sm);
-  background: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.18);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 1px solid rgba(255,255,255,0.25);
+  border: 1px solid rgba(255,255,255,0.30);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .boq_hero_info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.65rem;
 }
 
 .boq_hero_right {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-  padding: 1.5rem 1.75rem;
-  border-left: none;
-  padding-left: 1.75rem;
+  gap: 0.65rem;
+  padding: 1.75rem 2rem;
 }
 
 .boq_field_row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
 .boq_field_label {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(255,255,255,0.55);
-  min-width: 90px;
+  letter-spacing: 0.09em;
+  color: rgba(255,255,255,0.60);
+  min-width: 95px;
   flex-shrink: 0;
 }
 
-/* Force field values to be white and bold inside the hero card */
+/* Force ALL hero card text to be white and readable */
 .boq_hero_card .o_field_widget,
 .boq_hero_card .o_field_widget span,
 .boq_hero_card .o_field_widget input,
+.boq_hero_card .o_field_widget a,
 .boq_hero_card .o_field_widget .o_form_uri,
 .boq_hero_card .o_field_many2one .o_form_uri,
 .boq_hero_card .o_field_char,
-.boq_hero_card .o_field_date span {
-  color: #fff !important;
+.boq_hero_card .o_field_date span,
+.boq_hero_card .o_field_many2one_avatar_user span {
+  color: #ffffff !important;
   font-weight: 600 !important;
-  font-size: 0.9rem !important;
+  font-size: 0.92rem !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 
 .boq_hero_card .o_field_widget input::placeholder,
 .boq_hero_card .o_field_widget .o_field_empty {
-  color: rgba(255,255,255,0.35) !important;
+  color: rgba(255,255,255,0.40) !important;
+  -webkit-text-fill-color: rgba(255,255,255,0.40) !important;
 }
 
 .boq_hero_card .o_field_many2one_avatar_user .o_avatar {
-  border: 2px solid rgba(255,255,255,0.4);
+  border: 2px solid rgba(255,255,255,0.50);
 }
 
-/* Avatar user name next to avatar */
-.boq_hero_card .o_field_many2one_avatar_user span {
-  color: #fff !important;
-  font-weight: 600 !important;
-}
-
-/* ── Category Selector Panel ──────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   CATEGORY SELECTOR PANEL
+   ───────────────────────────────────────────────────────────────────────── */
 .boq_category_panel {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border: 2px dashed #7dd3fc;
+  background: linear-gradient(135deg, #f0f8ff 0%, #e0f2fe 100%);
+  border: 2px dashed #60a5fa;
   border-radius: var(--boq-r);
   padding: 1.25rem 1.5rem;
   margin-bottom: 1.25rem;
@@ -194,9 +240,9 @@
 }
 
 .boq_category_panel:focus-within {
-  border-color: var(--boq-blue);
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+  border-color: var(--boq-primary-mid);
+  background: linear-gradient(135deg, #e8f4fd 0%, #dbeafe 100%);
+  box-shadow: 0 0 0 4px rgba(26, 111, 181, 0.12);
 }
 
 .boq_category_panel_header {
@@ -208,62 +254,67 @@
 
 .boq_panel_title {
   font-size: 0.875rem;
-  font-weight: 700;
-  color: #0369a1;
-  letter-spacing: 0.02em;
+  font-weight: 800;
+  color: var(--boq-primary);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .boq_panel_hint {
   font-size: 0.8rem;
+  color: var(--boq-text-muted);
 }
 
 .boq_category_tags .o_tag,
 .boq_category_tags .badge {
-  font-size: 0.825rem !important;
-  padding: 0.4em 0.85em !important;
+  font-size: 0.83rem !important;
+  padding: 0.4em 0.9em !important;
   border-radius: 20px !important;
-  font-weight: 600;
+  font-weight: 700 !important;
   transition: var(--boq-transition);
+  box-shadow: var(--boq-shadow-xs);
 }
 
 .boq_category_tags .o_tag:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: var(--boq-shadow-sm);
 }
 
-/* ── Summary Strip ─────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   SUMMARY STRIP — live per-category totals
+   ───────────────────────────────────────────────────────────────────────── */
 .boq_summary_strip {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-bottom: 1.25rem;
-  padding: 1rem 1.25rem;
-  background: #fff;
+  gap: 0.65rem;
+  margin-bottom: 1.5rem;
+  padding: 1.1rem 1.25rem;
+  background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: var(--boq-r);
-  box-shadow: var(--boq-shadow-xs);
+  box-shadow: var(--boq-shadow-sm);
 }
 
 .boq_summary_item {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.55rem 1rem;
-  border-radius: var(--boq-r-sm);
-  border: 1px solid transparent;
+  gap: 0.65rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
   flex: 1;
-  min-width: 140px;
+  min-width: 145px;
   transition: var(--boq-transition);
 }
 
 .boq_summary_item:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--boq-shadow-sm);
+  transform: translateY(-2px);
+  box-shadow: var(--boq-shadow-md);
 }
 
 .boq_summary_icon {
-  font-size: 1.1rem;
-  opacity: 0.8;
+  font-size: 1.15rem;
+  opacity: 0.85;
   flex-shrink: 0;
 }
 
@@ -275,169 +326,256 @@
 }
 
 .boq_summary_label {
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-size: 0.67rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  opacity: 0.7;
+  letter-spacing: 0.09em;
+  opacity: 0.72;
   white-space: nowrap;
 }
 
 .boq_summary_value {
-  font-size: 0.9rem !important;
-  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
 }
 
-/* Per-category summary colours */
-.boq_cat_electrical { background: var(--boq-elec-bg);   border-color: var(--boq-elec-border);   color: #92400e; }
-.boq_cat_civil      { background: var(--boq-civil-bg);  border-color: var(--boq-civil-border);  color: #374151; }
-.boq_cat_lighting   { background: var(--boq-light-bg);  border-color: var(--boq-light-border);  color: #78350f; }
-.boq_cat_plumbing   { background: var(--boq-plumb-bg);  border-color: var(--boq-plumb-border);  color: #1e40af; }
-.boq_cat_hvac       { background: var(--boq-hvac-bg);   border-color: var(--boq-hvac-border);   color: #155e75; }
-.boq_cat_finishing  { background: var(--boq-finish-bg); border-color: var(--boq-finish-border); color: #4c1d95; }
+/* Per-category summary chip colours */
+.boq_cat_electrical { background: var(--boq-elec-bg);   border-color: var(--boq-elec-border);   color: var(--boq-elec-dark); }
+.boq_cat_civil      { background: var(--boq-civil-bg);  border-color: var(--boq-civil-border);  color: var(--boq-civil-dark); }
+.boq_cat_lighting   { background: var(--boq-light-bg);  border-color: var(--boq-light-border);  color: var(--boq-light-dark); }
+.boq_cat_plumbing   { background: var(--boq-plumb-bg);  border-color: var(--boq-plumb-border);  color: var(--boq-plumb-dark); }
+.boq_cat_hvac       { background: var(--boq-hvac-bg);   border-color: var(--boq-hvac-border);   color: var(--boq-hvac-dark); }
+.boq_cat_finishing  { background: var(--boq-finish-bg); border-color: var(--boq-finish-border); color: var(--boq-finish-dark); }
 
 /* Grand total pill */
 .boq_grand_pill {
-  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #0f4c81 0%, #1a6fb5 100%);
   border-color: transparent;
-  color: #fff;
-  min-width: 180px;
+  color: #ffffff;
+  min-width: 190px;
+  box-shadow: var(--boq-shadow-md);
 }
-.boq_grand_pill .boq_summary_label { opacity: 0.8; }
+.boq_grand_pill .boq_summary_label { opacity: 0.85; color: #ffffff; }
 .boq_grand_total_value {
-  font-size: 1.15rem !important;
-  font-weight: 800 !important;
-  color: #34d399 !important;
+  font-size: 1.2rem !important;
+  font-weight: 900 !important;
+  color: #6ee7b7 !important;   /* emerald — pops on dark blue */
+  -webkit-text-fill-color: #6ee7b7 !important;
 }
 
-/* ── Notebook ──────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   NOTEBOOK TABS
+   ───────────────────────────────────────────────────────────────────────── */
 .boq_notebook_enterprise > .nav-tabs {
-  border-bottom: 2px solid #e2e8f0;
-  gap: 0.2rem;
+  border-bottom: 3px solid #e2e8f0;
+  gap: 0.25rem;
   flex-wrap: wrap;
   padding: 0 0.25rem;
+  background: #f8fafc;
+  border-radius: var(--boq-r-sm) var(--boq-r-sm) 0 0;
+  padding-top: 0.5rem;
 }
 
 .boq_notebook_enterprise .nav-tabs .nav-link {
   border-radius: var(--boq-r-sm) var(--boq-r-sm) 0 0 !important;
   font-size: 0.875rem;
-  font-weight: 600;
-  padding: 0.6rem 1.2rem;
-  color: #64748b;
-  border: 1px solid transparent;
+  font-weight: 700;
+  padding: 0.6rem 1.3rem;
+  color: var(--boq-text-muted);
+  border: 1.5px solid transparent;
+  background: transparent;
   transition: var(--boq-transition);
   white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 
 .boq_notebook_enterprise .nav-tabs .nav-link:hover {
-  background: #f8fafc;
-  color: #1e293b;
+  background: #ffffff;
+  color: var(--boq-primary);
   border-color: #e2e8f0 #e2e8f0 transparent;
+  box-shadow: 0 -2px 6px rgba(15,76,129,0.06);
 }
 
 .boq_notebook_enterprise .nav-tabs .nav-link.active {
-  background: #fff;
-  color: var(--boq-blue);
-  font-weight: 700;
-  border-color: #e2e8f0 #e2e8f0 #fff;
-  border-bottom: 3px solid var(--boq-blue);
-  box-shadow: 0 -2px 6px rgba(37,99,235,0.08);
+  background: #ffffff;
+  color: var(--boq-primary);
+  font-weight: 800;
+  border-color: #cbd5e1 #cbd5e1 #ffffff;
+  border-bottom: 3px solid var(--boq-primary);
+  box-shadow: 0 -3px 8px rgba(15,76,129,0.10);
+  margin-bottom: -3px;
 }
 
 .boq_notebook_enterprise .tab-content > .tab-pane {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
   border-top: none;
   border-radius: 0 0 var(--boq-r) var(--boq-r);
   padding: 0;
   box-shadow: var(--boq-shadow-sm);
 }
 
-/* ── Tab Band Header ───────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   TAB BAND HEADER (coloured strip above each tab's table)
+   ───────────────────────────────────────────────────────────────────────── */
 .boq_tab_band {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.85rem 1.25rem;
-  font-weight: 700;
+  padding: 0.9rem 1.35rem;
+  font-weight: 800;
   font-size: 0.95rem;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-bottom: 2px solid rgba(0,0,0,0.08);
 }
 
 .boq_band_left {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
 .boq_band_title {
   font-size: 1rem;
   letter-spacing: -0.01em;
+  font-weight: 800;
 }
 
 .boq_band_right {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.55rem;
 }
 
 .boq_band_total_label {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.73rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  opacity: 0.65;
+  letter-spacing: 0.07em;
+  opacity: 0.70;
 }
 
 .boq_band_total_value {
-  font-size: 1.05rem !important;
-  font-weight: 800 !important;
+  font-size: 1.1rem !important;
+  font-weight: 900 !important;
 }
 
-/* Tab band colour themes */
-.boq_band_electrical { background: var(--boq-elec-bg);   color: #78350f; border-left: 4px solid var(--boq-elec); }
-.boq_band_civil      { background: var(--boq-civil-bg);  color: #1f2937; border-left: 4px solid var(--boq-civil); }
-.boq_band_lighting   { background: var(--boq-light-bg);  color: #713f12; border-left: 4px solid var(--boq-light); }
-.boq_band_plumbing   { background: var(--boq-plumb-bg);  color: #1e3a8a; border-left: 4px solid var(--boq-plumb); }
-.boq_band_hvac       { background: var(--boq-hvac-bg);   color: #164e63; border-left: 4px solid var(--boq-hvac); }
-.boq_band_finishing  { background: var(--boq-finish-bg); color: #4c1d95; border-left: 4px solid var(--boq-finish); }
+/* Tab band themes — each category gets its own vivid header */
+.boq_band_electrical {
+  background: linear-gradient(90deg, #fffbeb 0%, #fef3c7 100%);
+  color: var(--boq-elec-dark);
+  border-left: 5px solid var(--boq-elec);
+}
+.boq_band_civil {
+  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 100%);
+  color: var(--boq-civil-dark);
+  border-left: 5px solid var(--boq-civil);
+}
+.boq_band_lighting {
+  background: linear-gradient(90deg, #fefce8 0%, #fef9c3 100%);
+  color: var(--boq-light-dark);
+  border-left: 5px solid var(--boq-light);
+}
+.boq_band_plumbing {
+  background: linear-gradient(90deg, #eff6ff 0%, #dbeafe 100%);
+  color: var(--boq-plumb-dark);
+  border-left: 5px solid var(--boq-plumb);
+}
+.boq_band_hvac {
+  background: linear-gradient(90deg, #ecfeff 0%, #cffafe 100%);
+  color: var(--boq-hvac-dark);
+  border-left: 5px solid var(--boq-hvac);
+}
+.boq_band_finishing {
+  background: linear-gradient(90deg, #f5f3ff 0%, #ede9fe 100%);
+  color: var(--boq-finish-dark);
+  border-left: 5px solid var(--boq-finish);
+}
 
-/* ── Order Line Table ──────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   ORDER LINE TABLE — the critical readability section
+   ───────────────────────────────────────────────────────────────────────── */
 .boq_line_table {
   border-top: none !important;
 }
 
+/* ── Table HEADER: dark background → white text (high contrast) ── */
 .boq_line_table thead tr th {
-  background: #f8fafc !important;
-  color: #64748b !important;
-  font-size: 0.72rem !important;
-  font-weight: 700 !important;
+  background: #1e293b !important;
+  color: #f1f5f9 !important;
+  font-size: 0.71rem !important;
+  font-weight: 800 !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.06em !important;
-  border-bottom: 2px solid #e2e8f0 !important;
-  padding: 0.65rem 0.75rem !important;
+  letter-spacing: 0.08em !important;
+  border-bottom: 3px solid #0f172a !important;
+  border-right: 1px solid #334155 !important;
+  padding: 0.75rem 0.85rem !important;
+  white-space: nowrap;
 }
 
+/* ── Table BODY rows ── */
 .boq_line_table tbody tr td {
   vertical-align: middle !important;
-  padding: 0.5rem 0.75rem !important;
-  border-bottom: 1px solid #f1f5f9 !important;
+  padding: 0.55rem 0.85rem !important;
+  border-bottom: 1px solid #e8edf3 !important;
   font-size: 0.875rem !important;
-  color: #1e293b !important;
-  transition: background 0.1s;
+  color: var(--boq-text-primary) !important;
+  background: #ffffff !important;
+  transition: background 0.12s ease;
 }
 
+/* Alternating row stripes for easy scanning */
+.boq_line_table tbody tr:nth-child(even) td {
+  background: #f7fbff !important;
+}
+.boq_line_table tbody tr:nth-child(odd) td {
+  background: #ffffff !important;
+}
+
+/* Row hover: bright teal-blue highlight */
 .boq_line_table tbody tr:hover td {
-  background: #eff6ff !important;
-  color: #1e293b !important;
+  background: #e0f2fe !important;
+  color: var(--boq-text-primary) !important;
 }
 
+/* Selected / editing row: vivid blue background */
 .boq_line_table tbody tr.o_selected_row td {
   background: #dbeafe !important;
-  color: #1e293b !important;
+  color: var(--boq-text-primary) !important;
 }
 
-/* Force inputs, spans and field widgets inside editable rows to always show dark text */
+/* ── PRODUCT NAME — maximum readability ── */
+/* product_id column (many2one link) — target both td[name] and .o_data_cell[name] */
+.boq_line_table td[name="product_id"] .o_field_widget,
+.boq_line_table td[name="product_id"] .o_field_many2one,
+.boq_line_table td[name="product_id"] .o_form_uri,
+.boq_line_table td[name="product_id"] span,
+.boq_line_table td[name="product_id"] a,
+.boq_line_table .o_data_cell[name="product_id"] .o_field_widget,
+.boq_line_table .o_data_cell[name="product_id"] .o_field_many2one,
+.boq_line_table .o_data_cell[name="product_id"] .o_form_uri,
+.boq_line_table .o_data_cell[name="product_id"] span,
+.boq_line_table .o_data_cell[name="product_id"] a {
+  color: var(--boq-primary) !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  -webkit-text-fill-color: var(--boq-primary) !important;
+  text-decoration: none !important;
+}
+
+/* product_name column (Char description) */
+.boq_line_table td[name="product_name"] .o_field_widget,
+.boq_line_table td[name="product_name"] span,
+.boq_line_table td[name="product_name"] input,
+.boq_line_table .o_data_cell[name="product_name"] .o_field_widget,
+.boq_line_table .o_data_cell[name="product_name"] span,
+.boq_line_table .o_data_cell[name="product_name"] input {
+  color: var(--boq-text-secondary) !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  -webkit-text-fill-color: var(--boq-text-secondary) !important;
+}
+
+/* Input text inside editable cells */
 .boq_line_table tbody tr.o_selected_row td input,
 .boq_line_table tbody tr.o_selected_row td textarea,
 .boq_line_table tbody tr.o_selected_row td .o_field_widget,
@@ -447,29 +585,74 @@
 .boq_line_table tbody tr.o_selected_row td .o_field_float input,
 .boq_line_table tbody tr.o_selected_row td .o_field_monetary input,
 .boq_line_table tbody tr.o_selected_row td .o_input {
-  color: #1e293b !important;
+  color: var(--boq-text-primary) !important;
   background: transparent !important;
-  -webkit-text-fill-color: #1e293b !important;
+  -webkit-text-fill-color: var(--boq-text-primary) !important;
 }
 
-/* Non-editable / readonly field values in all rows */
-.boq_line_table .o_field_widget .o_form_uri,
-.boq_line_table .o_field_widget span:not(.o_arrow) {
-  color: #1e293b !important;
-}
-
-.boq_line_table tfoot td {
-  background: #f8fafc !important;
+/* product_id + product_name in selected row — keep them vivid even when editing */
+.boq_line_table tbody tr.o_selected_row td[name="product_id"] .o_form_uri,
+.boq_line_table tbody tr.o_selected_row td[name="product_id"] a,
+.boq_line_table tbody tr.o_selected_row td[name="product_id"] span,
+.boq_line_table tbody tr.o_selected_row td[name="product_id"] input,
+.boq_line_table tbody tr.o_selected_row .o_data_cell[name="product_id"] .o_form_uri,
+.boq_line_table tbody tr.o_selected_row .o_data_cell[name="product_id"] a,
+.boq_line_table tbody tr.o_selected_row .o_data_cell[name="product_id"] span,
+.boq_line_table tbody tr.o_selected_row .o_data_cell[name="product_id"] input {
+  color: var(--boq-primary) !important;
   font-weight: 700 !important;
-  font-size: 0.875rem !important;
-  border-top: 2px solid #e2e8f0 !important;
-  padding: 0.6rem 0.75rem !important;
+  -webkit-text-fill-color: var(--boq-primary) !important;
 }
 
-/* ── Kanban View ───────────────────────────────────────────────────────── */
+/* Non-editable field values (read-only links and spans) */
+.boq_line_table .o_field_widget .o_form_uri,
+.boq_line_table .o_field_widget span:not(.o_arrow):not(.boq_tab_badge) {
+  color: var(--boq-text-primary) !important;
+}
+
+/* Subtotal column — emphasise with brand color */
+.boq_line_table td[name="subtotal"] .o_field_widget span,
+.boq_line_table td[name="subtotal"] span {
+  color: var(--boq-green) !important;
+  font-weight: 800 !important;
+  font-size: 0.9rem !important;
+  -webkit-text-fill-color: var(--boq-green) !important;
+}
+
+/* product_type badge-like styling */
+.boq_line_table td[name="product_type"] span {
+  display: inline-block;
+  padding: 0.15em 0.55em;
+  border-radius: 6px;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  background: #f1f5f9;
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+}
+
+/* ── Table FOOTER (sum row) ── */
+.boq_line_table tfoot td {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  font-weight: 800 !important;
+  font-size: 0.875rem !important;
+  border-top: 3px solid #0f172a !important;
+  padding: 0.7rem 0.85rem !important;
+}
+
+.boq_line_table tfoot td span,
+.boq_line_table tfoot td .o_field_widget {
+  color: #6ee7b7 !important;
+  -webkit-text-fill-color: #6ee7b7 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   KANBAN VIEW
+   ───────────────────────────────────────────────────────────────────────── */
 .boq_kanban_view .o_kanban_record {
   border-radius: var(--boq-r) !important;
-  border: 1px solid #e2e8f0 !important;
+  border: 1.5px solid #e2e8f0 !important;
   box-shadow: var(--boq-shadow-sm) !important;
   overflow: hidden;
   transition: var(--boq-transition);
@@ -477,72 +660,91 @@
 }
 
 .boq_kanban_view .o_kanban_record:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
   box-shadow: var(--boq-shadow-lg) !important;
-  border-color: #bfdbfe !important;
+  border-color: #93c5fd !important;
 }
 
 .boq_kcard_header {
-  background: linear-gradient(135deg, var(--boq-blue-dark) 0%, var(--boq-blue) 100%);
-  padding: 0.75rem 1rem;
+  background: linear-gradient(130deg, #0f4c81 0%, #1a6fb5 100%);
+  padding: 0.85rem 1.1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.boq_kcard_header::after {
+  content: "";
+  position: absolute;
+  top: -20px; right: -20px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  pointer-events: none;
 }
 
 .boq_kcard_name {
   color: #fff;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
+  font-weight: 700;
 }
 
 .boq_kcard_body {
-  padding: 0.85rem 1rem;
+  padding: 0.9rem 1.1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.4rem;
   font-size: 0.85rem;
-  color: #374151;
+  color: var(--boq-text-secondary);
+  background: #fff;
 }
 
 .boq_kcard_row {
   display: flex;
   align-items: center;
+  gap: 0.4rem;
 }
 
 .boq_kcard_tags {
-  padding: 0.4rem 1rem 0.6rem;
+  padding: 0.45rem 1.1rem 0.65rem;
   border-top: 1px solid #f1f5f9;
-  min-height: 2rem;
+  min-height: 2.2rem;
+  background: #fafbfc;
 }
 
 .boq_kcard_footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.55rem 1rem;
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
+  padding: 0.6rem 1.1rem;
+  background: #f1f5f9;
+  border-top: 1.5px solid #e2e8f0;
   font-size: 0.82rem;
 }
 
 .boq_kcard_lines {
-  color: #64748b;
+  color: var(--boq-text-muted);
+  font-weight: 600;
 }
 
 .boq_kcard_total {
-  font-weight: 700;
-  color: var(--boq-blue-dark);
-  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--boq-primary);
+  font-size: 0.97rem;
 }
 
-/* ── Category Kanban ───────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   CATEGORY KANBAN
+   ───────────────────────────────────────────────────────────────────────── */
 .boq_cat_kanban .o_kanban_record {
   border-radius: var(--boq-r) !important;
   transition: var(--boq-transition);
 }
 
 .boq_cat_kanban .o_kanban_record:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: var(--boq-shadow-md) !important;
 }
 
@@ -550,28 +752,29 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem;
+  padding: 1.1rem;
 }
 
 .boq_cat_icon_circle {
-  width: 48px;
-  height: 48px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   color: #fff;
+  box-shadow: var(--boq-shadow-sm);
 }
 
-/* Color circle backgrounds using Odoo's 12-color palette */
-.boq_color_0  { background: #adb5bd; }
+/* Color circles using Odoo's 12-color palette */
+.boq_color_0  { background: #94a3b8; }
 .boq_color_1  { background: #ef4444; }
 .boq_color_2  { background: #f97316; }
 .boq_color_3  { background: #eab308; }
 .boq_color_4  { background: #22c55e; }
 .boq_color_5  { background: #a855f7; }
-.boq_color_6  { background: #6b7280; }
+.boq_color_6  { background: #64748b; }
 .boq_color_7  { background: #06b6d4; }
 .boq_color_8  { background: #10b981; }
 .boq_color_9  { background: #ec4899; }
@@ -585,8 +788,8 @@
   flex: 1;
 }
 
-.boq_cat_name { font-size: 0.95rem; }
-.boq_cat_code { font-size: 0.75rem; }
+.boq_cat_name { font-size: 0.95rem; font-weight: 700; color: var(--boq-text-primary); }
+.boq_cat_code { font-size: 0.75rem; color: var(--boq-text-muted); }
 
 .boq_cat_stats {
   display: flex;
@@ -595,19 +798,21 @@
   gap: 0.2rem;
 }
 
-/* ── Category Form ─────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   CATEGORY FORM HEADER
+   ───────────────────────────────────────────────────────────────────────── */
 .boq_cat_form_header {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1.35rem;
   margin-bottom: 1rem;
 }
 
 .boq_cat_icon_wrap {
-  width: 64px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   border-radius: var(--boq-r);
-  background: linear-gradient(135deg, var(--boq-blue) 0%, var(--boq-blue-mid) 100%);
+  background: linear-gradient(135deg, var(--boq-primary) 0%, var(--boq-primary-mid) 100%);
   color: #fff;
   display: flex;
   align-items: center;
@@ -616,53 +821,94 @@
   box-shadow: var(--boq-shadow-md);
 }
 
-/* ── Responsive ────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   STAT BUTTONS
+   ───────────────────────────────────────────────────────────────────────── */
+.boq_enterprise_form .oe_stat_button {
+  border-radius: var(--boq-r-sm) !important;
+  transition: var(--boq-transition) !important;
+  border: 1.5px solid #e2e8f0 !important;
+}
+.boq_enterprise_form .oe_stat_button:hover {
+  background: var(--boq-primary-light) !important;
+  border-color: #93c5fd !important;
+  transform: translateY(-2px);
+  box-shadow: var(--boq-shadow-sm) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   TAB BADGE (line count pills)
+   ───────────────────────────────────────────────────────────────────────── */
+.boq_tab_badge {
+  font-size: 0.65rem !important;
+  padding: 0.2em 0.55em !important;
+  background: var(--boq-primary) !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+  vertical-align: middle;
+  transition: var(--boq-transition);
+}
+
+.nav-link.active .boq_tab_badge {
+  background: var(--boq-accent) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   RESPONSIVE
+   ───────────────────────────────────────────────────────────────────────── */
 @media (max-width: 992px) {
   .boq_hero_card {
     grid-template-columns: 1fr;
   }
   .boq_hero_left {
     border-right: none;
-    border-bottom: 1px solid rgba(255,255,255,0.12);
+    border-bottom: 1px solid rgba(255,255,255,0.15);
   }
   .boq_hero_right {
-    border-left: none;
-    padding-left: 1.75rem;
+    padding-top: 1.25rem;
   }
 }
 
 @media (max-width: 768px) {
   .boq_summary_strip {
-    gap: 0.4rem;
+    gap: 0.45rem;
+    padding: 0.75rem;
   }
   .boq_summary_item {
-    min-width: 120px;
-    flex: 1 1 calc(50% - 0.4rem);
+    min-width: 130px;
+    flex: 1 1 calc(50% - 0.45rem);
   }
   .boq_grand_pill {
     flex: 1 1 100%;
   }
   .boq_ref_number {
-    font-size: 1.4rem !important;
+    font-size: 1.5rem !important;
+  }
+  .boq_line_table thead tr th {
+    font-size: 0.65rem !important;
+    padding: 0.55rem 0.5rem !important;
+  }
+  .boq_line_table tbody tr td {
+    padding: 0.45rem 0.5rem !important;
+    font-size: 0.8rem !important;
   }
 }
 
-/* ── Stat button polish ─────────────────────────────────────────────────── */
-.boq_enterprise_form .oe_stat_button {
-  border-radius: var(--boq-r-sm) !important;
-  transition: var(--boq-transition) !important;
-}
-.boq_enterprise_form .oe_stat_button:hover {
-  background: var(--boq-blue-pale) !important;
-  transform: translateY(-1px);
-}
-
-/* ── Tab visibility animation ─────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────
+   ANIMATIONS
+   ───────────────────────────────────────────────────────────────────────── */
 .boq_notebook_enterprise .tab-pane.active {
-  animation: boq_fadein 0.2s ease;
+  animation: boq_fadein 0.22s ease;
 }
 
 @keyframes boq_fadein {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Grand total pulse animation (triggered by JS) */
+@keyframes boq_pulse_green {
+  0%   { transform: scale(1);    color: #6ee7b7; }
+  50%  { transform: scale(1.12); color: #34d399; }
+  100% { transform: scale(1);    color: #6ee7b7; }
 }
