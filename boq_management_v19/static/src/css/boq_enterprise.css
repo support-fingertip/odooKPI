@@ -418,48 +418,47 @@
   padding: 0.65rem 0.75rem !important;
 }
 
+/* Normal rows — explicit white so no dark background leaks through */
+.boq_line_table tbody tr,
 .boq_line_table tbody tr td {
+  background: #fff !important;
+  color: #1e293b !important;
   vertical-align: middle !important;
   padding: 0.5rem 0.75rem !important;
   border-bottom: 1px solid #f1f5f9 !important;
   font-size: 0.875rem !important;
-  color: #1e293b !important;
-  transition: background 0.1s;
+  transition: background 0.12s;
 }
 
+/* Hover */
+.boq_line_table tbody tr:hover,
 .boq_line_table tbody tr:hover td {
   background: #eff6ff !important;
   color: #1e293b !important;
 }
 
+/* Selected / editing row */
+.boq_line_table tbody tr.o_selected_row,
 .boq_line_table tbody tr.o_selected_row td {
   background: #dbeafe !important;
   color: #1e293b !important;
 }
 
-/* Force inputs, spans and field widgets inside editable rows to always show dark text */
-.boq_line_table tbody tr.o_selected_row td input,
-.boq_line_table tbody tr.o_selected_row td textarea,
-.boq_line_table tbody tr.o_selected_row td .o_field_widget,
-.boq_line_table tbody tr.o_selected_row td .o_field_widget span,
-.boq_line_table tbody tr.o_selected_row td .o_field_many2one input,
-.boq_line_table tbody tr.o_selected_row td .o_field_char input,
-.boq_line_table tbody tr.o_selected_row td .o_field_float input,
-.boq_line_table tbody tr.o_selected_row td .o_field_monetary input,
-.boq_line_table tbody tr.o_selected_row td .o_input {
+/* All inputs and field text inside every row — always dark */
+.boq_line_table tbody td input,
+.boq_line_table tbody td textarea,
+.boq_line_table tbody td .o_input,
+.boq_line_table tbody td .o_field_widget,
+.boq_line_table tbody td .o_field_widget span,
+.boq_line_table tbody td .o_field_widget input,
+.boq_line_table tbody td .o_form_uri {
   color: #1e293b !important;
-  background: transparent !important;
   -webkit-text-fill-color: #1e293b !important;
-}
-
-/* Non-editable / readonly field values in all rows */
-.boq_line_table .o_field_widget .o_form_uri,
-.boq_line_table .o_field_widget span:not(.o_arrow) {
-  color: #1e293b !important;
 }
 
 .boq_line_table tfoot td {
   background: #f8fafc !important;
+  color: #1e293b !important;
   font-weight: 700 !important;
   font-size: 0.875rem !important;
   border-top: 2px solid #e2e8f0 !important;
