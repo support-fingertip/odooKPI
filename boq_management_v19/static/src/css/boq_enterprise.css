@@ -416,41 +416,74 @@
   padding: 0.65rem 0.75rem !important;
 }
 
-/* Every data row — force white background on both tr AND td */
-.boq_enterprise_form .o_data_row {
-  background: #ffffff !important;
+/* ── Force light rows regardless of Odoo dark-mode theme ──────────────
+   Dark mode sets row color via --bs-table-bg CSS variable.
+   We override the variable AND set explicit background-color with higher
+   specificity selectors to win the cascade.                             */
+.o_form_view.boq_enterprise_form .o_data_row,
+.o_form_view .boq_enterprise_form .o_data_row {
+  --bs-table-bg: #ffffff;
+  --bs-table-striped-bg: #f8fafc;
+  --bs-table-hover-bg: #eff6ff;
+  background-color: #ffffff !important;
+  color: #1e293b !important;
 }
-.boq_enterprise_form .o_data_row > td {
-  background: #ffffff !important;
+
+.o_form_view.boq_enterprise_form .o_data_row > td,
+.o_form_view .boq_enterprise_form .o_data_row > td {
+  background-color: #ffffff !important;
   color: #1e293b !important;
   vertical-align: middle !important;
   padding: 0.5rem 0.75rem !important;
-  border-bottom: 1px solid #f1f5f9 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
   font-size: 0.875rem !important;
 }
 
 /* Hover */
-.boq_enterprise_form .o_data_row:hover > td {
-  background: #eff6ff !important;
+.o_form_view.boq_enterprise_form .o_data_row:hover > td,
+.o_form_view .boq_enterprise_form .o_data_row:hover > td {
+  background-color: #eff6ff !important;
   color: #1e293b !important;
 }
 
-/* Row being edited */
-.boq_enterprise_form .o_data_row.o_selected_row > td {
-  background: #dbeafe !important;
+/* Editing row */
+.o_form_view.boq_enterprise_form .o_data_row.o_selected_row > td,
+.o_form_view .boq_enterprise_form .o_data_row.o_selected_row > td {
+  background-color: #dbeafe !important;
   color: #1e293b !important;
 }
 
-/* All field text, inputs and links inside any data row */
-.boq_enterprise_form .o_data_row .o_field_widget,
-.boq_enterprise_form .o_data_row .o_field_widget span,
-.boq_enterprise_form .o_data_row .o_field_widget input,
-.boq_enterprise_form .o_data_row .o_field_widget .o_form_uri,
-.boq_enterprise_form .o_data_row input.o_input,
-.boq_enterprise_form .o_data_row .o_input {
+/* All field text, inputs and links inside rows — always dark */
+.o_form_view.boq_enterprise_form .o_data_row .o_field_widget,
+.o_form_view.boq_enterprise_form .o_data_row .o_field_widget span,
+.o_form_view.boq_enterprise_form .o_data_row .o_field_widget input,
+.o_form_view.boq_enterprise_form .o_data_row .o_form_uri,
+.o_form_view.boq_enterprise_form .o_data_row input,
+.o_form_view .boq_enterprise_form .o_data_row .o_field_widget,
+.o_form_view .boq_enterprise_form .o_data_row .o_field_widget span,
+.o_form_view .boq_enterprise_form .o_data_row .o_field_widget input,
+.o_form_view .boq_enterprise_form .o_data_row .o_form_uri,
+.o_form_view .boq_enterprise_form .o_data_row input {
   color: #1e293b !important;
   -webkit-text-fill-color: #1e293b !important;
 }
+
+/* Footer sum row */
+.boq_enterprise_form .o_list_renderer tfoot td {
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
+  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+  border-top: 2px solid #e2e8f0 !important;
+  padding: 0.6rem 0.75rem !important;
+}
+
+/* "Add a line" row */
+.boq_enterprise_form .o_field_x2many_list_row_add > td {
+  background-color: #ffffff !important;
+  color: #2563eb !important;
+}
+
 
 /* Footer sum row */
 .boq_enterprise_form .o_list_renderer tfoot td {
