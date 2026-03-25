@@ -404,8 +404,8 @@
 
 /* ── Order Line Table ──────────────────────────────────────────────────── */
 
-/* Table header */
-.boq_enterprise_form .o_field_one2many thead tr th {
+/* Header columns */
+.boq_enterprise_form .o_list_renderer thead tr th {
   background: #f8fafc !important;
   color: #64748b !important;
   font-size: 0.72rem !important;
@@ -416,45 +416,44 @@
   padding: 0.65rem 0.75rem !important;
 }
 
-/* Normal rows — explicit white background to override any Odoo dark row style */
-.boq_enterprise_form .o_field_one2many tbody tr {
+/* Every data row — force white background on both tr AND td */
+.boq_enterprise_form .o_data_row {
   background: #ffffff !important;
 }
-.boq_enterprise_form .o_field_one2many tbody tr td {
+.boq_enterprise_form .o_data_row > td {
   background: #ffffff !important;
   color: #1e293b !important;
   vertical-align: middle !important;
   padding: 0.5rem 0.75rem !important;
   border-bottom: 1px solid #f1f5f9 !important;
   font-size: 0.875rem !important;
-  transition: background 0.12s;
 }
 
 /* Hover */
-.boq_enterprise_form .o_field_one2many tbody tr:hover td {
+.boq_enterprise_form .o_data_row:hover > td {
   background: #eff6ff !important;
   color: #1e293b !important;
 }
 
-/* Editing row */
-.boq_enterprise_form .o_field_one2many tbody tr.o_selected_row td {
+/* Row being edited */
+.boq_enterprise_form .o_data_row.o_selected_row > td {
   background: #dbeafe !important;
   color: #1e293b !important;
 }
 
-/* All text inside rows — always dark and readable */
-.boq_enterprise_form .o_field_one2many tbody td .o_field_widget,
-.boq_enterprise_form .o_field_one2many tbody td .o_field_widget span,
-.boq_enterprise_form .o_field_one2many tbody td .o_field_widget input,
-.boq_enterprise_form .o_field_one2many tbody td .o_form_uri,
-.boq_enterprise_form .o_field_one2many tbody td input,
-.boq_enterprise_form .o_field_one2many tbody td .o_input {
+/* All field text, inputs and links inside any data row */
+.boq_enterprise_form .o_data_row .o_field_widget,
+.boq_enterprise_form .o_data_row .o_field_widget span,
+.boq_enterprise_form .o_data_row .o_field_widget input,
+.boq_enterprise_form .o_data_row .o_field_widget .o_form_uri,
+.boq_enterprise_form .o_data_row input.o_input,
+.boq_enterprise_form .o_data_row .o_input {
   color: #1e293b !important;
   -webkit-text-fill-color: #1e293b !important;
 }
 
-/* Footer / sum row */
-.boq_enterprise_form .o_field_one2many tfoot td {
+/* Footer sum row */
+.boq_enterprise_form .o_list_renderer tfoot td {
   background: #f8fafc !important;
   color: #1e293b !important;
   font-weight: 700 !important;
@@ -463,8 +462,9 @@
   padding: 0.6rem 0.75rem !important;
 }
 
-/* "Add a line" footer row */
-.boq_enterprise_form .o_field_one2many .o_field_x2many_list_row_add td {
+/* "Add a line" row */
+.boq_enterprise_form .o_field_x2many_list_row_add td,
+.boq_enterprise_form .o_list_renderer .o_field_x2many_list_row_add td {
   background: #ffffff !important;
   color: #2563eb !important;
 }
