@@ -1,0 +1,616 @@
+/* =========================================================================
+   BOQ MANAGEMENT — Enterprise UI Stylesheet  (Odoo 19 / Bootstrap 5.3)
+   ========================================================================= */
+
+/* ── Design Tokens ─────────────────────────────────────────────────────── */
+:root {
+  /* Brand palette */
+  --boq-blue-dark:    #1e3a8a;
+  --boq-blue:         #2563eb;
+  --boq-blue-mid:     #3b82f6;
+  --boq-blue-light:   #dbeafe;
+  --boq-blue-pale:    #eff6ff;
+
+  /* Category accent colours */
+  --boq-elec:         #f59e0b;
+  --boq-elec-bg:      #fffbeb;
+  --boq-elec-border:  #fcd34d;
+
+  --boq-civil:        #6b7280;
+  --boq-civil-bg:     #f9fafb;
+  --boq-civil-border: #d1d5db;
+
+  --boq-light:        #eab308;
+  --boq-light-bg:     #fefce8;
+  --boq-light-border: #fde047;
+
+  --boq-plumb:        #3b82f6;
+  --boq-plumb-bg:     #eff6ff;
+  --boq-plumb-border: #93c5fd;
+
+  --boq-hvac:         #06b6d4;
+  --boq-hvac-bg:      #ecfeff;
+  --boq-hvac-border:  #67e8f9;
+
+  --boq-finish:       #8b5cf6;
+  --boq-finish-bg:    #f5f3ff;
+  --boq-finish-border:#c4b5fd;
+
+  /* Shadows */
+  --boq-shadow-xs: 0 1px 2px rgba(0,0,0,.06);
+  --boq-shadow-sm: 0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
+  --boq-shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+  --boq-shadow-lg: 0 10px 15px rgba(0,0,0,.08), 0 4px 6px rgba(0,0,0,.05);
+
+  /* Radius */
+  --boq-r-sm: 8px;
+  --boq-r:    12px;
+  --boq-r-lg: 18px;
+
+  /* Transitions */
+  --boq-transition: all 0.18s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Form wrapper ──────────────────────────────────────────────────────── */
+.boq_enterprise_form .o_form_sheet_bg {
+  background: linear-gradient(160deg, #f0f4ff 0%, #f8fafc 50%, #f0fdf4 100%);
+}
+.boq_enterprise_form .o_form_sheet {
+  border-radius: var(--boq-r-lg);
+  box-shadow: var(--boq-shadow-lg);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+/* ── Reference number ──────────────────────────────────────────────────── */
+.boq_ref_number {
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  background: linear-gradient(135deg, var(--boq-blue-dark), var(--boq-blue-mid));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.03em;
+}
+
+.boq_project_title {
+  font-size: 1.1rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+.boq_project_inline {
+  color: #475569 !important;
+  font-weight: 600;
+}
+
+/* ── Hero Card ──────────────────────────────────────────────────────────── */
+.boq_hero_card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--boq-r);
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--boq-shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.boq_hero_card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: linear-gradient(180deg, var(--boq-blue) 0%, var(--boq-blue-mid) 100%);
+  border-radius: 0;
+}
+
+.boq_hero_left {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.boq_hero_icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--boq-r-sm);
+  background: linear-gradient(135deg, var(--boq-blue) 0%, var(--boq-blue-mid) 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: var(--boq-shadow-sm);
+}
+
+.boq_hero_info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.boq_hero_right {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-left: 1px solid #f1f5f9;
+  padding-left: 1.5rem;
+}
+
+.boq_field_row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.boq_field_label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  min-width: 80px;
+}
+
+/* ── Category Selector Panel ──────────────────────────────────────────── */
+.boq_category_panel {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px dashed #7dd3fc;
+  border-radius: var(--boq-r);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+  transition: var(--boq-transition);
+}
+
+.boq_category_panel:focus-within {
+  border-color: var(--boq-blue);
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+.boq_category_panel_header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.boq_panel_title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0369a1;
+  letter-spacing: 0.02em;
+}
+
+.boq_panel_hint {
+  font-size: 0.8rem;
+}
+
+.boq_category_tags .o_tag,
+.boq_category_tags .badge {
+  font-size: 0.825rem !important;
+  padding: 0.4em 0.85em !important;
+  border-radius: 20px !important;
+  font-weight: 600;
+  transition: var(--boq-transition);
+}
+
+.boq_category_tags .o_tag:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--boq-shadow-sm);
+}
+
+/* ── Summary Strip ─────────────────────────────────────────────────────── */
+.boq_summary_strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.25rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--boq-r);
+  box-shadow: var(--boq-shadow-xs);
+}
+
+.boq_summary_item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 1rem;
+  border-radius: var(--boq-r-sm);
+  border: 1px solid transparent;
+  flex: 1;
+  min-width: 140px;
+  transition: var(--boq-transition);
+}
+
+.boq_summary_item:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--boq-shadow-sm);
+}
+
+.boq_summary_icon {
+  font-size: 1.1rem;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.boq_summary_data {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.boq_summary_label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.boq_summary_value {
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+}
+
+/* Per-category summary colours */
+.boq_cat_electrical { background: var(--boq-elec-bg);   border-color: var(--boq-elec-border);   color: #92400e; }
+.boq_cat_civil      { background: var(--boq-civil-bg);  border-color: var(--boq-civil-border);  color: #374151; }
+.boq_cat_lighting   { background: var(--boq-light-bg);  border-color: var(--boq-light-border);  color: #78350f; }
+.boq_cat_plumbing   { background: var(--boq-plumb-bg);  border-color: var(--boq-plumb-border);  color: #1e40af; }
+.boq_cat_hvac       { background: var(--boq-hvac-bg);   border-color: var(--boq-hvac-border);   color: #155e75; }
+.boq_cat_finishing  { background: var(--boq-finish-bg); border-color: var(--boq-finish-border); color: #4c1d95; }
+
+/* Grand total pill */
+.boq_grand_pill {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  border-color: transparent;
+  color: #fff;
+  min-width: 180px;
+}
+.boq_grand_pill .boq_summary_label { opacity: 0.8; }
+.boq_grand_total_value {
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  color: #34d399 !important;
+}
+
+/* ── Notebook ──────────────────────────────────────────────────────────── */
+.boq_notebook_enterprise > .nav-tabs {
+  border-bottom: 2px solid #e2e8f0;
+  gap: 0.2rem;
+  flex-wrap: wrap;
+  padding: 0 0.25rem;
+}
+
+.boq_notebook_enterprise .nav-tabs .nav-link {
+  border-radius: var(--boq-r-sm) var(--boq-r-sm) 0 0 !important;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  color: #64748b;
+  border: 1px solid transparent;
+  transition: var(--boq-transition);
+  white-space: nowrap;
+}
+
+.boq_notebook_enterprise .nav-tabs .nav-link:hover {
+  background: #f8fafc;
+  color: #1e293b;
+  border-color: #e2e8f0 #e2e8f0 transparent;
+}
+
+.boq_notebook_enterprise .nav-tabs .nav-link.active {
+  background: #fff;
+  color: var(--boq-blue);
+  font-weight: 700;
+  border-color: #e2e8f0 #e2e8f0 #fff;
+  border-bottom: 3px solid var(--boq-blue);
+  box-shadow: 0 -2px 6px rgba(37,99,235,0.08);
+}
+
+.boq_notebook_enterprise .tab-content > .tab-pane {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 var(--boq-r) var(--boq-r);
+  padding: 0;
+  box-shadow: var(--boq-shadow-sm);
+}
+
+/* ── Tab Band Header ───────────────────────────────────────────────────── */
+.boq_tab_band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.boq_band_left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.boq_band_title {
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.boq_band_right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.boq_band_total_label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.65;
+}
+
+.boq_band_total_value {
+  font-size: 1.05rem !important;
+  font-weight: 800 !important;
+}
+
+/* Tab band colour themes */
+.boq_band_electrical { background: var(--boq-elec-bg);   color: #78350f; border-left: 4px solid var(--boq-elec); }
+.boq_band_civil      { background: var(--boq-civil-bg);  color: #1f2937; border-left: 4px solid var(--boq-civil); }
+.boq_band_lighting   { background: var(--boq-light-bg);  color: #713f12; border-left: 4px solid var(--boq-light); }
+.boq_band_plumbing   { background: var(--boq-plumb-bg);  color: #1e3a8a; border-left: 4px solid var(--boq-plumb); }
+.boq_band_hvac       { background: var(--boq-hvac-bg);   color: #164e63; border-left: 4px solid var(--boq-hvac); }
+.boq_band_finishing  { background: var(--boq-finish-bg); color: #4c1d95; border-left: 4px solid var(--boq-finish); }
+
+/* ── Order Line Table ──────────────────────────────────────────────────── */
+.boq_line_table {
+  border-top: none !important;
+}
+
+.boq_line_table thead tr th {
+  background: #f8fafc !important;
+  color: #64748b !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  padding: 0.65rem 0.75rem !important;
+}
+
+.boq_line_table tbody tr td {
+  vertical-align: middle !important;
+  padding: 0.5rem 0.75rem !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  font-size: 0.875rem !important;
+  transition: background 0.1s;
+}
+
+.boq_line_table tbody tr:hover td {
+  background: #eff6ff !important;
+}
+
+.boq_line_table tbody tr.o_selected_row td {
+  background: #dbeafe !important;
+}
+
+.boq_line_table tfoot td {
+  background: #f8fafc !important;
+  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+  border-top: 2px solid #e2e8f0 !important;
+  padding: 0.6rem 0.75rem !important;
+}
+
+/* ── Kanban View ───────────────────────────────────────────────────────── */
+.boq_kanban_view .o_kanban_record {
+  border-radius: var(--boq-r) !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: var(--boq-shadow-sm) !important;
+  overflow: hidden;
+  transition: var(--boq-transition);
+  padding: 0 !important;
+}
+
+.boq_kanban_view .o_kanban_record:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--boq-shadow-lg) !important;
+  border-color: #bfdbfe !important;
+}
+
+.boq_kcard_header {
+  background: linear-gradient(135deg, var(--boq-blue-dark) 0%, var(--boq-blue) 100%);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.boq_kcard_name {
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.boq_kcard_body {
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.boq_kcard_row {
+  display: flex;
+  align-items: center;
+}
+
+.boq_kcard_tags {
+  padding: 0.4rem 1rem 0.6rem;
+  border-top: 1px solid #f1f5f9;
+  min-height: 2rem;
+}
+
+.boq_kcard_footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 1rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.82rem;
+}
+
+.boq_kcard_lines {
+  color: #64748b;
+}
+
+.boq_kcard_total {
+  font-weight: 700;
+  color: var(--boq-blue-dark);
+  font-size: 0.95rem;
+}
+
+/* ── Category Kanban ───────────────────────────────────────────────────── */
+.boq_cat_kanban .o_kanban_record {
+  border-radius: var(--boq-r) !important;
+  transition: var(--boq-transition);
+}
+
+.boq_cat_kanban .o_kanban_record:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--boq-shadow-md) !important;
+}
+
+.boq_cat_kanban_card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.boq_cat_icon_circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+/* Color circle backgrounds using Odoo's 12-color palette */
+.boq_color_0  { background: #adb5bd; }
+.boq_color_1  { background: #ef4444; }
+.boq_color_2  { background: #f97316; }
+.boq_color_3  { background: #eab308; }
+.boq_color_4  { background: #22c55e; }
+.boq_color_5  { background: #a855f7; }
+.boq_color_6  { background: #6b7280; }
+.boq_color_7  { background: #06b6d4; }
+.boq_color_8  { background: #10b981; }
+.boq_color_9  { background: #ec4899; }
+.boq_color_10 { background: #3b82f6; }
+.boq_color_11 { background: #6366f1; }
+
+.boq_cat_info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+}
+
+.boq_cat_name { font-size: 0.95rem; }
+.boq_cat_code { font-size: 0.75rem; }
+
+.boq_cat_stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+
+/* ── Category Form ─────────────────────────────────────────────────────── */
+.boq_cat_form_header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.boq_cat_icon_wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--boq-r);
+  background: linear-gradient(135deg, var(--boq-blue) 0%, var(--boq-blue-mid) 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: var(--boq-shadow-md);
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 992px) {
+  .boq_hero_card {
+    grid-template-columns: 1fr;
+  }
+  .boq_hero_right {
+    border-left: none;
+    border-top: 1px solid #f1f5f9;
+    padding-left: 0;
+    padding-top: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .boq_summary_strip {
+    gap: 0.4rem;
+  }
+  .boq_summary_item {
+    min-width: 120px;
+    flex: 1 1 calc(50% - 0.4rem);
+  }
+  .boq_grand_pill {
+    flex: 1 1 100%;
+  }
+  .boq_ref_number {
+    font-size: 1.4rem !important;
+  }
+}
+
+/* ── Stat button polish ─────────────────────────────────────────────────── */
+.boq_enterprise_form .oe_stat_button {
+  border-radius: var(--boq-r-sm) !important;
+  transition: var(--boq-transition) !important;
+}
+.boq_enterprise_form .oe_stat_button:hover {
+  background: var(--boq-blue-pale) !important;
+  transform: translateY(-1px);
+}
+
+/* ── Tab visibility animation ─────────────────────────────────────────── */
+.boq_notebook_enterprise .tab-pane.active {
+  animation: boq_fadein 0.2s ease;
+}
+
+@keyframes boq_fadein {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- BOQ Module Category -->
+        <record id="module_category_boq" model="ir.module.category">
+            <field name="name">BOQ Management</field>
+            <field name="description">BOQ (Bill of Quantities) access groups</field>
+            <field name="sequence">80</field>
+        </record>
+
+        <!-- BOQ User: can create/edit their own BOQs -->
+        <record id="group_boq_user" model="res.groups">
+            <field name="name">BOQ User</field>
+            <field name="category_id" ref="module_category_boq"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- BOQ Manager: can approve/reject, see all BOQs -->
+        <record id="group_boq_manager" model="res.groups">
+            <field name="name">BOQ Manager</field>
+            <field name="category_id" ref="module_category_boq"/>
+            <field name="implied_ids" eval="[(4, ref('group_boq_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+    </data>
+</odoo>
