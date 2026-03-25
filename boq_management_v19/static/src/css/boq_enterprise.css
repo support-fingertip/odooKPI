@@ -570,85 +570,79 @@
   -webkit-text-fill-color: var(--boq-text-secondary) !important;
 }
 
-/* ── AUTOCOMPLETE / MANY2ONE DROPDOWN — complete color reset ──
+/* ── AUTOCOMPLETE / MANY2ONE DROPDOWN — clean readable styles ──
  *
- * The dropdown renders as a DOM child of the td cell, so Bootstrap's
- * default `a { color: #0d6efd }` overrides inherited color.
- * We use a wildcard (*) nuclear reset on ALL children inside the popup.
+ * Two problems were causing the dark background + blue text:
+ * 1. `background: transparent !important` on `*` was stripping internal
+ *    wrapper backgrounds, exposing the dark table header behind the popup.
+ * 2. Bootstrap's `a { color: #0d6efd }` was setting link text to blue.
  *
- * Odoo 19 OWL autocomplete classes:
- *   ul.o-autocomplete--dropdown-menu  → popup list container
- *   li.o-autocomplete--dropdown-item  → each suggestion row
- *   .dropdown-menu / .dropdown-item   → Bootstrap fallback classes
+ * Fix: set white background ONLY on the container, NO background override
+ * on children (let them inherit naturally), and explicitly set text dark
+ * on `a`, `span`, and `li` elements directly.
  */
 
-/* Dropdown container — white background, clean border */
+/* Dropdown container — solid white box */
 .o-autocomplete--dropdown-menu,
+ul.o-autocomplete--dropdown-menu,
+.o-autocomplete .dropdown-menu,
 .o_field_many2one .dropdown-menu,
 .o_field_many2one_selection .dropdown-menu {
-  background-color: #ffffff !important;
+  background: #ffffff !important;
   border: 1px solid #cbd5e1 !important;
   box-shadow: 0 8px 24px rgba(0,0,0,0.14) !important;
   border-radius: 10px !important;
   padding: 4px 0 !important;
   z-index: 9999 !important;
+  overflow: hidden;
 }
 
-/* Nuclear reset — every child element in the dropdown gets dark text */
-.o-autocomplete--dropdown-menu *,
-.o_field_many2one .dropdown-menu *,
-.o_field_many2one_selection .dropdown-menu * {
+/* Every direct and indirect child — ONLY color, NO background override */
+.o-autocomplete--dropdown-menu li,
+.o-autocomplete--dropdown-menu a,
+.o-autocomplete--dropdown-menu span,
+.o-autocomplete--dropdown-menu div,
+ul.o-autocomplete--dropdown-menu li,
+ul.o-autocomplete--dropdown-menu a,
+ul.o-autocomplete--dropdown-menu span {
   color: #1e293b !important;
   -webkit-text-fill-color: #1e293b !important;
-  background-color: transparent !important;
+  text-decoration: none !important;
 }
 
-/* Individual item rows */
+/* Item rows */
 .o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item,
-.o-autocomplete--dropdown-menu .dropdown-item,
-.o_field_many2one .dropdown-menu .dropdown-item,
-.o_field_many2one_selection .dropdown-menu .dropdown-item {
+.o-autocomplete--dropdown-menu .dropdown-item {
   padding: 0.45rem 1rem !important;
   font-size: 0.875rem !important;
   font-weight: 500 !important;
-  color: #1e293b !important;
-  -webkit-text-fill-color: #1e293b !important;
+  background: transparent !important;
+  border: none !important;
   cursor: pointer;
-  border-radius: 0;
   transition: background 0.1s;
 }
 
-/* Item hover/focus/active highlight */
+/* Hover / focused row */
 .o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item:hover,
+.o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item.focus,
 .o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item:focus,
-.o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item.active,
-.o-autocomplete--dropdown-menu .dropdown-item:hover,
-.o_field_many2one .dropdown-menu .dropdown-item:hover,
-.o_field_many2one .dropdown-menu .dropdown-item.active {
-  background-color: var(--boq-primary-light) !important;
+.o-autocomplete--dropdown-menu .dropdown-item:hover {
+  background: #e8f4fd !important;
 }
 
-.o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item:hover *,
-.o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item.active *,
-.o_field_many2one .dropdown-menu .dropdown-item:hover * {
-  color: var(--boq-primary) !important;
-  -webkit-text-fill-color: var(--boq-primary) !important;
+.o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item:hover a,
+.o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item:hover span,
+.o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item.focus a,
+.o-autocomplete--dropdown-menu .o-autocomplete--dropdown-item.focus span {
+  color: #0f4c81 !important;
+  -webkit-text-fill-color: #0f4c81 !important;
 }
 
-/* Secondary / muted text (product ref code shown beside name) */
-.o-autocomplete--dropdown-menu .text-muted,
-.o_field_many2one .dropdown-menu .text-muted {
-  color: #64748b !important;
-  -webkit-text-fill-color: #64748b !important;
+/* Ref / muted secondary text beside product name */
+.o-autocomplete--dropdown-menu .text-muted {
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
   font-size: 0.78rem !important;
-}
-
-/* "Search more…" / create option at the bottom */
-.o-autocomplete--dropdown-menu li:last-child .o-autocomplete--dropdown-item,
-.o_field_many2one .dropdown-menu .dropdown-item:last-child {
-  border-top: 1px solid #f1f5f9 !important;
-  font-style: italic;
-  font-weight: 600 !important;
 }
 
 /* Input text inside editable cells
@@ -993,41 +987,53 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   GLOBAL AUTOCOMPLETE / MANY2ONE DROPDOWN FIX
-   Applied WITHOUT any parent scope so it works whether the dropdown is
-   rendered inline inside the <td> or portaled to <body> by Odoo 19.
-   This MUST come LAST so it wins over all other rules above.
+   GLOBAL AUTOCOMPLETE DROPDOWN — FINAL OVERRIDE (placed last = highest win)
+   Works for both inline DOM and body-portaled dropdowns.
+   KEY RULE: NEVER set background:transparent on *, only on individual items.
    ───────────────────────────────────────────────────────────────────────── */
 
-/* ① White background on every possible dropdown container */
+/* ① Solid white container */
 ul.o-autocomplete--dropdown-menu,
 .o-autocomplete .dropdown-menu {
   background: #ffffff !important;
   border: 1px solid #cbd5e1 !important;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
   border-radius: 10px !important;
+  overflow: hidden !important;
 }
 
-/* ② Dark text on EVERY element inside — no exceptions */
-ul.o-autocomplete--dropdown-menu *,
-.o-autocomplete .dropdown-menu * {
+/* ② Dark text — target specific tags, NOT * (avoids background-stripping) */
+ul.o-autocomplete--dropdown-menu a,
+ul.o-autocomplete--dropdown-menu span,
+ul.o-autocomplete--dropdown-menu li,
+.o-autocomplete .dropdown-menu a,
+.o-autocomplete .dropdown-menu span,
+.o-autocomplete .dropdown-menu li {
   color: #1e293b !important;
   -webkit-text-fill-color: #1e293b !important;
-  background: transparent !important;
   text-decoration: none !important;
 }
 
-/* ③ Hover row highlight */
+/* ③ Item background transparent (only items, not all wrappers) */
+ul.o-autocomplete--dropdown-menu li {
+  background: transparent !important;
+}
+
+/* ④ Hover highlight */
 ul.o-autocomplete--dropdown-menu li:hover,
-ul.o-autocomplete--dropdown-menu li:hover *,
-ul.o-autocomplete--dropdown-menu .focus,
-ul.o-autocomplete--dropdown-menu .focus * {
+ul.o-autocomplete--dropdown-menu li.focus {
   background: #e8f4fd !important;
+}
+
+ul.o-autocomplete--dropdown-menu li:hover a,
+ul.o-autocomplete--dropdown-menu li:hover span,
+ul.o-autocomplete--dropdown-menu li.focus a,
+ul.o-autocomplete--dropdown-menu li.focus span {
   color: #0f4c81 !important;
   -webkit-text-fill-color: #0f4c81 !important;
 }
 
-/* ④ Muted secondary text (product ref / code beside name) */
+/* ⑤ Muted secondary text */
 ul.o-autocomplete--dropdown-menu .text-muted {
   color: #94a3b8 !important;
   -webkit-text-fill-color: #94a3b8 !important;
