@@ -40,6 +40,17 @@ class AssetMaster(models.Model):
                 ('state', '=', 'assigned'),
             ])
 
+    def action_view_assigned(self):
+        self.ensure_one()
+        return {
+            'name': _('Assigned: %s') % self.name,
+            'type': 'ir.actions.act_window',
+            'res_model': 'customer.asset',
+            'view_mode': 'list,form',
+            'domain': [('asset_master_id', '=', self.id), ('state', '=', 'assigned')],
+            'context': {'default_asset_master_id': self.id},
+        }
+
 
 class CustomerAsset(models.Model):
     """An asset assigned to a specific customer (partner) by the company.
