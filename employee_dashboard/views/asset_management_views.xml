@@ -72,7 +72,7 @@
         <field name="name">customer.asset.list</field>
         <field name="model">customer.asset</field>
         <field name="arch" type="xml">
-            <list string="Customer Assets"
+            <list string="Customer Assets" default_order="installation_date desc"
                   decoration-success="state == 'assigned'"
                   decoration-warning="state == 'damaged'"
                   decoration-danger="state == 'lost'"
@@ -80,13 +80,11 @@
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="asset_master_id"/>
-                <field name="asset_type"/>
                 <field name="serial_number"/>
                 <field name="installation_date"/>
                 <field name="employee_id"/>
-                <field name="state" widget="badge"/>
-                <field name="open_issue_count" string="Open Issues"/>
-                <field name="return_date" optional="hide"/>
+                <field name="state"/>
+                <field name="open_issue_count"/>
             </list>
         </field>
     </record>
@@ -239,7 +237,7 @@
         <field name="name">asset.issue.list</field>
         <field name="model">asset.issue</field>
         <field name="arch" type="xml">
-            <list string="Asset Issues"
+            <list string="Asset Issues" default_order="date desc"
                   decoration-danger="priority == 'Critical'"
                   decoration-warning="priority == 'High'"
                   decoration-success="state in ('resolved', 'closed')"
@@ -248,12 +246,11 @@
                 <field name="date"/>
                 <field name="partner_id"/>
                 <field name="customer_asset_id"/>
-                <field name="asset_master_id"/>
                 <field name="subject"/>
                 <field name="case_type"/>
-                <field name="priority" widget="badge"/>
+                <field name="priority"/>
                 <field name="employee_id"/>
-                <field name="state" widget="badge"/>
+                <field name="state"/>
             </list>
         </field>
     </record>
