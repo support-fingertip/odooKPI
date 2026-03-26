@@ -84,11 +84,7 @@
                 <field name="serial_number"/>
                 <field name="installation_date"/>
                 <field name="employee_id"/>
-                <field name="state" widget="badge"
-                       decoration-success="state == 'assigned'"
-                       decoration-warning="state == 'damaged'"
-                       decoration-danger="state == 'lost'"
-                       decoration-muted="state == 'returned'"/>
+                <field name="state" widget="badge"/>
                 <field name="open_issue_count" string="Open Issues"/>
                 <field name="return_date" optional="hide"/>
             </list>
@@ -169,7 +165,7 @@
                     </group>
                     <notebook>
                         <page string="Issues" name="issues">
-                            <field name="issue_ids" mode="list" readonly="1">
+                            <field name="issue_ids" readonly="1">
                                 <list decoration-danger="priority == 'Critical'"
                                       decoration-warning="priority == 'High'"
                                       decoration-success="state in ('resolved','closed')">
@@ -190,7 +186,6 @@
                         </page>
                     </notebook>
                 </sheet>
-                <chatter/>
             </form>
         </field>
     </record>
@@ -256,16 +251,9 @@
                 <field name="asset_master_id"/>
                 <field name="subject"/>
                 <field name="case_type"/>
-                <field name="priority" widget="badge"
-                       decoration-danger="priority == 'Critical'"
-                       decoration-warning="priority == 'High'"
-                       decoration-info="priority == 'Medium'"
-                       decoration-muted="priority == 'Low'"/>
+                <field name="priority" widget="badge"/>
                 <field name="employee_id"/>
-                <field name="state" widget="badge"
-                       decoration-danger="state == 'open'"
-                       decoration-warning="state == 'in_progress'"
-                       decoration-success="state in ('resolved','closed')"/>
+                <field name="state" widget="badge"/>
             </list>
         </field>
     </record>
@@ -338,7 +326,6 @@
                         </page>
                     </notebook>
                 </sheet>
-                <chatter/>
             </form>
         </field>
     </record>
