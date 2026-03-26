@@ -84,11 +84,7 @@
                 <field name="serial_number"/>
                 <field name="installation_date"/>
                 <field name="employee_id"/>
-                <field name="state" widget="badge"
-                       decoration-success="state == 'assigned'"
-                       decoration-warning="state == 'damaged'"
-                       decoration-danger="state == 'lost'"
-                       decoration-secondary="state == 'returned'"/>
+                <field name="state" widget="badge"/>
                 <field name="open_issue_count" string="Open Issues"/>
                 <field name="return_date" optional="hide"/>
             </list>
@@ -256,16 +252,9 @@
                 <field name="asset_master_id"/>
                 <field name="subject"/>
                 <field name="case_type"/>
-                <field name="priority" widget="badge"
-                       decoration-danger="priority == 'Critical'"
-                       decoration-warning="priority == 'High'"
-                       decoration-info="priority == 'Medium'"
-                       decoration-secondary="priority == 'Low'"/>
+                <field name="priority" widget="badge"/>
                 <field name="employee_id"/>
-                <field name="state" widget="badge"
-                       decoration-danger="state == 'open'"
-                       decoration-warning="state == 'in_progress'"
-                       decoration-success="state in ('resolved','closed')"/>
+                <field name="state" widget="badge"/>
             </list>
         </field>
     </record>
@@ -319,10 +308,10 @@
                         </group>
                     </group>
                     <group string="Issue Description">
-                        <field name="subject" attrs="{'readonly': [('state', 'in', ['resolved','closed'])]}"/>
+                        <field name="subject" readonly="state in ('resolved', 'closed')"/>
                         <field name="description"
                                placeholder="Describe the issue in detail…"
-                               attrs="{'readonly': [('state', 'in', ['resolved','closed'])]}"/>
+                               readonly="state in ('resolved', 'closed')"/>
                     </group>
                     <notebook>
                         <page string="Resolution" name="resolution">
