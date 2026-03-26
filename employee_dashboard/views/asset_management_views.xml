@@ -88,7 +88,7 @@
                        decoration-success="state == 'assigned'"
                        decoration-warning="state == 'damaged'"
                        decoration-danger="state == 'lost'"
-                       decoration-secondary="state == 'returned'"/>
+                       decoration-muted="state == 'returned'"/>
                 <field name="open_issue_count" string="Open Issues"/>
                 <field name="return_date" optional="hide"/>
             </list>
@@ -260,7 +260,7 @@
                        decoration-danger="priority == 'Critical'"
                        decoration-warning="priority == 'High'"
                        decoration-info="priority == 'Medium'"
-                       decoration-secondary="priority == 'Low'"/>
+                       decoration-muted="priority == 'Low'"/>
                 <field name="employee_id"/>
                 <field name="state" widget="badge"
                        decoration-danger="state == 'open'"
@@ -319,10 +319,10 @@
                         </group>
                     </group>
                     <group string="Issue Description">
-                        <field name="subject" attrs="{'readonly': [('state', 'in', ['resolved','closed'])]}"/>
+                        <field name="subject" readonly="state in ('resolved','closed')"/>
                         <field name="description"
                                placeholder="Describe the issue in detail…"
-                               attrs="{'readonly': [('state', 'in', ['resolved','closed'])]}"/>
+                               readonly="state in ('resolved','closed')"/>
                     </group>
                     <notebook>
                         <page string="Resolution" name="resolution">
