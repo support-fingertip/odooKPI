@@ -25,15 +25,6 @@
         <field name="arch" type="xml">
             <form string="Asset Master">
                 <sheet>
-                    <div class="oe_button_box" name="button_box">
-                        <button name="action_view_assigned"
-                                type="object"
-                                class="oe_stat_button"
-                                icon="fa-archive"
-                                invisible="customer_count == 0">
-                            <field name="customer_count" widget="statinfo" string="Assigned"/>
-                        </button>
-                    </div>
                     <div class="oe_title">
                         <label for="name" string="Asset Name"/>
                         <h1><field name="name" placeholder="e.g. Visi-Cooler 300L"/></h1>
@@ -42,6 +33,7 @@
                         <group>
                             <field name="asset_type"/>
                             <field name="code"/>
+                            <field name="customer_count" string="Assigned (Active)" readonly="1"/>
                             <field name="active"/>
                         </group>
                         <group>
