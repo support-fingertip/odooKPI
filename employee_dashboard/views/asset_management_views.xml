@@ -384,14 +384,14 @@
     <!-- Sub-menu under Reports (visible to managers) -->
     <menuitem id="menu_customer_assets"
               name="Customer Assets"
-              parent="employee_dashboard.menu_emp360_reports"
+              parent="employee_dashboard.menu_employee_dashboard_reports"
               action="action_customer_asset"
               sequence="25"
               groups="employee_dashboard.group_employee_dashboard_manager"/>
 
     <menuitem id="menu_asset_issues"
               name="Asset Issues"
-              parent="employee_dashboard.menu_emp360_reports"
+              parent="employee_dashboard.menu_employee_dashboard_reports"
               action="action_asset_issue"
               sequence="26"
               groups="employee_dashboard.group_employee_dashboard_manager"/>
@@ -399,7 +399,7 @@
     <!-- Configuration sub-menu (managers only) -->
     <menuitem id="menu_asset_master"
               name="Asset Master"
-              parent="employee_dashboard.menu_emp360_configuration"
+              parent="employee_dashboard.menu_employee_dashboard_config"
               action="action_asset_master"
               sequence="30"
               groups="employee_dashboard.group_employee_dashboard_manager"/>
