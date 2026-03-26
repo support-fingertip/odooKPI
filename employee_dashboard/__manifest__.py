@@ -32,6 +32,7 @@
     'views/visit_competitor_views.xml',
     'views/visit_checklist_views.xml',
     'views/visit_geofence_views.xml',
+    'views/asset_management_views.xml',
 ],
     "assets": {
         "web.assets_backend": [

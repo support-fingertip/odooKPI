@@ -137,6 +137,13 @@
                                 <field name="checklist_total" string="Total Items" readonly="1"/>
                             </group>
                         </page>
+                        <page string="Customer Assets" name="assets">
+                            <div class="alert alert-info" role="alert" style="font-size:13px;">
+                                Assets assigned to this customer. Use the <strong>Customer Assets</strong>
+                                menu to register new assets or raise issues.
+                            </div>
+                            <field name="partner_id" invisible="1"/>
+                        </page>
                         <page string="GPS &amp; Geo-fence" name="gps">
                             <group>
                                 <group string="Check-in GPS">

@@ -148,6 +148,25 @@ export class TodayVisit extends Component {
             retailerOrders: [],
             retailerOrderStats: { retailers: 0, orders: 0, totalValue: 0 },
             retailerTab: 'retailers',
+
+            // ── Asset Management ──────────────────────────────────
+            customerAssets: [],
+            assetMasters: [],
+            assetsLoading: false,
+            assetSubView: 'list',    // 'list' | 'register' | 'issue'
+            selectedAssetForIssue: null,
+            assetForm: {
+                assetMasterId: null,
+                assetMasterName: '',
+                serialNumber: '',
+                notes: '',
+            },
+            assetIssueForm: {
+                subject: '',
+                caseType: 'maintenance',
+                priority: 'Medium',
+                description: '',
+            },
         });
 
         onWillStart(async () => {
@@ -2296,6 +2315,7 @@ export class TodayVisit extends Component {
         if (panelName === 'stock') this._initStockPanel();
         if (panelName === 'outstanding') this._loadOutstanding();
         if (panelName === 'retailer') this._loadRetailerOrders();
+        if (panelName === 'assets') this._loadCustomerAssets();
     }
 
     closePanel() {
@@ -2657,6 +2677,194 @@ export class TodayVisit extends Component {
             this.state.retailerOrders = [];
             this.state.retailerOrderStats = { retailers: 0, orders: 0, totalValue: 0 };
         }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  ASSET MANAGEMENT PANEL
+    // ══════════════════════════════════════════════════════════════
+
+    async _loadCustomerAssets() {
+        if (!this.state.activeVisit) return;
+        this.state.assetsLoading = true;
+        try {
+            const partnerId = this.state.activeVisit.partner_id[0];
+            const [assets, masters] = await Promise.all([
+                this.orm.call('customer.asset', 'get_assets_for_partner', [partnerId]),
+                this.orm.call('customer.asset', 'get_asset_masters', []),
+            ]);
+            this.state.customerAssets = assets || [];
+            this.state.assetMasters = masters || [];
+            this.state.assetSubView = 'list';
+        } catch (e) {
+            console.error('Error loading customer assets:', e);
+            this.state.customerAssets = [];
+            this.state.assetMasters = [];
+        } finally {
+            this.state.assetsLoading = false;
+        }
+    }
+
+    openRegisterAsset() {
+        this.state.assetForm = {
+            assetMasterId: null,
+            assetMasterName: '',
+            serialNumber: '',
+            notes: '',
+        };
+        this.state.assetSubView = 'register';
+    }
+
+    onAssetMasterChange(ev) {
+        const masterId = parseInt(ev.target.value) || null;
+        const master = this.state.assetMasters.find(m => m.id === masterId);
+        this.state.assetForm.assetMasterId = masterId;
+        this.state.assetForm.assetMasterName = master ? master.name : '';
+    }
+
+    onAssetFormFieldChange(field, ev) {
+        this.state.assetForm[field] = ev.target.value;
+    }
+
+    async saveAsset() {
+        if (!this.state.assetForm.assetMasterId) {
+            this.notification.add('Please select an asset type', { type: 'warning' });
+            return;
+        }
+        if (!this.state.activeVisit) {
+            this.notification.add('No active visit – cannot register asset', { type: 'warning' });
+            return;
+        }
+        this.state.isProcessing = true;
+        try {
+            const employeeId = this.getEmployeeId();
+            const today = new Date().toISOString().slice(0, 10);
+            await this.orm.create('customer.asset', [{
+                partner_id: this.state.activeVisit.partner_id[0],
+                asset_master_id: this.state.assetForm.assetMasterId,
+                serial_number: this.state.assetForm.serialNumber || '',
+                installation_date: today,
+                employee_id: employeeId || false,
+                visit_id: this.state.activeVisit.id,
+                notes: this.state.assetForm.notes || '',
+                state: 'assigned',
+            }]);
+            this.notification.add('✅ Asset registered successfully!', { type: 'success' });
+            // Reload asset list
+            await this._loadCustomerAssets();
+        } catch (e) {
+            const msg = (e.data && e.data.message) || e.message || String(e);
+            this.notification.add('Failed to register asset: ' + msg, { type: 'danger' });
+        } finally {
+            this.state.isProcessing = false;
+        }
+    }
+
+    openRaiseAssetIssue(asset) {
+        this.state.selectedAssetForIssue = asset;
+        this.state.assetIssueForm = {
+            subject: '',
+            caseType: 'maintenance',
+            priority: 'Medium',
+            description: '',
+        };
+        this.state.assetSubView = 'issue';
+    }
+
+    onAssetIssueFieldChange(field, ev) {
+        this.state.assetIssueForm[field] = ev.target.value;
+    }
+
+    async saveAssetIssue() {
+        if (!this.state.assetIssueForm.subject || !this.state.assetIssueForm.subject.trim()) {
+            this.notification.add('Please enter an issue subject', { type: 'warning' });
+            return;
+        }
+        if (!this.state.selectedAssetForIssue) {
+            this.notification.add('No asset selected for the issue', { type: 'warning' });
+            return;
+        }
+        this.state.isProcessing = true;
+        try {
+            const employeeId = this.getEmployeeId();
+            const today = new Date().toISOString().slice(0, 10);
+            await this.orm.create('asset.issue', [{
+                customer_asset_id: this.state.selectedAssetForIssue.id,
+                employee_id: employeeId || false,
+                visit_id: this.state.activeVisit ? this.state.activeVisit.id : false,
+                date: today,
+                subject: this.state.assetIssueForm.subject.trim(),
+                case_type: this.state.assetIssueForm.caseType || 'maintenance',
+                priority: this.state.assetIssueForm.priority || 'Medium',
+                description: this.state.assetIssueForm.description || '',
+                state: 'open',
+            }]);
+            this.notification.add('✅ Asset issue logged successfully!', { type: 'success' });
+            await this._loadCustomerAssets();
+        } catch (e) {
+            const msg = (e.data && e.data.message) || e.message || String(e);
+            this.notification.add('Failed to log asset issue: ' + msg, { type: 'danger' });
+        } finally {
+            this.state.isProcessing = false;
+        }
+    }
+
+    backToAssetList() {
+        this.state.assetSubView = 'list';
+        this.state.selectedAssetForIssue = null;
+    }
+
+    getAssetStateClass(state) {
+        const map = {
+            assigned: 'emp360-asset-state-assigned',
+            returned: 'emp360-asset-state-returned',
+            damaged:  'emp360-asset-state-damaged',
+            lost:     'emp360-asset-state-lost',
+        };
+        return map[state] || 'emp360-asset-state-assigned';
+    }
+
+    getAssetTypeIcon(assetType) {
+        const map = {
+            freezer:       'fa-snowflake-o',
+            hoarding:      'fa-image',
+            vehicle:       'fa-truck',
+            display_stand: 'fa-th-large',
+            posm:          'fa-sign',
+            other:         'fa-archive',
+        };
+        return map[assetType] || 'fa-archive';
+    }
+
+    getAssetTypeGradient(assetType) {
+        const map = {
+            freezer:       'linear-gradient(135deg,#4cc9f0,#0077b6)',
+            hoarding:      'linear-gradient(135deg,#f77f00,#d62828)',
+            vehicle:       'linear-gradient(135deg,#06d6a0,#019b72)',
+            display_stand: 'linear-gradient(135deg,#7209b7,#560bad)',
+            posm:          'linear-gradient(135deg,#f59e0b,#d97706)',
+            other:         'linear-gradient(135deg,#4361ee,#3a0ca3)',
+        };
+        return map[assetType] || 'linear-gradient(135deg,#4361ee,#3a0ca3)';
+    }
+
+    getIssuePriorityClass(priority) {
+        const map = {
+            Critical: 'emp360-badge-danger',
+            High:     'emp360-badge-warning',
+            Medium:   'emp360-badge-info',
+            Low:      'emp360-badge-secondary',
+        };
+        return map[priority] || 'emp360-badge-secondary';
+    }
+
+    getIssueStateClass(state) {
+        const map = {
+            open:        'emp360-badge-danger',
+            in_progress: 'emp360-badge-warning',
+            resolved:    'emp360-badge-success',
+            closed:      'emp360-badge-secondary',
+        };
+        return map[state] || 'emp360-badge-secondary';
     }
 
     toggleRetailerExpand(id) {

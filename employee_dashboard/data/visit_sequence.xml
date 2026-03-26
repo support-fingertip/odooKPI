@@ -25,5 +25,21 @@
             <field name="number_increment">1</field>
             <field name="number_next">1</field>
         </record>
+        <record id="seq_customer_asset" model="ir.sequence">
+            <field name="name">Customer Asset Sequence</field>
+            <field name="code">customer.asset</field>
+            <field name="prefix">AST/</field>
+            <field name="padding">5</field>
+            <field name="number_increment">1</field>
+            <field name="number_next">1</field>
+        </record>
+        <record id="seq_asset_issue" model="ir.sequence">
+            <field name="name">Asset Issue Sequence</field>
+            <field name="code">asset.issue</field>
+            <field name="prefix">ASI/</field>
+            <field name="padding">5</field>
+            <field name="number_increment">1</field>
+            <field name="number_next">1</field>
+        </record>
     </data>
 </odoo>
