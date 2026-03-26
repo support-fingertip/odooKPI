@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'BOQ Management — Bill of Quantities (Odoo 19 Enterprise)',
-    'version': '19.0.1.0.0',
-    'summary': 'Enterprise Bill of Quantities with dynamic category tabs linked to Customers',
+    'name': 'BOQ Management — Bill of Quantities (Odoo 19)',
+    'version': '19.0.1.0.1',
+    'summary': 'Bill of Quantities with dynamic category tabs linked to Customers',
     'description': """
-        BOQ Management — Enterprise Edition
-        ====================================
+        BOQ Management
+        ==============
         ✅ BOQ records linked directly to Customers
         ✅ Dynamic notebook tabs per work category (show/hide by selection)
         ✅ Electrical | Civil | Lighting | Plumbing | HVAC | Finishing tabs
@@ -25,7 +25,6 @@
         'product',
         'contacts',
         'web',
-        'web_enterprise',
         'uom',
     ],
     'data': [
