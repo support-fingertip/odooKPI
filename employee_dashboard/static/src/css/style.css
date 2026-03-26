@@ -3759,3 +3759,298 @@
 .tv-cust-done     { background: #d1fae5; color: #065f46; }
 .tv-cust-inprogress { background: #fef3c7; color: #92400e; }
 .tv-cust-pending  { background: #f3f4f6; color: #6b7280; }
+
+/* =================================================================
+   ASSET MANAGEMENT PANEL — emp360-assets-*
+   ================================================================= */
+
+/* ── Panel Header ──────────────────────────────────────────────── */
+.emp360-assets-header {
+    background: linear-gradient(135deg, #1a1a3e 0%, #7209b7 60%, #4361ee 100%) !important;
+}
+
+.emp360-assets-icon {
+    background: rgba(255,255,255,.15) !important;
+    box-shadow: 0 2px 8px rgba(114,9,183,.3);
+}
+
+/* ── Bottom Nav "Assets" Button ────────────────────────────────── */
+.emp360-bottom-nav-item-assets {
+    position: relative;
+}
+
+.emp360-nav-badge {
+    position: absolute;
+    top: 2px;
+    right: 6px;
+    background: #ef476f;
+    color: #fff;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    min-width: 14px;
+    text-align: center;
+    line-height: 14px;
+}
+
+/* ── Summary Strip ─────────────────────────────────────────────── */
+.emp360-assets-summary-strip {
+    display: flex;
+    gap: 0;
+    background: linear-gradient(135deg, #1a1a3e, #0f3460);
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+}
+
+.emp360-assets-strip-item {
+    flex: 1;
+    text-align: center;
+    border-right: 1px solid rgba(255,255,255,.1);
+}
+.emp360-assets-strip-item:last-child { border-right: none; }
+
+.emp360-assets-strip-val {
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+}
+
+.emp360-assets-strip-lbl {
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(255,255,255,.5);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    margin-top: 4px;
+}
+
+/* ── Empty State ───────────────────────────────────────────────── */
+.emp360-assets-empty {
+    text-align: center;
+    padding: 40px 24px;
+}
+
+.emp360-assets-empty-icon {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, #7209b7, #4361ee);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 28px;
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(114,9,183,.3);
+}
+
+.emp360-assets-empty-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #1a1a3e;
+    margin-bottom: 8px;
+}
+
+.emp360-assets-empty-sub {
+    font-size: 13px;
+    color: #9ca3af;
+    line-height: 1.6;
+}
+
+/* ── Asset Card ────────────────────────────────────────────────── */
+.emp360-asset-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    transition: box-shadow .2s, border-color .2s;
+}
+.emp360-asset-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    border-color: #7209b7;
+}
+
+.emp360-asset-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.emp360-asset-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 18px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+
+.emp360-asset-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.emp360-asset-card-name {
+    font-size: 14px;
+    font-weight: 800;
+    color: #1a1a3e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.emp360-asset-card-id {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 3px;
+    font-family: monospace;
+}
+
+.emp360-asset-card-date {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.emp360-asset-card-state {
+    flex-shrink: 0;
+}
+
+/* ── Asset State Badges ────────────────────────────────────────── */
+.emp360-asset-state-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+.emp360-asset-state-assigned { background: #d1fae5; color: #065f46; }
+.emp360-asset-state-returned { background: #f3f4f6; color: #6b7280; }
+.emp360-asset-state-damaged  { background: #fef3c7; color: #92400e; }
+.emp360-asset-state-lost     { background: #fee2e2; color: #991b1b; }
+
+/* ── Open Issues Strip ─────────────────────────────────────────── */
+.emp360-asset-issues-strip {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #fecaca;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+/* ── Asset Card Actions ────────────────────────────────────────── */
+.emp360-asset-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.emp360-asset-issue-btn {
+    border-color: #ef476f !important;
+    color: #ef476f !important;
+}
+.emp360-asset-issue-btn:hover {
+    background: #fef2f2 !important;
+}
+
+/* ── Register Asset Button ─────────────────────────────────────── */
+.emp360-assets-register-btn {
+    background: linear-gradient(135deg, #7209b7, #4361ee) !important;
+    border: none !important;
+    box-shadow: 0 4px 14px rgba(114,9,183,.3) !important;
+}
+
+/* ── Info Strip ────────────────────────────────────────────────── */
+.emp360-assets-info-strip {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #1e40af;
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+}
+
+/* ── Issue Context Card ────────────────────────────────────────── */
+.emp360-issue-asset-context {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+    border: 1px solid #ddd6fe;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+}
+
+.emp360-issue-asset-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 18px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+
+/* ── Case Type Grid ────────────────────────────────────────────── */
+.emp360-issue-type-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.emp360-issue-type-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 10px 6px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .2s;
+    background: #fff;
+}
+.emp360-issue-type-chip:hover {
+    border-color: #7209b7;
+    background: #f5f3ff;
+}
+.emp360-issue-type-chip.active {
+    box-shadow: 0 2px 8px rgba(114,9,183,.15);
+}
+
+/* ── Existing assets-grid adjustments for panel context ─────────── */
+.emp360-assets-panel .emp360-assets-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+/* ── Responsive: narrow screens ────────────────────────────────── */
+@media (max-width: 480px) {
+    .emp360-assets-summary-strip { flex-wrap: wrap; }
+    .emp360-assets-strip-item { min-width: 50%; border-bottom: 1px solid rgba(255,255,255,.1); }
+    .emp360-issue-type-grid { grid-template-columns: repeat(3, 1fr); }
+    .emp360-asset-card-top { flex-wrap: wrap; }
+}

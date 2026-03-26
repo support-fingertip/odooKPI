@@ -32,3 +32,9 @@ access_scheme_master_user,scheme.master.user,model_scheme_master,employee_dashbo
 access_scheme_master_manager,scheme.master.manager,model_scheme_master,employee_dashboard.group_employee_dashboard_manager,1,1,1,1
 access_must_sell_product_user,must.sell.product.user,model_must_sell_product,employee_dashboard.group_employee_dashboard_user,1,0,0,0
 access_must_sell_product_manager,must.sell.product.manager,model_must_sell_product,employee_dashboard.group_employee_dashboard_manager,1,1,1,1
+access_asset_master_user,asset.master.user,model_asset_master,employee_dashboard.group_employee_dashboard_user,1,0,0,0
+access_asset_master_manager,asset.master.manager,model_asset_master,employee_dashboard.group_employee_dashboard_manager,1,1,1,1
+access_customer_asset_user,customer.asset.user,model_customer_asset,employee_dashboard.group_employee_dashboard_user,1,1,1,0
+access_customer_asset_manager,customer.asset.manager,model_customer_asset,employee_dashboard.group_employee_dashboard_manager,1,1,1,1
+access_asset_issue_user,asset.issue.user,model_asset_issue,employee_dashboard.group_employee_dashboard_user,1,1,1,0
+access_asset_issue_manager,asset.issue.manager,model_asset_issue,employee_dashboard.group_employee_dashboard_manager,1,1,1,1
