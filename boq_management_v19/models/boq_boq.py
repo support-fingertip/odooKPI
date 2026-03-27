@@ -200,43 +200,62 @@ class BoqBoq(models.Model):
     )
 
     # ── Totals ────────────────────────────────────────────────────────────
+    #
+    # ARCHITECTURE (Odoo 19):
+    # ─────────────────────────────────────────────────────────────────────
+    # In Odoo 19 form views, STORED computed fields display the last value
+    # written to the database. They do NOT update in real-time while the
+    # user is editing O2M lines (virtual / unsaved lines on the client).
+    #
+    # To get real-time form-view updates we need TWO groups:
+    #
+    # Group A — NON-STORED (no store=True, no precompute):
+    #   → computed fresh every time the record is read / onchange fires
+    #   → updates immediately as the user adds/edits O2M lines
+    #   → used in: summary strip, line-count smart button, tab headers
+    #
+    # Group B — STORED (store=True):
+    #   → written to DB on save; needed for list-view aggregation (sum)
+    #   → total_amount only (shown in list view with sum="Grand Total")
+    # ─────────────────────────────────────────────────────────────────────
+
+    # Group A — non-stored, real-time
     electrical_total = fields.Monetary(
-        compute='_compute_totals', store=True, precompute=True,
+        compute='_compute_category_totals',
         currency_field='currency_id',
     )
     civil_total = fields.Monetary(
-        compute='_compute_totals', store=True, precompute=True,
+        compute='_compute_category_totals',
         currency_field='currency_id',
     )
     lighting_total = fields.Monetary(
-        compute='_compute_totals', store=True, precompute=True,
+        compute='_compute_category_totals',
         currency_field='currency_id',
     )
     plumbing_total = fields.Monetary(
-        compute='_compute_totals', store=True, precompute=True,
+        compute='_compute_category_totals',
         currency_field='currency_id',
     )
     hvac_total = fields.Monetary(
-        compute='_compute_totals', store=True, precompute=True,
+        compute='_compute_category_totals',
         currency_field='currency_id',
     )
     finishing_total = fields.Monetary(
-        compute='_compute_totals', store=True, precompute=True,
+        compute='_compute_category_totals',
         currency_field='currency_id',
-    )
-    total_amount = fields.Monetary(
-        string='Grand Total',
-        compute='_compute_totals',
-        store=True,
-        precompute=True,
-        currency_field='currency_id',
-        tracking=True,
     )
     line_count = fields.Integer(
         string='Lines',
-        compute='_compute_totals',
+        compute='_compute_category_totals',
+    )
+
+    # Group B — stored, for list-view sum + chatter tracking
+    total_amount = fields.Monetary(
+        string='Grand Total',
+        compute='_compute_total_amount',
         store=True,
-        precompute=True,
+        currency_field='currency_id',
+        tracking=True,
     )
 
     # ── Linked Purchase RFQs ──────────────────────────────────────────────
@@ -251,7 +270,6 @@ class BoqBoq(models.Model):
     rfq_count = fields.Integer(
         string='RFQs',
         compute='_compute_rfq_count',
-        store=True,
     )
 
     @api.depends('rfq_ids')
@@ -259,28 +277,37 @@ class BoqBoq(models.Model):
         for rec in self:
             rec.rfq_count = len(rec.rfq_ids)
 
-    # ── _compute_totals ────────────────────────────────────────────────────
-    # IMPORTANT: Only depend on `line_ids.*` (the unfiltered O2M).
-    # Domain-filtered O2M fields like `electrical_line_ids` cannot reliably
-    # propagate stored-compute triggers in Odoo ORM — the inverse lookup
-    # across a domain filter silently drops triggers, causing stale values.
+    # ── Group A: non-stored category totals + line count ──────────────────
+    # Non-stored → Odoo ORM recomputes these on every record read AND on
+    # every onchange triggered by changes to line_ids (adding/editing lines
+    # in the inline O2M editor).  This gives real-time form-view updates.
     @api.depends('line_ids.subtotal', 'line_ids.category_id')
-    def _compute_totals(self):
+    def _compute_category_totals(self):
         for rec in self:
             lines = rec.line_ids
+
             def cat_sum(code):
                 return sum(
                     l.subtotal for l in lines
                     if l.category_id and l.category_id.code == code
                 )
+
             rec.electrical_total = cat_sum('electrical')
             rec.civil_total      = cat_sum('civil')
             rec.lighting_total   = cat_sum('lighting')
             rec.plumbing_total   = cat_sum('plumbing')
             rec.hvac_total       = cat_sum('hvac')
             rec.finishing_total  = cat_sum('finishing')
-            rec.total_amount     = sum(lines.mapped('subtotal'))
             rec.line_count       = len(lines)
+
+    # ── Group B: stored grand total (list-view aggregation + tracking) ────
+    # Stored → written to DB on save.  The onchange mechanism propagates
+    # the current (unsaved) value to the form widget so the smart button
+    # Total also updates in real-time while editing lines.
+    @api.depends('line_ids.subtotal')
+    def _compute_total_amount(self):
+        for rec in self:
+            rec.total_amount = sum(rec.line_ids.mapped('subtotal'))
 
     # ── Sequence / Create ─────────────────────────────────────────────────
     @api.model_create_multi
