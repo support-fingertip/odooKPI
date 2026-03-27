@@ -1039,3 +1039,105 @@ ul.o-autocomplete--dropdown-menu .text-muted {
   -webkit-text-fill-color: #94a3b8 !important;
   font-size: 0.78rem !important;
 }
+
+/* =========================================================================
+   RFQ — Header "Create RFQ" button
+   ========================================================================= */
+.boq_enterprise_form .boq_rfq_header_btn {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+  border-color: #15803d !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+  border-radius: 8px !important;
+  padding: 6px 18px !important;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35) !important;
+  transition: var(--boq-transition) !important;
+}
+
+.boq_enterprise_form .boq_rfq_header_btn:hover,
+.boq_enterprise_form .boq_rfq_header_btn:focus {
+  background: linear-gradient(135deg, #15803d 0%, #166534 100%) !important;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.45) !important;
+  transform: translateY(-1px);
+}
+
+.boq_enterprise_form .boq_rfq_header_btn .fa {
+  margin-right: 6px;
+}
+
+/* =========================================================================
+   RFQ — Smart button (oe_stat_button) pill
+   ========================================================================= */
+.boq_enterprise_form .boq_rfq_stat_btn {
+  border-left: 4px solid #16a34a !important;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
+}
+
+.boq_enterprise_form .boq_rfq_stat_btn .o_stat_value,
+.boq_enterprise_form .boq_rfq_stat_btn .o_field_widget {
+  color: #15803d !important;
+  font-weight: 800 !important;
+}
+
+.boq_enterprise_form .boq_rfq_stat_btn .o_stat_text {
+  color: #166534 !important;
+  font-weight: 600 !important;
+}
+
+.boq_enterprise_form .boq_rfq_stat_btn .fa {
+  color: #16a34a !important;
+}
+
+/* =========================================================================
+   VENDOR TAGS — many2many_tags inside BOQ line table
+   ========================================================================= */
+
+/* Tag pill */
+.boq_line_table td[name="vendor_ids"] .badge,
+.boq_line_table td[name="vendor_ids"] .o_tag {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+  color: #1e3a8a !important;
+  border: 1px solid #93c5fd !important;
+  border-radius: 20px !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  padding: 2px 8px !important;
+  margin: 1px 2px !important;
+  white-space: nowrap;
+  transition: var(--boq-transition);
+}
+
+.boq_line_table td[name="vendor_ids"] .badge:hover,
+.boq_line_table td[name="vendor_ids"] .o_tag:hover {
+  background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%) !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 1px 4px rgba(59, 130, 246, 0.3);
+}
+
+/* Remove × inside tag */
+.boq_line_table td[name="vendor_ids"] .badge .o_delete,
+.boq_line_table td[name="vendor_ids"] .o_tag .o_delete {
+  color: #3b82f6 !important;
+  opacity: 0.75;
+}
+
+.boq_line_table td[name="vendor_ids"] .badge .o_delete:hover,
+.boq_line_table td[name="vendor_ids"] .o_tag .o_delete:hover {
+  opacity: 1;
+  color: #dc2626 !important;
+}
+
+/* Cell: allow wrapping so multiple vendor tags stack neatly */
+.boq_line_table td[name="vendor_ids"] {
+  min-width: 160px;
+  max-width: 260px;
+  vertical-align: middle;
+}
+
+/* Column header label */
+.boq_line_table th[data-field="vendor_ids"] {
+  color: #1e3a8a;
+  font-weight: 700;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
