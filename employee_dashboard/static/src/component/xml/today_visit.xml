@@ -707,55 +707,63 @@
                     </t>
                 </div>
 
-                <!-- Assets Summary (accordion) -->
+                <!-- Assets Summary (accordion) — real data from customer.asset -->
                 <div class="emp360-acc-card">
                     <div class="emp360-acc-header" t-on-click="() => this.toggleAccordion('assets')">
                         <div style="display:flex;align-items:center;gap:10px;">
                             <i class="fa fa-archive" style="color:#7209b7;"></i>
                             Assets Summary
+                            <t t-if="state.customerAssets.length > 0">
+                                <span class="emp360-badge emp360-badge-info" style="font-size:10px;">
+                                    <t t-esc="state.customerAssets.length"/>
+                                </span>
+                            </t>
                         </div>
                         <i t-attf-class="fa fa-chevron-{{state.accordionOpen.assets ? 'up' : 'down'}}" style="color:#9ca3af;font-size:13px;"></i>
                     </div>
                     <t t-if="state.accordionOpen.assets">
                         <div class="emp360-acc-body">
-                            <div class="emp360-assets-grid">
-                                <div class="emp360-asset-item">
-                                    <div class="emp360-asset-icon" style="background:linear-gradient(135deg,#4cc9f0,#0077b6);">
-                                        <i class="fa fa-snowflake-o"></i>
-                                    </div>
-                                    <div class="emp360-asset-info">
-                                        <div class="emp360-asset-name">Visi-Cooler</div>
-                                        <div class="emp360-asset-status emp360-asset-ok">Functional</div>
-                                    </div>
+                            <t t-if="state.customerAssets.length === 0">
+                                <div style="text-align:center;color:#9ca3af;padding:12px 0;font-size:13px;">
+                                    <i class="fa fa-archive" style="font-size:24px;display:block;margin-bottom:6px;opacity:.4;"></i>
+                                    No assets registered yet.
                                 </div>
-                                <div class="emp360-asset-item">
-                                    <div class="emp360-asset-icon" style="background:linear-gradient(135deg,#f77f00,#d62828);">
-                                        <i class="fa fa-image"></i>
-                                    </div>
-                                    <div class="emp360-asset-info">
-                                        <div class="emp360-asset-name">Display Stand</div>
-                                        <div class="emp360-asset-status emp360-asset-ok">Present</div>
-                                    </div>
+                                <div style="text-align:center;margin-top:6px;">
+                                    <button class="emp360-btn emp360-btn-primary emp360-btn-sm"
+                                            t-on-click="() => this.openPanel('assets')">
+                                        <i class="fa fa-plus me-1"></i> Register Asset
+                                    </button>
                                 </div>
-                                <div class="emp360-asset-item">
-                                    <div class="emp360-asset-icon" style="background:linear-gradient(135deg,#06d6a0,#019b72);">
-                                        <i class="fa fa-sign"></i>
-                                    </div>
-                                    <div class="emp360-asset-info">
-                                        <div class="emp360-asset-name">POSM Material</div>
-                                        <div class="emp360-asset-status emp360-asset-warn">Partial</div>
-                                    </div>
+                            </t>
+                            <t t-else="">
+                                <div class="emp360-assets-grid">
+                                    <t t-foreach="state.customerAssets" t-as="asset" t-key="asset.id">
+                                        <div class="emp360-asset-item" t-on-click="() => this.openPanel('assets')">
+                                            <div class="emp360-asset-icon"
+                                                 t-att-style="'background:' + getAssetTypeGradient(asset.asset_type) + ';'">
+                                                <i t-attf-class="fa {{getAssetTypeIcon(asset.asset_type)}}"></i>
+                                            </div>
+                                            <div class="emp360-asset-info">
+                                                <div class="emp360-asset-name">
+                                                    <t t-esc="asset.asset_master_name || asset.name"/>
+                                                </div>
+                                                <div t-attf-class="emp360-asset-status {{asset.state === 'assigned' ? 'emp360-asset-ok' : asset.state === 'damaged' ? 'emp360-asset-warn' : 'emp360-asset-bad'}}">
+                                                    <t t-esc="asset.state ? asset.state.charAt(0).toUpperCase() + asset.state.slice(1) : ''"/>
+                                                    <t t-if="asset.open_issue_count > 0">
+                                                        · <span style="color:#ef476f;"><t t-esc="asset.open_issue_count"/> issue(s)</span>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
                                 </div>
-                                <div class="emp360-asset-item">
-                                    <div class="emp360-asset-icon" style="background:linear-gradient(135deg,#7209b7,#560bad);">
-                                        <i class="fa fa-tags"></i>
-                                    </div>
-                                    <div class="emp360-asset-info">
-                                        <div class="emp360-asset-name">Price Tags</div>
-                                        <div class="emp360-asset-status emp360-asset-ok">Updated</div>
-                                    </div>
+                                <div style="text-align:center;margin-top:10px;">
+                                    <button class="emp360-btn emp360-btn-ghost emp360-btn-sm"
+                                            t-on-click="() => this.openPanel('assets')">
+                                        <i class="fa fa-archive me-1"></i> Manage Assets
+                                    </button>
                                 </div>
-                            </div>
+                            </t>
                         </div>
                     </t>
                 </div>
@@ -907,6 +915,13 @@
                 <div class="emp360-bottom-nav-item" t-on-click="() => this.openPanel('competitor')">
                     <i class="fa fa-users"></i>
                     <span>Compet.</span>
+                </div>
+                <div class="emp360-bottom-nav-item emp360-bottom-nav-item-assets" t-on-click="() => this.openPanel('assets')">
+                    <i class="fa fa-archive"></i>
+                    <span>Assets</span>
+                    <t t-if="state.customerAssets.length > 0">
+                        <span class="emp360-nav-badge"><t t-esc="state.customerAssets.length"/></span>
+                    </t>
                 </div>
             </div>
         </t>
@@ -1401,6 +1416,410 @@
                         <i class="fa fa-save me-1"></i> Save
                     </button>
                 </div>
+            </div>
+        </t>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ASSET MANAGEMENT PANEL
+             Sub-views: list (default) | register | issue
+             ═══════════════════════════════════════════════════════════ -->
+        <t t-if="state.activePanel === 'assets'">
+            <div class="emp360-panel-overlay emp360-assets-panel">
+
+                <!-- ── Common Header ─────────────────────────────── -->
+                <div class="emp360-panel-header emp360-assets-header">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <t t-if="state.assetSubView === 'list'">
+                            <button class="emp360-panel-back" t-on-click="closePanel">
+                                <i class="fa fa-chevron-left"></i>
+                            </button>
+                        </t>
+                        <t t-else="">
+                            <button class="emp360-panel-back" t-on-click="backToAssetList">
+                                <i class="fa fa-chevron-left"></i>
+                            </button>
+                        </t>
+                        <div class="emp360-panel-header-icon emp360-assets-icon">
+                            <i class="fa fa-archive"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:15px;font-weight:800;color:#fff;">
+                                <t t-if="state.assetSubView === 'list'">Customer Assets</t>
+                                <t t-elif="state.assetSubView === 'register'">Register Asset</t>
+                                <t t-else="">Raise Asset Issue</t>
+                            </div>
+                            <div style="font-size:11px;color:rgba(255,255,255,.7);">
+                                <t t-if="state.assetSubView === 'list'">Assets assigned to this customer</t>
+                                <t t-elif="state.assetSubView === 'register'">Assign a new asset to this customer</t>
+                                <t t-else="">Log an issue for the selected asset</t>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="emp360-panel-store-chip">
+                        <i class="fa fa-store me-1" style="font-size:11px;"></i>
+                        <t t-if="state.customerSummary"><t t-esc="state.customerSummary.name"/></t>
+                    </div>
+                </div>
+
+                <!-- ══════════════════════════════════════
+                     SUB-VIEW 1: ASSET LIST
+                     ══════════════════════════════════════ -->
+                <t t-if="state.assetSubView === 'list'">
+                    <!-- Summary strip -->
+                    <div class="emp360-assets-summary-strip">
+                        <div class="emp360-assets-strip-item">
+                            <div class="emp360-assets-strip-val" style="color:#06d6a0;">
+                                <t t-esc="state.customerAssets.filter(a => a.state === 'assigned').length"/>
+                            </div>
+                            <div class="emp360-assets-strip-lbl">Assigned</div>
+                        </div>
+                        <div class="emp360-assets-strip-item">
+                            <div class="emp360-assets-strip-val" style="color:#f59e0b;">
+                                <t t-esc="state.customerAssets.filter(a => a.state === 'damaged').length"/>
+                            </div>
+                            <div class="emp360-assets-strip-lbl">Damaged</div>
+                        </div>
+                        <div class="emp360-assets-strip-item">
+                            <div class="emp360-assets-strip-val" style="color:#ef476f;">
+                                <t t-esc="state.customerAssets.reduce((s,a) => s + (a.open_issue_count || 0), 0)"/>
+                            </div>
+                            <div class="emp360-assets-strip-lbl">Open Issues</div>
+                        </div>
+                        <div class="emp360-assets-strip-item">
+                            <div class="emp360-assets-strip-val" style="color:#9ca3af;">
+                                <t t-esc="state.customerAssets.filter(a => a.state === 'returned').length"/>
+                            </div>
+                            <div class="emp360-assets-strip-lbl">Returned</div>
+                        </div>
+                    </div>
+
+                    <div class="emp360-panel-body" style="padding-top:8px;">
+                        <!-- Loading state -->
+                        <t t-if="state.assetsLoading">
+                            <div class="emp360-loading" style="padding:40px 0;">
+                                <div class="emp360-spinner"></div>
+                                <div style="text-align:center;color:#9ca3af;margin-top:10px;font-size:13px;">Loading assets…</div>
+                            </div>
+                        </t>
+
+                        <!-- No assets -->
+                        <t t-elif="state.customerAssets.length === 0">
+                            <div class="emp360-assets-empty">
+                                <div class="emp360-assets-empty-icon">
+                                    <i class="fa fa-archive"></i>
+                                </div>
+                                <div class="emp360-assets-empty-title">No Assets Registered</div>
+                                <div class="emp360-assets-empty-sub">
+                                    This customer has no assets assigned yet.<br/>
+                                    Register the first asset below.
+                                </div>
+                                <button class="emp360-btn emp360-btn-primary emp360-btn-sm"
+                                        style="margin-top:14px;"
+                                        t-on-click="openRegisterAsset">
+                                    <i class="fa fa-plus me-1"></i> Register First Asset
+                                </button>
+                            </div>
+                        </t>
+
+                        <!-- Asset cards -->
+                        <t t-else="">
+                            <div class="emp360-panel-section-title">
+                                <i class="fa fa-archive me-2" style="color:#7209b7;"></i>
+                                Assigned Assets
+                                <span class="emp360-badge emp360-badge-info" style="margin-left:auto;font-size:10px;">
+                                    <t t-esc="state.customerAssets.length"/> asset(s)
+                                </span>
+                            </div>
+
+                            <t t-foreach="state.customerAssets" t-as="asset" t-key="asset.id">
+                                <div class="emp360-asset-card">
+                                    <!-- Asset type icon + name -->
+                                    <div class="emp360-asset-card-top">
+                                        <div class="emp360-asset-card-icon"
+                                             t-att-style="'background:' + getAssetTypeGradient(asset.asset_type) + ';'">
+                                            <i t-attf-class="fa {{getAssetTypeIcon(asset.asset_type)}}"></i>
+                                        </div>
+                                        <div class="emp360-asset-card-info">
+                                            <div class="emp360-asset-card-name">
+                                                <t t-esc="asset.asset_master_name || 'Asset'"/>
+                                            </div>
+                                            <div class="emp360-asset-card-id">
+                                                <i class="fa fa-tag me-1" style="font-size:10px;"></i>
+                                                <t t-esc="asset.name"/>
+                                                <t t-if="asset.serial_number">
+                                                    · SN: <t t-esc="asset.serial_number"/>
+                                                </t>
+                                            </div>
+                                            <div class="emp360-asset-card-date">
+                                                <i class="fa fa-calendar me-1" style="font-size:10px;"></i>
+                                                Since <t t-esc="asset.installation_date || '--'"/>
+                                            </div>
+                                        </div>
+                                        <div class="emp360-asset-card-state">
+                                            <span t-attf-class="emp360-asset-state-badge {{getAssetStateClass(asset.state)}}">
+                                                <t t-esc="asset.state ? asset.state.charAt(0).toUpperCase() + asset.state.slice(1) : ''"/>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Open issues pills -->
+                                    <t t-if="asset.open_issues and asset.open_issues.length > 0">
+                                        <div class="emp360-asset-issues-strip">
+                                            <span style="font-size:10px;font-weight:700;color:#ef476f;margin-right:6px;">
+                                                <i class="fa fa-exclamation-circle me-1"></i>
+                                                <t t-esc="asset.open_issues.length"/> open issue(s):
+                                            </span>
+                                            <t t-foreach="asset.open_issues" t-as="iss" t-key="iss.id">
+                                                <span t-attf-class="emp360-badge {{getIssuePriorityClass(iss.priority)}}"
+                                                      style="font-size:9px;margin-right:4px;">
+                                                    <t t-esc="iss.subject"/>
+                                                </span>
+                                            </t>
+                                        </div>
+                                    </t>
+
+                                    <!-- Action buttons -->
+                                    <div class="emp360-asset-card-actions">
+                                        <button class="emp360-btn emp360-btn-ghost emp360-btn-sm emp360-asset-issue-btn"
+                                                t-on-click="() => this.openRaiseAssetIssue(asset)">
+                                            <i class="fa fa-exclamation-triangle me-1"></i> Raise Issue
+                                        </button>
+                                        <t t-if="asset.open_issue_count > 0">
+                                            <span class="emp360-badge emp360-badge-danger" style="font-size:10px;">
+                                                <t t-esc="asset.open_issue_count"/> open
+                                            </span>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="emp360-panel-footer">
+                        <button class="emp360-btn emp360-btn-outline" t-on-click="closePanel">
+                            <i class="fa fa-times me-1"></i> Close
+                        </button>
+                        <button class="emp360-btn emp360-btn-primary emp360-assets-register-btn"
+                                t-on-click="openRegisterAsset">
+                            <i class="fa fa-plus me-1"></i> Register Asset
+                        </button>
+                    </div>
+                </t>
+
+                <!-- ══════════════════════════════════════
+                     SUB-VIEW 2: REGISTER ASSET
+                     ══════════════════════════════════════ -->
+                <t t-elif="state.assetSubView === 'register'">
+                    <div class="emp360-panel-body">
+                        <div class="emp360-panel-section-title">
+                            <i class="fa fa-plus-circle me-2" style="color:#06d6a0;"></i>
+                            Register New Asset
+                        </div>
+
+                        <!-- Asset Type -->
+                        <div class="emp360-form-group">
+                            <label class="emp360-form-label">
+                                <span class="emp360-required-star">*</span> Asset Type
+                            </label>
+                            <div class="emp360-form-input-wrap">
+                                <i class="fa fa-archive emp360-form-input-icon"></i>
+                                <select class="emp360-form-select emp360-form-input-padded"
+                                        t-on-change="(ev) => this.onAssetMasterChange(ev)">
+                                    <option value="">— Select Asset Type —</option>
+                                    <t t-foreach="state.assetMasters" t-as="master" t-key="master.id">
+                                        <option t-att-value="master.id"
+                                                t-att-selected="state.assetForm.assetMasterId === master.id">
+                                            <t t-esc="master.name"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+                            <!-- Selected asset type visual -->
+                            <t t-if="state.assetForm.assetMasterId">
+                                <div style="margin-top:8px;display:flex;align-items:center;gap:8px;background:#f0fdf4;border-radius:8px;padding:8px 12px;">
+                                    <t t-set="selMaster" t-value="state.assetMasters.find(m => m.id === state.assetForm.assetMasterId)"/>
+                                    <div t-att-style="'width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:' + getAssetTypeGradient(selMaster ? selMaster.asset_type : '')">
+                                        <i t-attf-class="fa {{getAssetTypeIcon(selMaster ? selMaster.asset_type : '')}} " style="color:#fff;font-size:12px;"></i>
+                                    </div>
+                                    <span style="font-size:13px;font-weight:700;color:#059669;">
+                                        <t t-esc="state.assetForm.assetMasterName"/>
+                                    </span>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- Serial / Tag Number -->
+                        <div class="emp360-form-group">
+                            <label class="emp360-form-label">Serial / Tag Number</label>
+                            <div class="emp360-form-input-wrap">
+                                <i class="fa fa-barcode emp360-form-input-icon"></i>
+                                <input class="emp360-form-input emp360-form-input-padded"
+                                       type="text"
+                                       placeholder="e.g. VC-2024-001"
+                                       t-att-value="state.assetForm.serialNumber"
+                                       t-on-change="(ev) => this.onAssetFormFieldChange('serialNumber', ev)"/>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="emp360-form-group">
+                            <label class="emp360-form-label">Notes / Condition</label>
+                            <div class="emp360-form-input-wrap">
+                                <textarea class="emp360-form-textarea" rows="3"
+                                          placeholder="Describe asset condition or placement details…"
+                                          t-on-change="(ev) => this.onAssetFormFieldChange('notes', ev)">
+                                    <t t-esc="state.assetForm.notes"/>
+                                </textarea>
+                            </div>
+                        </div>
+
+                        <!-- Info strip -->
+                        <div class="emp360-assets-info-strip">
+                            <i class="fa fa-info-circle me-2" style="color:#4361ee;"></i>
+                            This asset will be registered today and linked to the current visit and customer.
+                        </div>
+                    </div>
+
+                    <div class="emp360-panel-footer">
+                        <button class="emp360-btn emp360-btn-outline"
+                                t-on-click="backToAssetList"
+                                t-att-disabled="state.isProcessing">
+                            <i class="fa fa-chevron-left me-1"></i> Back
+                        </button>
+                        <button class="emp360-btn emp360-btn-success emp360-save-btn"
+                                t-on-click="saveAsset"
+                                t-att-disabled="state.isProcessing">
+                            <i t-if="!state.isProcessing" class="fa fa-check me-1"></i>
+                            <i t-else="" class="fa fa-spinner fa-spin me-1"></i>
+                            <t t-if="!state.isProcessing">Register Asset</t>
+                            <t t-else="">Registering…</t>
+                        </button>
+                    </div>
+                </t>
+
+                <!-- ══════════════════════════════════════
+                     SUB-VIEW 3: RAISE ISSUE
+                     ══════════════════════════════════════ -->
+                <t t-elif="state.assetSubView === 'issue'">
+                    <div class="emp360-panel-body">
+                        <!-- Asset context card -->
+                        <t t-if="state.selectedAssetForIssue">
+                            <div class="emp360-issue-asset-context">
+                                <div class="emp360-issue-asset-icon"
+                                     t-att-style="'background:' + getAssetTypeGradient(state.selectedAssetForIssue.asset_type) + ';'">
+                                    <i t-attf-class="fa {{getAssetTypeIcon(state.selectedAssetForIssue.asset_type)}}"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size:13px;font-weight:800;color:#1a1a3e;">
+                                        <t t-esc="state.selectedAssetForIssue.asset_master_name"/>
+                                    </div>
+                                    <div style="font-size:11px;color:#9ca3af;">
+                                        <t t-esc="state.selectedAssetForIssue.name"/>
+                                        <t t-if="state.selectedAssetForIssue.serial_number">
+                                            · SN: <t t-esc="state.selectedAssetForIssue.serial_number"/>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+
+                        <div class="emp360-panel-section-title">
+                            <i class="fa fa-exclamation-triangle me-2" style="color:#ef476f;"></i>
+                            Log Asset Issue
+                        </div>
+
+                        <!-- Subject -->
+                        <div class="emp360-form-group">
+                            <label class="emp360-form-label">
+                                <span class="emp360-required-star">*</span> Subject
+                            </label>
+                            <div class="emp360-form-input-wrap">
+                                <i class="fa fa-pencil emp360-form-input-icon"></i>
+                                <input class="emp360-form-input emp360-form-input-padded"
+                                       type="text"
+                                       placeholder="Brief description of the issue…"
+                                       t-att-value="state.assetIssueForm.subject"
+                                       t-on-change="(ev) => this.onAssetIssueFieldChange('subject', ev)"/>
+                            </div>
+                        </div>
+
+                        <!-- Case Type -->
+                        <div class="emp360-form-group">
+                            <label class="emp360-form-label">Case Type</label>
+                            <div class="emp360-issue-type-grid">
+                                <t t-foreach="[
+                                    {val:'maintenance', label:'Maintenance', icon:'fa-wrench', color:'#4361ee'},
+                                    {val:'damage', label:'Damage', icon:'fa-exclamation-circle', color:'#ef476f'},
+                                    {val:'missing', label:'Missing', icon:'fa-search', color:'#f59e0b'},
+                                    {val:'relocation', label:'Relocation', icon:'fa-map-marker', color:'#06d6a0'},
+                                    {val:'upgrade', label:'Upgrade', icon:'fa-arrow-up', color:'#7209b7'},
+                                    {val:'complaint', label:'Complaint', icon:'fa-commenting', color:'#d62828'},
+                                    {val:'other', label:'Other', icon:'fa-ellipsis-h', color:'#9ca3af'}
+                                ]" t-as="ctype" t-key="ctype.val">
+                                    <div t-attf-class="emp360-issue-type-chip {{state.assetIssueForm.caseType === ctype.val ? 'active' : ''}}"
+                                         t-on-click="() => { this.state.assetIssueForm.caseType = ctype.val; }"
+                                         t-att-style="state.assetIssueForm.caseType === ctype.val ? 'border-color:' + ctype.color + ';background:' + ctype.color + '18;' : ''">
+                                        <i t-attf-class="fa {{ctype.icon}}"
+                                           t-att-style="'color:' + (state.assetIssueForm.caseType === ctype.val ? ctype.color : '#9ca3af') + ';font-size:14px;'"></i>
+                                        <span t-att-style="'font-size:10px;font-weight:700;color:' + (state.assetIssueForm.caseType === ctype.val ? ctype.color : '#6b7280')">
+                                            <t t-esc="ctype.label"/>
+                                        </span>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- Priority -->
+                        <div class="emp360-form-group">
+                            <label class="emp360-form-label">Priority</label>
+                            <div class="emp360-payment-modes">
+                                <t t-foreach="[
+                                    {val:'Low', icon:'fa-arrow-down', color:'#9ca3af'},
+                                    {val:'Medium', icon:'fa-minus', color:'#4361ee'},
+                                    {val:'High', icon:'fa-arrow-up', color:'#f59e0b'},
+                                    {val:'Critical', icon:'fa-exclamation', color:'#ef476f'}
+                                ]" t-as="pri" t-key="pri.val">
+                                    <div t-attf-class="emp360-payment-mode-pill {{state.assetIssueForm.priority === pri.val ? 'active' : ''}}"
+                                         t-on-click="() => { this.state.assetIssueForm.priority = pri.val; }"
+                                         t-att-style="state.assetIssueForm.priority === pri.val ? 'border-color:' + pri.color + ';background:' + pri.color + '18;color:' + pri.color : ''">
+                                        <i t-attf-class="fa {{pri.icon}}" style="font-size:14px;"></i>
+                                        <span><t t-esc="pri.val"/></span>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="emp360-form-group">
+                            <label class="emp360-form-label">Description</label>
+                            <div class="emp360-form-input-wrap">
+                                <textarea class="emp360-form-textarea" rows="3"
+                                          placeholder="Describe the issue in detail…"
+                                          t-on-change="(ev) => this.onAssetIssueFieldChange('description', ev)">
+                                    <t t-esc="state.assetIssueForm.description"/>
+                                </textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="emp360-panel-footer">
+                        <button class="emp360-btn emp360-btn-outline"
+                                t-on-click="backToAssetList"
+                                t-att-disabled="state.isProcessing">
+                            <i class="fa fa-chevron-left me-1"></i> Back
+                        </button>
+                        <button class="emp360-btn emp360-btn-danger emp360-save-btn"
+                                t-on-click="saveAssetIssue"
+                                t-att-disabled="state.isProcessing">
+                            <i t-if="!state.isProcessing" class="fa fa-paper-plane me-1"></i>
+                            <i t-else="" class="fa fa-spinner fa-spin me-1"></i>
+                            <t t-if="!state.isProcessing">Submit Issue</t>
+                            <t t-else="">Submitting…</t>
+                        </button>
+                    </div>
+                </t>
+
             </div>
         </t>
 

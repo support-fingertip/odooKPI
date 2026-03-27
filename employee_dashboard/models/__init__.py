@@ -11,3 +11,4 @@ from . import visit_ticket
 from . import visit_competitor
 from . import visit_checklist
 from . import visit_geofence
+from . import asset_management
