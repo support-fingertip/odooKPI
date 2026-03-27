@@ -29,6 +29,14 @@
                 <button name="action_reset_draft" string="Reset to Draft" type="object"
                         class="btn-secondary"
                         invisible="state not in ('rejected', 'submitted')"/>
+                <!-- ── CREATE RFQ — visible whenever lines exist ──── -->
+                <button name="action_create_rfq"
+                        string="Create RFQ"
+                        type="object"
+                        class="btn-success boq_rfq_header_btn"
+                        icon="fa-shopping-cart"
+                        invisible="not line_ids"
+                        confirm="This will generate one RFQ per mapped vendor. Proceed?"/>
                 <field name="state" widget="statusbar"
                        statusbar_visible="draft,submitted,approved,done"/>
             </header>
@@ -54,6 +62,14 @@
                             </span>
                             <span class="o_stat_text">Total</span>
                         </div>
+                    </button>
+                    <!-- ── RFQ smart button ── -->
+                    <button name="action_view_rfqs"
+                            type="object"
+                            class="oe_stat_button boq_rfq_stat_btn"
+                            icon="fa-shopping-cart"
+                            invisible="rfq_count == 0">
+                        <field name="rfq_count" widget="statinfo" string="RFQs"/>
                     </button>
                 </div>
 
@@ -261,6 +277,11 @@
                                 <field name="unit_price" string="Unit Price"/>
                                 <field name="discount" string="Disc %" optional="hide"/>
                                 <field name="subtotal" string="Subtotal" readonly="1" sum="Tab Total"/>
+                                <field name="vendor_ids" widget="many2many_tags"
+                                       string="Preferred Vendors"
+                                       domain="[('supplier_rank','>',0)]"
+                                       options="{'no_create_edit': True}"
+                                       optional="show"/>
                                 <field name="currency_id" column_invisible="True"/>
                                 <field name="notes" string="Notes" optional="hide"/>
                                 <field name="category_id" column_invisible="True" required="1"/>
@@ -297,6 +318,11 @@
                                 <field name="unit_price" string="Unit Price"/>
                                 <field name="discount" string="Disc %" optional="hide"/>
                                 <field name="subtotal" string="Subtotal" readonly="1" sum="Tab Total"/>
+                                <field name="vendor_ids" widget="many2many_tags"
+                                       string="Preferred Vendors"
+                                       domain="[('supplier_rank','>',0)]"
+                                       options="{'no_create_edit': True}"
+                                       optional="show"/>
                                 <field name="currency_id" column_invisible="True"/>
                                 <field name="notes" string="Notes" optional="hide"/>
                                 <field name="category_id" column_invisible="True" required="1"/>
@@ -333,6 +359,11 @@
                                 <field name="unit_price" string="Unit Price"/>
                                 <field name="discount" string="Disc %" optional="hide"/>
                                 <field name="subtotal" string="Subtotal" readonly="1" sum="Tab Total"/>
+                                <field name="vendor_ids" widget="many2many_tags"
+                                       string="Preferred Vendors"
+                                       domain="[('supplier_rank','>',0)]"
+                                       options="{'no_create_edit': True}"
+                                       optional="show"/>
                                 <field name="currency_id" column_invisible="True"/>
                                 <field name="notes" string="Notes" optional="hide"/>
                                 <field name="category_id" column_invisible="True" required="1"/>
@@ -369,6 +400,11 @@
                                 <field name="unit_price" string="Unit Price"/>
                                 <field name="discount" string="Disc %" optional="hide"/>
                                 <field name="subtotal" string="Subtotal" readonly="1" sum="Tab Total"/>
+                                <field name="vendor_ids" widget="many2many_tags"
+                                       string="Preferred Vendors"
+                                       domain="[('supplier_rank','>',0)]"
+                                       options="{'no_create_edit': True}"
+                                       optional="show"/>
                                 <field name="currency_id" column_invisible="True"/>
                                 <field name="notes" string="Notes" optional="hide"/>
                                 <field name="category_id" column_invisible="True" required="1"/>
@@ -405,6 +441,11 @@
                                 <field name="unit_price" string="Unit Price"/>
                                 <field name="discount" string="Disc %" optional="hide"/>
                                 <field name="subtotal" string="Subtotal" readonly="1" sum="Tab Total"/>
+                                <field name="vendor_ids" widget="many2many_tags"
+                                       string="Preferred Vendors"
+                                       domain="[('supplier_rank','>',0)]"
+                                       options="{'no_create_edit': True}"
+                                       optional="show"/>
                                 <field name="currency_id" column_invisible="True"/>
                                 <field name="notes" string="Notes" optional="hide"/>
                                 <field name="category_id" column_invisible="True" required="1"/>
@@ -441,6 +482,11 @@
                                 <field name="unit_price" string="Unit Price"/>
                                 <field name="discount" string="Disc %" optional="hide"/>
                                 <field name="subtotal" string="Subtotal" readonly="1" sum="Tab Total"/>
+                                <field name="vendor_ids" widget="many2many_tags"
+                                       string="Preferred Vendors"
+                                       domain="[('supplier_rank','>',0)]"
+                                       options="{'no_create_edit': True}"
+                                       optional="show"/>
                                 <field name="currency_id" column_invisible="True"/>
                                 <field name="notes" string="Notes" optional="hide"/>
                                 <field name="category_id" column_invisible="True" required="1"/>
@@ -464,6 +510,7 @@
                 <field name="show_plumbing"   invisible="1"/>
                 <field name="show_hvac"       invisible="1"/>
                 <field name="show_finishing"  invisible="1"/>
+                <field name="rfq_count"       invisible="1"/>
 
             </sheet>
 

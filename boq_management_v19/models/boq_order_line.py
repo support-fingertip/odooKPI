@@ -101,6 +101,18 @@ class BoqOrderLine(models.Model):
         store=True,
     )
 
+    # ── Preferred Vendors (Many2many → res.partner, filtered to vendors) ──
+    vendor_ids = fields.Many2many(
+        comodel_name='res.partner',
+        relation='boq_order_line_vendor_rel',
+        column1='line_id',
+        column2='partner_id',
+        string='Preferred Vendors',
+        domain=[('supplier_rank', '>', 0)],
+        help='Select one or more vendors for this line. '
+             '"Create RFQ" will generate a purchase RFQ per vendor.',
+    )
+
     # ── Notes ─────────────────────────────────────────────────────────────
     notes = fields.Char(string='Remarks')
 

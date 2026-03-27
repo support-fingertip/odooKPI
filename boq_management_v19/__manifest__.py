@@ -26,6 +26,7 @@
         'contacts',
         'web',
         'uom',
+        'purchase',
     ],
     'data': [
         'security/boq_groups.xml',
