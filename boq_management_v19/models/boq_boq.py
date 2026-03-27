@@ -259,12 +259,12 @@ class BoqBoq(models.Model):
         for rec in self:
             rec.rfq_count = len(rec.rfq_ids)
 
-    @api.depends(
-        'line_ids.subtotal', 'line_ids.category_id',
-        'electrical_line_ids.subtotal', 'civil_line_ids.subtotal',
-        'lighting_line_ids.subtotal', 'plumbing_line_ids.subtotal',
-        'hvac_line_ids.subtotal', 'finishing_line_ids.subtotal',
-    )
+    # ── _compute_totals ────────────────────────────────────────────────────
+    # IMPORTANT: Only depend on `line_ids.*` (the unfiltered O2M).
+    # Domain-filtered O2M fields like `electrical_line_ids` cannot reliably
+    # propagate stored-compute triggers in Odoo ORM — the inverse lookup
+    # across a domain filter silently drops triggers, causing stale values.
+    @api.depends('line_ids.subtotal', 'line_ids.category_id')
     def _compute_totals(self):
         for rec in self:
             lines = rec.line_ids
@@ -281,12 +281,6 @@ class BoqBoq(models.Model):
             rec.finishing_total  = cat_sum('finishing')
             rec.total_amount     = sum(lines.mapped('subtotal'))
             rec.line_count       = len(lines)
-
-    # ── Computed label for smart button ───────────────────────────────────
-    @api.depends('line_count')
-    def _compute_stat_label(self):
-        for rec in self:
-            rec.stat_label = str(rec.line_count)
 
     # ── Sequence / Create ─────────────────────────────────────────────────
     @api.model_create_multi
