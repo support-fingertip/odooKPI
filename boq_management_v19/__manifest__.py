@@ -39,12 +39,7 @@
         'views/res_partner_views.xml',
         'views/menu_views.xml',
     ],
-    'assets': {
-        'web.assets_backend': [
-            'boq_management_v19/static/src/css/boq_enterprise.css',
-            'boq_management_v19/static/src/js/boq_form_controller.js',
-        ],
-    },
+    'assets': {},
     'images': ['static/src/img/boq_icon.png'],
     'installable': True,
     'application': True,
