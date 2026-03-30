@@ -37,17 +37,15 @@ class PurchaseOrderBoqExtend(models.Model):
         help='Total tax amount on all order lines (same as Tax in order totals).',
     )
 
-    # ── RFQ description: reuse existing `notes` field with better label ──
-    # purchase.order.notes already exists. We expose a computed display field
-    # for dashboard/reporting purposes without touching the base field.
+    # ── RFQ description: computed display field for BOQ context ──────────
     boq_description = fields.Text(
         string='BOQ Description',
         compute='_compute_boq_description',
         store=False,
-        help='Combines origin and notes for display on RFQ forms linked to BOQ.',
+        help='Combines origin and BOQ details for display on RFQ forms linked to BOQ.',
     )
 
-    @api.depends('origin', 'notes', 'boq_id')
+    @api.depends('origin', 'boq_id', 'boq_id.name', 'boq_id.project_name')
     def _compute_boq_description(self):
         for order in self:
             parts = []
@@ -55,8 +53,8 @@ class PurchaseOrderBoqExtend(models.Model):
                 parts.append(_('BOQ: %s') % order.boq_id.name)
                 if order.boq_id.project_name:
                     parts.append(_('Project: %s') % order.boq_id.project_name)
-            if order.notes:
-                parts.append(order.notes)
+            if order.origin:
+                parts.append(order.origin)
             order.boq_description = '\n'.join(parts) if parts else ''
 
     def action_open_boq(self):
