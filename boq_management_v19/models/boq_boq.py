@@ -368,8 +368,6 @@ class BoqBoq(models.Model):
             po = PO.create({
                 'partner_id': vendor_id,
                 'origin': '%s — %s' % (self.name, self.project_name or '-'),
-                'boq_id': self.id,
-                'notes': self.project_name or '',
             })
             for line in lines:
                 POLine.create({
