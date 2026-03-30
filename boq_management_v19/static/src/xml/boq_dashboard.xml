@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+<!--
+    BOQ Dashboard Template — Task 4
+    Vendor-wise RFQ summary with margin %, project stage, payment status.
+-->
+<t t-name="boq_management_v19.BoqDashboard">
+    <div class="boq_dashboard o_action">
+
+        <!-- ── LOADING STATE ─────────────────────────────────────────── -->
+        <t t-if="state.loading">
+            <div class="boq_dash_loading d-flex flex-column align-items-center justify-content-center"
+                 style="min-height:60vh;">
+                <div class="spinner-border text-primary mb-3" role="status"
+                     style="width:3rem;height:3rem;">
+                    <span class="visually-hidden">Loading…</span>
+                </div>
+                <p class="text-muted">Loading BOQ dashboard…</p>
+            </div>
+        </t>
+
+        <!-- ── ERROR STATE ───────────────────────────────────────────── -->
+        <t t-elif="state.error">
+            <div class="alert alert-danger m-4">
+                <i class="fa fa-exclamation-triangle me-2"/>
+                <strong>Dashboard Error:</strong>
+                <t t-esc="state.error"/>
+                <button class="btn btn-sm btn-outline-danger ms-3"
+                        t-on-click="refresh">Retry</button>
+            </div>
+        </t>
+
+        <!-- ── MAIN DASHBOARD ────────────────────────────────────────── -->
+        <t t-else="">
+
+            <!-- ╔═══════════════════════════════════════════════════════╗
+                 ║  PAGE HEADER                                          ║
+                 ╚═══════════════════════════════════════════════════════╝ -->
+            <div class="boq_dash_header d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="fa fa-tachometer fa-2x text-primary"/>
+                    <div>
+                        <h4 class="mb-0 fw-bold">BOQ Dashboard</h4>
+                        <small class="text-muted">Vendor-wise RFQ summary, margins and project status</small>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" t-on-click="openAllBoqs">
+                        <i class="fa fa-calculator me-1"/>All BOQs
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" t-on-click="openRfqs">
+                        <i class="fa fa-shopping-cart me-1"/>RFQs
+                    </button>
+                    <button class="btn btn-sm btn-light" t-on-click="refresh">
+                        <i class="fa fa-refresh me-1"/>Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- ╔═══════════════════════════════════════════════════════╗
+                 ║  STAT CARDS ROW                                       ║
+                 ╚═══════════════════════════════════════════════════════╝ -->
+            <div class="boq_dash_stat_row d-flex flex-wrap gap-3 p-4">
+
+                <!-- Total BOQs -->
+                <div class="boq_stat_card flex-fill" t-on-click="openAllBoqs">
+                    <div class="boq_stat_icon bg-primary-subtle text-primary">
+                        <i class="fa fa-calculator fa-2x"/>
+                    </div>
+                    <div class="boq_stat_body">
+                        <div class="boq_stat_value">
+                            <t t-esc="state.stats.total_boqs || 0"/>
+                        </div>
+                        <div class="boq_stat_label">Total BOQs</div>
+                    </div>
+                </div>
+
+                <!-- Total Value -->
+                <div class="boq_stat_card flex-fill">
+                    <div class="boq_stat_icon bg-success-subtle text-success">
+                        <i class="fa fa-money fa-2x"/>
+                    </div>
+                    <div class="boq_stat_body">
+                        <div class="boq_stat_value small">
+                            <t t-esc="fmtCurrency(state.stats.total_value)"/>
+                        </div>
+                        <div class="boq_stat_label">Total BOQ Value</div>
+                    </div>
+                </div>
+
+                <!-- RFQs -->
+                <div class="boq_stat_card flex-fill" t-on-click="openRfqs">
+                    <div class="boq_stat_icon bg-info-subtle text-info">
+                        <i class="fa fa-shopping-cart fa-2x"/>
+                    </div>
+                    <div class="boq_stat_body">
+                        <div class="boq_stat_value">
+                            <t t-esc="state.stats.total_rfqs || 0"/>
+                        </div>
+                        <div class="boq_stat_label">
+                            RFQs
+                            <span class="badge bg-warning text-dark ms-1 small">
+                                <t t-esc="state.stats.rfq_draft || 0"/> pending
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RFQ Total Value -->
+                <div class="boq_stat_card flex-fill">
+                    <div class="boq_stat_icon bg-warning-subtle text-warning">
+                        <i class="fa fa-file-text-o fa-2x"/>
+                    </div>
+                    <div class="boq_stat_body">
+                        <div class="boq_stat_value small">
+                            <t t-esc="fmtCurrency(state.stats.rfq_total_value)"/>
+                        </div>
+                        <div class="boq_stat_label">
+                            RFQ Value
+                            <span class="text-muted small d-block">
+                                Tax: <t t-esc="fmtCurrency(state.stats.rfq_total_tax)"/>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- BOQ State breakdown badges -->
+            <div class="d-flex flex-wrap gap-2 px-4 pb-3">
+                <span class="fw-semibold text-muted small me-2 align-self-center">Status breakdown:</span>
+                <t t-foreach="stateSummary" t-as="s" t-key="s.key">
+                    <span t-attf-class="badge rounded-pill {{ s.cls }} px-3 py-2">
+                        <t t-esc="s.label"/>: <t t-esc="s.val"/>
+                    </span>
+                </t>
+            </div>
+
+            <!-- ╔═══════════════════════════════════════════════════════╗
+                 ║  VENDOR SUMMARY SECTION                               ║
+                 ╚═══════════════════════════════════════════════════════╝ -->
+            <div class="px-4 pb-2 d-flex align-items-center justify-content-between">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fa fa-users me-2 text-primary"/>
+                    Vendor-wise RFQ Summary
+                </h5>
+                <input type="text"
+                       class="form-control form-control-sm"
+                       style="max-width:220px"
+                       placeholder="Filter vendors…"
+                       t-model="state.filterVendor"/>
+            </div>
+
+            <!-- No vendors message -->
+            <t t-if="filteredVendors.length === 0 and !state.loading">
+                <div class="text-center py-5 text-muted">
+                    <i class="fa fa-info-circle fa-2x mb-2 d-block"/>
+                    <t t-if="state.stats.total_rfqs === 0">
+                        No RFQs linked to BOQs yet.<br/>
+                        <small>Open a BOQ, assign vendors to lines, and click <b>Create RFQ</b>.</small>
+                    </t>
+                    <t t-else="">
+                        No vendors match your filter.
+                    </t>
+                </div>
+            </t>
+
+            <!-- Vendor Cards Grid -->
+            <div class="boq_vendor_grid px-4 pb-4">
+                <t t-foreach="filteredVendors" t-as="vendor" t-key="vendor.vendor_id">
+                    <div class="boq_vendor_card"
+                         t-on-click="() => openVendorRfqs(vendor.vendor_id)">
+
+                        <!-- Card Header -->
+                        <div class="boq_vendor_header">
+                            <div class="boq_vendor_avatar">
+                                <t t-esc="(vendor.vendor_name || '?').charAt(0).toUpperCase()"/>
+                            </div>
+                            <div class="boq_vendor_info">
+                                <div class="boq_vendor_name fw-bold">
+                                    <t t-esc="vendor.vendor_name"/>
+                                </div>
+                                <div class="boq_vendor_email text-muted small">
+                                    <t t-esc="vendor.vendor_email || '—'"/>
+                                </div>
+                            </div>
+                            <div class="boq_vendor_rfq_badge">
+                                <span class="badge bg-primary rounded-pill">
+                                    <t t-esc="vendor.rfq_count"/> RFQ<t t-if="vendor.rfq_count !== 1">s</t>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card Body: stats row -->
+                        <div class="boq_vendor_stats">
+                            <div class="boq_vendor_stat">
+                                <div class="boq_vendor_stat_label">Total Value</div>
+                                <div class="boq_vendor_stat_value fw-bold">
+                                    <t t-esc="fmtCurrency(vendor.total_value)"/>
+                                </div>
+                            </div>
+                            <div class="boq_vendor_stat">
+                                <div class="boq_vendor_stat_label">Total Tax</div>
+                                <div class="boq_vendor_stat_value">
+                                    <t t-esc="fmtCurrency(vendor.total_tax)"/>
+                                </div>
+                            </div>
+                            <div class="boq_vendor_stat">
+                                <div class="boq_vendor_stat_label">Margin</div>
+                                <div t-attf-class="boq_vendor_stat_value {{ marginClass(vendor.margin_percent) }} fw-bold">
+                                    <t t-esc="vendor.margin_percent"/>%
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Footer: project & status -->
+                        <div class="boq_vendor_footer">
+                            <div class="boq_vendor_footer_row">
+                                <i class="fa fa-folder-o me-1 text-muted"/>
+                                <span class="text-muted small" style="word-break:break-all">
+                                    <t t-esc="vendor.project_names"/>
+                                </span>
+                            </div>
+                            <div class="boq_vendor_footer_row mt-1">
+                                <i class="fa fa-flag-o me-1 text-muted"/>
+                                <span class="text-muted small">
+                                    BOQ: <t t-esc="vendor.boq_states"/>
+                                </span>
+                                <span class="ms-2 text-muted small">
+                                    RFQ: <t t-esc="vendor.rfq_states"/>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Click hint -->
+                        <div class="boq_vendor_click_hint text-end">
+                            <small class="text-primary">
+                                <i class="fa fa-arrow-right"/> View RFQs
+                            </small>
+                        </div>
+
+                    </div>
+                </t>
+            </div>
+
+        </t><!-- /main dashboard -->
+    </div>
+</t>
+
+</templates>

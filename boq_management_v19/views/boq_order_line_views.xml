@@ -25,8 +25,13 @@
                 <field name="qty"/>
                 <field name="uom_id" optional="show"/>
                 <field name="unit_price" optional="show"/>
+                <field name="cost_price" optional="hide"/>
                 <field name="discount" optional="hide"/>
-                <field name="subtotal" sum="Total"/>
+                <field name="tax_ids" widget="many2many_tags" optional="show"/>
+                <field name="subtotal" sum="Subtotal"/>
+                <field name="tax_amount" optional="show"/>
+                <field name="total_value" sum="Total (incl. Tax)"/>
+                <field name="margin_percent" optional="show"/>
                 <field name="currency_id" column_invisible="True"/>
                 <field name="notes" optional="hide"/>
             </list>

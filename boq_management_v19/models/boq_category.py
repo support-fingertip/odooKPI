@@ -46,6 +46,27 @@ class BoqCategory(models.Model):
         store=True,
     )
 
+    # ── Dynamic Category Flag ─────────────────────────────────────────────
+    is_dynamic = fields.Boolean(
+        string='Dynamic Category',
+        default=False,
+        help='Enable to allow creating sub-categories under this category. '
+             'When disabled, the "Add new category" option is hidden.',
+    )
+
+    # ── Hierarchy (optional parent / children) ────────────────────────────
+    parent_id = fields.Many2one(
+        comodel_name='boq.category',
+        string='Parent Category',
+        ondelete='restrict',
+        index=True,
+    )
+    child_ids = fields.One2many(
+        comodel_name='boq.category',
+        inverse_name='parent_id',
+        string='Sub-categories',
+    )
+
     # ── Status ───────────────────────────────────────────────────────────
     active = fields.Boolean(default=True)
 

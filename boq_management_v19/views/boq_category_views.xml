@@ -12,7 +12,10 @@
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="code"/>
+                <field name="parent_id" optional="show"/>
                 <field name="icon" optional="show"/>
+                <field name="is_dynamic" string="Dynamic" optional="show"
+                       widget="boolean_toggle"/>
                 <field name="boq_count" string="BOQs"/>
                 <field name="line_count" string="Lines"/>
                 <field name="active" column_invisible="True"/>
@@ -56,17 +59,44 @@
                         <group string="Identification">
                             <field name="code" placeholder="e.g. electrical"/>
                             <field name="sequence"/>
+                            <field name="parent_id"
+                                   options="{'no_create_edit': True}"
+                                   placeholder="Leave empty for top-level"/>
                             <field name="active" widget="boolean_toggle"/>
                         </group>
                         <group string="Visual">
                             <field name="color" widget="color_picker"/>
                             <field name="icon" placeholder="fa-bolt"/>
+                            <field name="is_dynamic" widget="boolean_toggle"
+                                   string="Dynamic Category (allow sub-categories)"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Description" name="desc_tab">
                             <field name="description"
                                    placeholder="Describe the scope of this work category…"/>
+                        </page>
+
+                        <!-- ── SUB-CATEGORIES page: only visible when is_dynamic = True ── -->
+                        <!-- Task 1: "Add new category" option hidden unless dynamic flag enabled -->
+                        <page string="Sub-categories" name="sub_categories_tab"
+                              invisible="not is_dynamic">
+                            <div class="alert alert-info mb-3" role="alert" style="font-size:13px;">
+                                <i class="fa fa-info-circle me-1"/>
+                                Sub-categories are only available when
+                                <b>Dynamic Category</b> is enabled.
+                            </div>
+                            <field name="child_ids"
+                                   context="{'default_parent_id': active_id}">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle" string="#"/>
+                                    <field name="name" string="Sub-category Name"/>
+                                    <field name="code" string="Code"/>
+                                    <field name="icon" string="Icon"
+                                           optional="show"/>
+                                    <field name="active" string="Active"/>
+                                </list>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>
