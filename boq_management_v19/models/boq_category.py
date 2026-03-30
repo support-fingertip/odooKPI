@@ -1,11 +1,22 @@
 # -*- coding: utf-8 -*-
+import json
 from odoo import models, fields, api
+
+# ir.config_parameter key that stores the set of category IDs with is_dynamic=True.
+# Format: JSON-encoded list of integers, e.g. "[1, 5, 12]"
+# Using an existing system-parameter table means zero new DB columns needed.
+_DYNAMIC_PARAM = 'boq.category.dynamic_ids'
 
 
 class BoqCategory(models.Model):
     """
     BOQ Work Category — maps to a notebook tab in the BOQ form.
     Examples: Electrical, Civil, Lighting, Plumbing, HVAC, Finishing.
+
+    Task 1 — Work Category UI fix:
+    'is_dynamic' controls whether the "Add new category" (sub-categories) section
+    is visible on the form.  It is stored in ir.config_parameter so no new
+    DB column is required on boq_category.
     """
     _name = 'boq.category'
     _description = 'BOQ Work Category'
@@ -46,32 +57,17 @@ class BoqCategory(models.Model):
         store=True,
     )
 
-    # ── Dynamic Category Flag ─────────────────────────────────────────────
-    # Non-stored: persisted via a '[dynamic]' prefix in the description field
-    # so no new DB column is required on boq_category.
+    # ── Task 1: Dynamic Category Flag ────────────────────────────────────
+    # Stored in ir.config_parameter (existing table) — NO new DB column.
+    # Hidden by default (is_dynamic=False).  Enable to reveal the
+    # "Add new category" sub-categories section on this category's form.
     is_dynamic = fields.Boolean(
         string='Dynamic Category',
         compute='_compute_is_dynamic',
         inverse='_inverse_is_dynamic',
         store=False,
-        help='Enable to allow creating sub-categories under this category. '
-             'When disabled, the "Add new category" option is hidden.',
-    )
-
-    # ── Hierarchy (optional parent / children) ────────────────────────────
-    # parent_id: non-stored computed — looks up by parent name stored in
-    # description prefix "[parent:CODE]" to avoid any new DB column.
-    parent_id = fields.Many2one(
-        comodel_name='boq.category',
-        string='Parent Category',
-        compute='_compute_parent_id',
-        inverse='_inverse_parent_id',
-        store=False,
-    )
-    child_ids = fields.One2many(
-        comodel_name='boq.category',
-        inverse_name='parent_id',
-        string='Sub-categories',
+        help='When enabled, the "Add new category" section becomes visible '
+             'on this Work Category form.  Disabled by default.',
     )
 
     # ── Status ───────────────────────────────────────────────────────────
@@ -93,65 +89,38 @@ class BoqCategory(models.Model):
         ('code_uniq', 'unique(code)', 'Category code must be unique.'),
     ]
 
-    # ── Helpers for description-backed virtual fields ─────────────────────
-    # Format: first line of description may contain flag tokens like
-    # "[dynamic]" or "[parent:CODE]". These tokens are stripped when
-    # the user reads the visible description.
+    # ── Helpers ───────────────────────────────────────────────────────────
+    def _get_dynamic_ids(self):
+        """Return the set of category IDs that have is_dynamic=True."""
+        raw = self.env['ir.config_parameter'].sudo().get_param(
+            _DYNAMIC_PARAM, '[]'
+        )
+        try:
+            return set(json.loads(raw))
+        except (ValueError, TypeError):
+            return set()
 
-    def _desc_flags(self):
-        """Return (flags_dict, clean_description) parsed from self.description."""
-        raw = self.description or ''
-        flags = {'dynamic': False, 'parent_code': None}
-        lines = raw.split('\n')
-        clean_lines = []
-        for line in lines:
-            stripped = line.strip()
-            if stripped == '[dynamic]':
-                flags['dynamic'] = True
-            elif stripped.startswith('[parent:') and stripped.endswith(']'):
-                flags['parent_code'] = stripped[8:-1]
-            else:
-                clean_lines.append(line)
-        return flags, '\n'.join(clean_lines).strip()
+    def _set_dynamic_ids(self, id_set):
+        """Persist the set of dynamic category IDs to ir.config_parameter."""
+        self.env['ir.config_parameter'].sudo().set_param(
+            _DYNAMIC_PARAM, json.dumps(sorted(id_set))
+        )
 
-    def _set_desc_flags(self, dynamic=None, parent_code=None):
-        """Write flag tokens back into the description field."""
-        for rec in self:
-            flags, clean = rec._desc_flags()
-            if dynamic is not None:
-                flags['dynamic'] = dynamic
-            if parent_code is not None:
-                flags['parent_code'] = parent_code or None
-            tokens = []
-            if flags['dynamic']:
-                tokens.append('[dynamic]')
-            if flags['parent_code']:
-                tokens.append('[parent:%s]' % flags['parent_code'])
-            rec.description = ('\n'.join(tokens) + '\n' + clean).strip() or False
-
-    # ── is_dynamic compute / inverse ──────────────────────────────────────
-    @api.depends('description')
+    # ── is_dynamic compute / inverse ─────────────────────────────────────
+    @api.depends()
     def _compute_is_dynamic(self):
+        dynamic_ids = self._get_dynamic_ids()
         for rec in self:
-            flags, _ = rec._desc_flags()
-            rec.is_dynamic = flags['dynamic']
+            rec.is_dynamic = rec.id in dynamic_ids
 
     def _inverse_is_dynamic(self):
+        dynamic_ids = self._get_dynamic_ids()
         for rec in self:
-            rec._set_desc_flags(dynamic=rec.is_dynamic)
-
-    # ── parent_id compute / inverse ───────────────────────────────────────
-    @api.depends('description')
-    def _compute_parent_id(self):
-        all_cats = {c.code: c for c in self.env['boq.category'].search([])}
-        for rec in self:
-            flags, _ = rec._desc_flags()
-            rec.parent_id = all_cats.get(flags['parent_code'], False)
-
-    def _inverse_parent_id(self):
-        for rec in self:
-            code = rec.parent_id.code if rec.parent_id else None
-            rec._set_desc_flags(parent_code=code)
+            if rec.is_dynamic:
+                dynamic_ids.add(rec.id)
+            else:
+                dynamic_ids.discard(rec.id)
+        self._set_dynamic_ids(dynamic_ids)
 
     # ── Computes ─────────────────────────────────────────────────────────
     @api.depends('color')
