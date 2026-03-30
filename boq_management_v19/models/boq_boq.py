@@ -368,7 +368,7 @@ class BoqBoq(models.Model):
                     'product_id': line.product_id.id,
                     'name': line.product_name or line.product_id.display_name,
                     'product_qty': line.qty,
-                    'product_uom': line.uom_id.id or line.product_id.uom_po_id.id,
+                    'product_uom_id': line.uom_id.id or line.product_id.uom_po_id.id,
                     'price_unit': line.unit_price,
                     'date_planned': today,
                 })
