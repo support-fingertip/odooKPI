@@ -32,16 +32,12 @@
                 </button>
             </xpath>
 
-            <!-- ── 2. BOQ Reference field + description below partner ────── -->
+            <!-- ── 2. BOQ Reference field below partner ─────────────────── -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="boq_id"
                        string="BOQ Reference"
                        options="{'no_create': True}"
                        invisible="not boq_id"/>
-                <!-- Description / notes field — visible when linked to BOQ -->
-                <field name="notes"
-                       string="Description / Terms"
-                       placeholder="Enter terms, conditions or project notes…"/>
             </xpath>
 
             <!-- ── 3. Relabel the existing Total Tax line in order totals ── -->
