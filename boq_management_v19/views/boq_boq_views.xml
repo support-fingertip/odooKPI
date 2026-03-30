@@ -105,6 +105,8 @@
                         <field name="partner_id"
                                options="{'no_create_edit': True}"/>
                         <field name="partner_shipping_id"/>
+                        <field name="project_id"
+                               options="{'no_create_edit': True}"/>
                         <field name="project_name"/>
                         <field name="project_location"/>
                     </group>
@@ -151,9 +153,21 @@
                                 <field name="qty" string="Qty"/>
                                 <field name="uom_id" string="Unit" optional="show"/>
                                 <field name="unit_price" string="Unit Price"/>
+                                <field name="cost_price" string="Cost Price" optional="hide"/>
                                 <field name="discount" string="Disc %" optional="hide"/>
+                                <field name="tax_ids"
+                                       widget="many2many_tags"
+                                       string="Taxes"
+                                       domain="[('type_tax_use','in',('purchase','all'))]"
+                                       optional="show"/>
                                 <field name="subtotal" string="Subtotal"
+                                       readonly="1" sum="Tab Subtotal"/>
+                                <field name="tax_amount" string="Tax Amt"
+                                       readonly="1" optional="show"/>
+                                <field name="total_value" string="Total (incl. Tax)"
                                        readonly="1" sum="Tab Total"/>
+                                <field name="margin_percent" string="Margin %"
+                                       readonly="1" optional="show"/>
                                 <field name="vendor_ids"
                                        widget="many2many_tags"
                                        string="Vendors"
@@ -181,9 +195,21 @@
                                 <field name="qty" string="Qty"/>
                                 <field name="uom_id" string="Unit" optional="show"/>
                                 <field name="unit_price" string="Unit Price"/>
+                                <field name="cost_price" string="Cost Price" optional="hide"/>
                                 <field name="discount" string="Disc %" optional="hide"/>
+                                <field name="tax_ids"
+                                       widget="many2many_tags"
+                                       string="Taxes"
+                                       domain="[('type_tax_use','in',('purchase','all'))]"
+                                       optional="show"/>
                                 <field name="subtotal" string="Subtotal"
+                                       readonly="1" sum="Tab Subtotal"/>
+                                <field name="tax_amount" string="Tax Amt"
+                                       readonly="1" optional="show"/>
+                                <field name="total_value" string="Total (incl. Tax)"
                                        readonly="1" sum="Tab Total"/>
+                                <field name="margin_percent" string="Margin %"
+                                       readonly="1" optional="show"/>
                                 <field name="vendor_ids"
                                        widget="many2many_tags"
                                        string="Vendors"
@@ -211,9 +237,21 @@
                                 <field name="qty" string="Qty"/>
                                 <field name="uom_id" string="Unit" optional="show"/>
                                 <field name="unit_price" string="Unit Price"/>
+                                <field name="cost_price" string="Cost Price" optional="hide"/>
                                 <field name="discount" string="Disc %" optional="hide"/>
+                                <field name="tax_ids"
+                                       widget="many2many_tags"
+                                       string="Taxes"
+                                       domain="[('type_tax_use','in',('purchase','all'))]"
+                                       optional="show"/>
                                 <field name="subtotal" string="Subtotal"
+                                       readonly="1" sum="Tab Subtotal"/>
+                                <field name="tax_amount" string="Tax Amt"
+                                       readonly="1" optional="show"/>
+                                <field name="total_value" string="Total (incl. Tax)"
                                        readonly="1" sum="Tab Total"/>
+                                <field name="margin_percent" string="Margin %"
+                                       readonly="1" optional="show"/>
                                 <field name="vendor_ids"
                                        widget="many2many_tags"
                                        string="Vendors"
@@ -241,9 +279,21 @@
                                 <field name="qty" string="Qty"/>
                                 <field name="uom_id" string="Unit" optional="show"/>
                                 <field name="unit_price" string="Unit Price"/>
+                                <field name="cost_price" string="Cost Price" optional="hide"/>
                                 <field name="discount" string="Disc %" optional="hide"/>
+                                <field name="tax_ids"
+                                       widget="many2many_tags"
+                                       string="Taxes"
+                                       domain="[('type_tax_use','in',('purchase','all'))]"
+                                       optional="show"/>
                                 <field name="subtotal" string="Subtotal"
+                                       readonly="1" sum="Tab Subtotal"/>
+                                <field name="tax_amount" string="Tax Amt"
+                                       readonly="1" optional="show"/>
+                                <field name="total_value" string="Total (incl. Tax)"
                                        readonly="1" sum="Tab Total"/>
+                                <field name="margin_percent" string="Margin %"
+                                       readonly="1" optional="show"/>
                                 <field name="vendor_ids"
                                        widget="many2many_tags"
                                        string="Vendors"
@@ -271,9 +321,21 @@
                                 <field name="qty" string="Qty"/>
                                 <field name="uom_id" string="Unit" optional="show"/>
                                 <field name="unit_price" string="Unit Price"/>
+                                <field name="cost_price" string="Cost Price" optional="hide"/>
                                 <field name="discount" string="Disc %" optional="hide"/>
+                                <field name="tax_ids"
+                                       widget="many2many_tags"
+                                       string="Taxes"
+                                       domain="[('type_tax_use','in',('purchase','all'))]"
+                                       optional="show"/>
                                 <field name="subtotal" string="Subtotal"
+                                       readonly="1" sum="Tab Subtotal"/>
+                                <field name="tax_amount" string="Tax Amt"
+                                       readonly="1" optional="show"/>
+                                <field name="total_value" string="Total (incl. Tax)"
                                        readonly="1" sum="Tab Total"/>
+                                <field name="margin_percent" string="Margin %"
+                                       readonly="1" optional="show"/>
                                 <field name="vendor_ids"
                                        widget="many2many_tags"
                                        string="Vendors"
@@ -301,9 +363,21 @@
                                 <field name="qty" string="Qty"/>
                                 <field name="uom_id" string="Unit" optional="show"/>
                                 <field name="unit_price" string="Unit Price"/>
+                                <field name="cost_price" string="Cost Price" optional="hide"/>
                                 <field name="discount" string="Disc %" optional="hide"/>
+                                <field name="tax_ids"
+                                       widget="many2many_tags"
+                                       string="Taxes"
+                                       domain="[('type_tax_use','in',('purchase','all'))]"
+                                       optional="show"/>
                                 <field name="subtotal" string="Subtotal"
+                                       readonly="1" sum="Tab Subtotal"/>
+                                <field name="tax_amount" string="Tax Amt"
+                                       readonly="1" optional="show"/>
+                                <field name="total_value" string="Total (incl. Tax)"
                                        readonly="1" sum="Tab Total"/>
+                                <field name="margin_percent" string="Margin %"
+                                       readonly="1" optional="show"/>
                                 <field name="vendor_ids"
                                        widget="many2many_tags"
                                        string="Vendors"
@@ -358,6 +432,7 @@
             <field name="priority" widget="priority" nolabel="1" optional="show"/>
             <field name="name"/>
             <field name="partner_id"/>
+            <field name="project_id" optional="show"/>
             <field name="project_name" optional="show"/>
             <field name="user_id" widget="many2one_avatar_user" optional="show"/>
             <field name="date"/>

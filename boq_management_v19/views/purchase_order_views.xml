@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Task 3 — RFQ inside BOQ
+        Inherit the standard purchase.order form to:
+        1. Show BOQ Reference smart button (opens linked BOQ record)
+        2. Show BOQ Reference field in main group
+        3. Show Description / Notes field visibly
+        4. Ensure Total Tax is clearly labelled in order totals
+        Madhan review fix: description + total tax fields were missing from view.
+    -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PURCHASE ORDER FORM — Inherit for BOQ fields
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_purchase_order_form_boq_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.form.boq.inherit</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- ── 1. BOQ smart button in button_box ────────────────────── -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_boq"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-calculator"
+                        invisible="not boq_id"
+                        string="View BOQ">
+                    <field name="boq_id" widget="statinfo" string="BOQ"/>
+                </button>
+            </xpath>
+
+            <!-- ── 2. BOQ Reference field + description below partner ────── -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="boq_id"
+                       string="BOQ Reference"
+                       options="{'no_create': True}"
+                       invisible="not boq_id"/>
+                <!-- Description / notes field — visible when linked to BOQ -->
+                <field name="notes"
+                       string="Description / Terms"
+                       placeholder="Enter terms, conditions or project notes…"/>
+            </xpath>
+
+            <!-- ── 3. Relabel the existing Total Tax line in order totals ── -->
+            <!--
+                Standard purchase form renders amount_tax in the totals footer.
+                We simply ensure the string label is clear ("Total Tax").
+                The `total_tax` related field equals amount_tax — both are available.
+            -->
+            <xpath expr="//field[@name='amount_tax']" position="attributes">
+                <attribute name="string">Total Tax</attribute>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PURCHASE RFQ LIST — Inherit to show BOQ column
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_purchase_rfq_list_boq_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.rfq.list.boq.inherit</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_rfq"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="boq_id" string="BOQ Ref" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         BOQ-SPECIFIC RFQ ACTION — filtered to RFQs linked to any BOQ
+         Placed in BOQ → Reporting menu (sequence 10)
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="action_boq_rfq_list" model="ir.actions.act_window">
+        <field name="name">RFQs from BOQ</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('boq_id', '!=', False)]</field>
+        <field name="context">{'search_default_draft': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No RFQs linked to a BOQ yet!
+            </p>
+            <p>
+                Open a BOQ record, assign vendors to line items, then click
+                <b>Create RFQ</b> to generate purchase quotations linked
+                to the BOQ automatically.
+            </p>
+        </field>
+    </record>
+
+</odoo>

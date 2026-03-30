@@ -113,6 +113,51 @@ class BoqOrderLine(models.Model):
              '"Create RFQ" will generate a purchase RFQ per vendor.',
     )
 
+    # ── Taxes ─────────────────────────────────────────────────────────────
+    tax_ids = fields.Many2many(
+        comodel_name='account.tax',
+        relation='boq_order_line_tax_rel',
+        column1='line_id',
+        column2='tax_id',
+        string='Taxes',
+        domain=[('type_tax_use', 'in', ('purchase', 'all'))],
+        help='Applicable taxes for this line item.',
+    )
+    tax_amount = fields.Float(
+        string='Tax Amount',
+        compute='_compute_total_value',
+        store=True,
+        digits='Product Price',
+        precompute=True,
+    )
+    total_value = fields.Float(
+        string='Total (incl. Tax)',
+        compute='_compute_total_value',
+        store=True,
+        digits='Product Price',
+        precompute=True,
+        help='Subtotal plus applicable taxes.',
+    )
+
+    # ── Cost & Margin ──────────────────────────────────────────────────────
+    cost_price = fields.Float(
+        string='Cost Price',
+        compute='_compute_from_product',
+        store=True,
+        readonly=False,
+        digits='Product Price',
+        precompute=True,
+        help='Unit cost from product standard price. Can be manually overridden.',
+    )
+    margin_percent = fields.Float(
+        string='Margin %',
+        compute='_compute_margin',
+        store=True,
+        digits='Discount',
+        precompute=True,
+        help='Gross margin percentage: ((Unit Price - Cost) / Unit Price) × 100.',
+    )
+
     # ── Notes ─────────────────────────────────────────────────────────────
     notes = fields.Char(string='Remarks')
 
@@ -123,15 +168,44 @@ class BoqOrderLine(models.Model):
             if line.product_id:
                 line.product_name = line.product_id.display_name
                 line.uom_id = line.product_id.uom_id
+                line.cost_price = line.product_id.standard_price or 0.0
             else:
                 line.product_name = False
                 line.uom_id = False
+                line.cost_price = 0.0
 
     @api.depends('qty', 'unit_price', 'discount')
     def _compute_subtotal(self):
         for line in self:
             base = line.qty * line.unit_price
             line.subtotal = base * (1.0 - line.discount / 100.0)
+
+    @api.depends('subtotal', 'tax_ids', 'qty', 'unit_price', 'discount', 'currency_id', 'product_id')
+    def _compute_total_value(self):
+        for line in self:
+            if line.tax_ids:
+                # Use Odoo's tax computation engine for accuracy
+                net_price = line.unit_price * (1.0 - line.discount / 100.0)
+                tax_results = line.tax_ids.compute_all(
+                    price_unit=net_price,
+                    currency=line.currency_id,
+                    quantity=line.qty,
+                    product=line.product_id,
+                )
+                line.tax_amount = tax_results['total_included'] - tax_results['total_excluded']
+                line.total_value = tax_results['total_included']
+            else:
+                line.tax_amount = 0.0
+                line.total_value = line.subtotal
+
+    @api.depends('unit_price', 'discount', 'cost_price')
+    def _compute_margin(self):
+        for line in self:
+            selling = line.unit_price * (1.0 - line.discount / 100.0)
+            if selling > 0:
+                line.margin_percent = ((selling - (line.cost_price or 0.0)) / selling) * 100.0
+            else:
+                line.margin_percent = 0.0
 
     @api.onchange('product_id')
     def _onchange_product_id(self):
