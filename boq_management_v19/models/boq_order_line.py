@@ -113,16 +113,9 @@ class BoqOrderLine(models.Model):
              '"Create RFQ" will generate a purchase RFQ per vendor.',
     )
 
-    # ── Taxes ─────────────────────────────────────────────────────────────
-    tax_ids = fields.Many2many(
-        comodel_name='account.tax',
-        relation='boq_order_line_tax_rel',
-        column1='line_id',
-        column2='tax_id',
-        string='Taxes',
-        domain=[('type_tax_use', 'in', ('purchase', 'all'))],
-        help='Applicable taxes for this line item.',
-    )
+    # ── Tax / Total / Margin (no DB columns — all non-stored computed) ────
+    # tax_ids Many2many removed: its relation table requires a module upgrade.
+    # tax_amount = 0 and total_value = subtotal until upgrade is run.
     tax_amount = fields.Float(
         string='Tax Amount',
         compute='_compute_total_value',
@@ -134,7 +127,7 @@ class BoqOrderLine(models.Model):
         compute='_compute_total_value',
         store=False,
         digits='Product Price',
-        help='Subtotal plus applicable taxes.',
+        help='Equal to Subtotal until taxes are configured after module upgrade.',
     )
 
     # ── Cost & Margin ──────────────────────────────────────────────────────
@@ -176,23 +169,13 @@ class BoqOrderLine(models.Model):
             base = line.qty * line.unit_price
             line.subtotal = base * (1.0 - line.discount / 100.0)
 
-    @api.depends('subtotal', 'tax_ids', 'qty', 'unit_price', 'discount', 'currency_id', 'product_id')
+    @api.depends('subtotal')
     def _compute_total_value(self):
+        # tax_ids removed (relation table requires module upgrade).
+        # total_value mirrors subtotal; tax_amount is 0 until upgrade.
         for line in self:
-            if line.tax_ids:
-                # Use Odoo's tax computation engine for accuracy
-                net_price = line.unit_price * (1.0 - line.discount / 100.0)
-                tax_results = line.tax_ids.compute_all(
-                    price_unit=net_price,
-                    currency=line.currency_id,
-                    quantity=line.qty,
-                    product=line.product_id,
-                )
-                line.tax_amount = tax_results['total_included'] - tax_results['total_excluded']
-                line.total_value = tax_results['total_included']
-            else:
-                line.tax_amount = 0.0
-                line.total_value = line.subtotal
+            line.tax_amount = 0.0
+            line.total_value = line.subtotal
 
     @api.depends('unit_price', 'discount', 'cost_price')
     def _compute_margin(self):

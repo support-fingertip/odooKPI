@@ -47,3 +47,14 @@ def migrate(cr, version):
             ADD COLUMN IF NOT EXISTS total_value    NUMERIC,
             ADD COLUMN IF NOT EXISTS margin_percent NUMERIC;
     """)
+
+    # M2M relation table for tax_ids on boq.order.line
+    cr.execute("""
+        CREATE TABLE IF NOT EXISTS boq_order_line_tax_rel (
+            line_id INTEGER NOT NULL
+                REFERENCES boq_order_line(id) ON DELETE CASCADE,
+            tax_id  INTEGER NOT NULL
+                REFERENCES account_tax(id)    ON DELETE CASCADE,
+            PRIMARY KEY (line_id, tax_id)
+        );
+    """)
