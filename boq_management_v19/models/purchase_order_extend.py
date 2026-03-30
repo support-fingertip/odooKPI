@@ -5,44 +5,65 @@ from odoo import models, fields, api, _
 class PurchaseOrderBoqExtend(models.Model):
     """
     Extends purchase.order with a back-link to the originating BOQ record
-    and a convenience `total_tax` field.
+    and a convenience total_tax field.
 
-    Task 3 — RFQ inside BOQ:
-    - boq_id: Many2one link back to boq.boq (set by action_create_rfq)
-    - total_tax: Computed monetary field = amount_tax (exposed for views)
-    - description field already exists as `notes` on purchase.order
+    Task 3 — RFQ inside BOQ.
+
+    IMPORTANT — no stored fields on purchase.order:
+    Both boq_id and total_tax are non-stored so they never need a DB column
+    and no module upgrade / ALTER TABLE is required on purchase_order.
+
+    boq_id   — computed from the existing boq_boq_purchase_order_rel M2M table
+                that is created by boq.boq.rfq_ids (already exists after install).
+    total_tax — non-stored related alias of amount_tax (reads live, no column).
     """
     _inherit = 'purchase.order'
 
-    # ── BOQ Back-link ─────────────────────────────────────────────────────
+    # ── BOQ Back-link (non-stored — derived from rfq_ids M2M) ────────────
     boq_id = fields.Many2one(
         comodel_name='boq.boq',
         string='BOQ Reference',
-        ondelete='set null',
-        copy=False,
-        index=True,
-        tracking=True,
-        help='Bill of Quantities that originated this Request for Quotation.',
+        compute='_compute_boq_id',
+        store=False,          # No DB column on purchase_order table
+        help='BOQ that generated this RFQ (read from the BOQ ↔ RFQ M2M link).',
     )
 
-    # ── Convenience: expose total tax amount ─────────────────────────────
-    # Note: purchase.order already computes `amount_tax` in the base module.
-    # We add `total_tax` as a related alias so views can reference it clearly
-    # without relying on the base field name which may differ across versions.
+    @api.depends()
+    def _compute_boq_id(self):
+        """
+        Derive boq_id by querying the boq_boq_purchase_order_rel table
+        which is owned by boq.boq.rfq_ids (Many2many, already exists).
+        Single batch query — no N+1 problem.
+        """
+        if not self.ids:
+            return
+        self.env.cr.execute(
+            """
+            SELECT purchase_id, boq_id
+              FROM boq_boq_purchase_order_rel
+             WHERE purchase_id IN %s
+            """,
+            (tuple(self.ids),)
+        )
+        mapping = {row[0]: row[1] for row in self.env.cr.fetchall()}
+        for order in self:
+            order.boq_id = mapping.get(order.id, False)
+
+    # ── Total Tax (non-stored related — reads live from amount_tax) ───────
     total_tax = fields.Monetary(
         string='Total Tax',
         related='amount_tax',
-        store=True,
+        store=False,          # No DB column on purchase_order table
         currency_field='currency_id',
-        help='Total tax amount on all order lines (same as Tax in order totals).',
+        help='Total tax on all order lines (alias of amount_tax).',
     )
 
-    # ── RFQ description: computed display field for BOQ context ──────────
+    # ── BOQ description (non-stored computed display field) ───────────────
     boq_description = fields.Text(
         string='BOQ Description',
         compute='_compute_boq_description',
         store=False,
-        help='Combines origin and BOQ details for display on RFQ forms linked to BOQ.',
+        help='Combines origin and BOQ details for display on RFQ forms.',
     )
 
     @api.depends('origin', 'boq_id', 'boq_id.name', 'boq_id.project_name')
