@@ -12,7 +12,6 @@
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="code"/>
-                <field name="parent_id" optional="show"/>
                 <field name="icon" optional="show"/>
                 <field name="is_dynamic" string="Dynamic" optional="show"
                        widget="boolean_toggle"/>
@@ -59,14 +58,16 @@
                         <group string="Identification">
                             <field name="code" placeholder="e.g. electrical"/>
                             <field name="sequence"/>
-                            <field name="parent_id"
-                                   options="{'no_create_edit': True}"
-                                   placeholder="Leave empty for top-level"/>
                             <field name="active" widget="boolean_toggle"/>
                         </group>
                         <group string="Visual">
                             <field name="color" widget="color_picker"/>
                             <field name="icon" placeholder="fa-bolt"/>
+                            <!--
+                                Task 1 — Dynamic Category flag.
+                                Stored in ir.config_parameter (no new DB column).
+                                Default = False → sub-categories section hidden.
+                            -->
                             <field name="is_dynamic" widget="boolean_toggle"
                                    string="Dynamic Category (allow sub-categories)"/>
                         </group>
@@ -77,26 +78,27 @@
                                    placeholder="Describe the scope of this work category…"/>
                         </page>
 
-                        <!-- ── SUB-CATEGORIES page: only visible when is_dynamic = True ── -->
-                        <!-- Task 1: "Add new category" option hidden unless dynamic flag enabled -->
-                        <page string="Sub-categories" name="sub_categories_tab"
+                        <!--
+                            Task 1: "Add new category" section.
+                            HIDDEN by default (invisible="not is_dynamic").
+                            Only appears when Dynamic Category toggle is ON.
+                        -->
+                        <page string="Add New Category" name="add_new_category_tab"
                               invisible="not is_dynamic">
-                            <div class="alert alert-info mb-3" role="alert" style="font-size:13px;">
-                                <i class="fa fa-info-circle me-1"/>
-                                Sub-categories are only available when
-                                <b>Dynamic Category</b> is enabled.
+                            <div class="alert alert-success mb-3" role="alert"
+                                 style="font-size:13px;">
+                                <i class="fa fa-check-circle me-1"/>
+                                <b>Dynamic Category is enabled.</b>
+                                You can now create additional categories linked
+                                to this one from the Work Categories list.
                             </div>
-                            <field name="child_ids"
-                                   context="{'default_parent_id': active_id}">
-                                <list editable="bottom">
-                                    <field name="sequence" widget="handle" string="#"/>
-                                    <field name="name" string="Sub-category Name"/>
-                                    <field name="code" string="Code"/>
-                                    <field name="icon" string="Icon"
-                                           optional="show"/>
-                                    <field name="active" string="Active"/>
-                                </list>
-                            </field>
+                            <group string="Quick-create a linked category">
+                                <p class="text-muted" style="padding:8px 16px;">
+                                    Use <b>Configuration → Work Categories → New</b>
+                                    to add more categories. Mark the parent category
+                                    by naming convention (e.g. "Electrical — LV Panel").
+                                </p>
+                            </group>
                         </page>
                     </notebook>
                 </sheet>
@@ -118,6 +120,7 @@
                 <field name="color"/>
                 <field name="boq_count"/>
                 <field name="line_count"/>
+                <field name="is_dynamic"/>
                 <templates>
                     <t t-name="card">
                         <div class="boq_cat_kanban_card">
@@ -138,6 +141,10 @@
                                 </span>
                                 <span class="badge rounded-pill bg-secondary ms-1">
                                     <field name="line_count"/> lines
+                                </span>
+                                <span t-if="record.is_dynamic.raw_value"
+                                      class="badge rounded-pill bg-info ms-1">
+                                    Dynamic
                                 </span>
                             </div>
                         </div>
