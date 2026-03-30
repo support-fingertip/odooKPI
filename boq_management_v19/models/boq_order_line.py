@@ -126,16 +126,14 @@ class BoqOrderLine(models.Model):
     tax_amount = fields.Float(
         string='Tax Amount',
         compute='_compute_total_value',
-        store=True,
+        store=False,
         digits='Product Price',
-        precompute=True,
     )
     total_value = fields.Float(
         string='Total (incl. Tax)',
         compute='_compute_total_value',
-        store=True,
+        store=False,
         digits='Product Price',
-        precompute=True,
         help='Subtotal plus applicable taxes.',
     )
 
@@ -143,18 +141,16 @@ class BoqOrderLine(models.Model):
     cost_price = fields.Float(
         string='Cost Price',
         compute='_compute_from_product',
-        store=True,
+        store=False,
         readonly=False,
         digits='Product Price',
-        precompute=True,
-        help='Unit cost from product standard price. Can be manually overridden.',
+        help='Unit cost from product standard price.',
     )
     margin_percent = fields.Float(
         string='Margin %',
         compute='_compute_margin',
-        store=True,
+        store=False,
         digits='Discount',
-        precompute=True,
         help='Gross margin percentage: ((Unit Price - Cost) / Unit Price) × 100.',
     )
 

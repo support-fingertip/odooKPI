@@ -47,19 +47,26 @@ class BoqCategory(models.Model):
     )
 
     # ── Dynamic Category Flag ─────────────────────────────────────────────
+    # Non-stored: persisted via a '[dynamic]' prefix in the description field
+    # so no new DB column is required on boq_category.
     is_dynamic = fields.Boolean(
         string='Dynamic Category',
-        default=False,
+        compute='_compute_is_dynamic',
+        inverse='_inverse_is_dynamic',
+        store=False,
         help='Enable to allow creating sub-categories under this category. '
              'When disabled, the "Add new category" option is hidden.',
     )
 
     # ── Hierarchy (optional parent / children) ────────────────────────────
+    # parent_id: non-stored computed — looks up by parent name stored in
+    # description prefix "[parent:CODE]" to avoid any new DB column.
     parent_id = fields.Many2one(
         comodel_name='boq.category',
         string='Parent Category',
-        ondelete='restrict',
-        index=True,
+        compute='_compute_parent_id',
+        inverse='_inverse_parent_id',
+        store=False,
     )
     child_ids = fields.One2many(
         comodel_name='boq.category',
@@ -85,6 +92,66 @@ class BoqCategory(models.Model):
         ('name_uniq', 'unique(name)', 'Category name must be unique.'),
         ('code_uniq', 'unique(code)', 'Category code must be unique.'),
     ]
+
+    # ── Helpers for description-backed virtual fields ─────────────────────
+    # Format: first line of description may contain flag tokens like
+    # "[dynamic]" or "[parent:CODE]". These tokens are stripped when
+    # the user reads the visible description.
+
+    def _desc_flags(self):
+        """Return (flags_dict, clean_description) parsed from self.description."""
+        raw = self.description or ''
+        flags = {'dynamic': False, 'parent_code': None}
+        lines = raw.split('\n')
+        clean_lines = []
+        for line in lines:
+            stripped = line.strip()
+            if stripped == '[dynamic]':
+                flags['dynamic'] = True
+            elif stripped.startswith('[parent:') and stripped.endswith(']'):
+                flags['parent_code'] = stripped[8:-1]
+            else:
+                clean_lines.append(line)
+        return flags, '\n'.join(clean_lines).strip()
+
+    def _set_desc_flags(self, dynamic=None, parent_code=None):
+        """Write flag tokens back into the description field."""
+        for rec in self:
+            flags, clean = rec._desc_flags()
+            if dynamic is not None:
+                flags['dynamic'] = dynamic
+            if parent_code is not None:
+                flags['parent_code'] = parent_code or None
+            tokens = []
+            if flags['dynamic']:
+                tokens.append('[dynamic]')
+            if flags['parent_code']:
+                tokens.append('[parent:%s]' % flags['parent_code'])
+            rec.description = ('\n'.join(tokens) + '\n' + clean).strip() or False
+
+    # ── is_dynamic compute / inverse ──────────────────────────────────────
+    @api.depends('description')
+    def _compute_is_dynamic(self):
+        for rec in self:
+            flags, _ = rec._desc_flags()
+            rec.is_dynamic = flags['dynamic']
+
+    def _inverse_is_dynamic(self):
+        for rec in self:
+            rec._set_desc_flags(dynamic=rec.is_dynamic)
+
+    # ── parent_id compute / inverse ───────────────────────────────────────
+    @api.depends('description')
+    def _compute_parent_id(self):
+        all_cats = {c.code: c for c in self.env['boq.category'].search([])}
+        for rec in self:
+            flags, _ = rec._desc_flags()
+            rec.parent_id = all_cats.get(flags['parent_code'], False)
+
+    def _inverse_parent_id(self):
+        for rec in self:
+            code = rec.parent_id.code if rec.parent_id else None
+            rec._set_desc_flags(parent_code=code)
 
     # ── Computes ─────────────────────────────────────────────────────────
     @api.depends('color')

@@ -62,12 +62,16 @@ class BoqBoq(models.Model):
         string='Site Contact',
         domain="[('parent_id', '=', partner_id)]",
     )
+    # project_id: non-stored computed — uses project_name (existing column) as
+    # backing storage so no new DB column is ever required on boq_boq.
     project_id = fields.Many2one(
         comodel_name='project.project',
         string='Project',
-        tracking=True,
-        index=True,
-        help='Link this BOQ to an existing Odoo Project for stage and task tracking.',
+        compute='_compute_project_id',
+        inverse='_inverse_project_id',
+        store=False,
+        help='Link this BOQ to an existing Odoo Project. '
+             'The project name is persisted in the Project Name field.',
     )
     project_name = fields.Char(
         string='Project Name',
@@ -143,6 +147,22 @@ class BoqBoq(models.Model):
     plumbing_category_id   = fields.Many2one('boq.category', compute='_compute_category_refs')
     hvac_category_id       = fields.Many2one('boq.category', compute='_compute_category_refs')
     finishing_category_id  = fields.Many2one('boq.category', compute='_compute_category_refs')
+
+    @api.depends('project_name')
+    def _compute_project_id(self):
+        Project = self.env['project.project']
+        for rec in self:
+            if rec.project_name:
+                rec.project_id = Project.search(
+                    [('name', '=', rec.project_name)], limit=1
+                )
+            else:
+                rec.project_id = False
+
+    def _inverse_project_id(self):
+        for rec in self:
+            if rec.project_id:
+                rec.project_name = rec.project_id.name
 
     @api.depends('category_ids')
     def _compute_tab_flags(self):
