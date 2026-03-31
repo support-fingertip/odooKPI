@@ -467,9 +467,17 @@ class BoqBoq(models.Model):
         """
         company_domain = [('company_id', '=', self.env.company.id)]
         boqs = self.search(company_domain)
-        rfqs = self.env['purchase.order'].search(
-            [('boq_id', 'in', boqs.ids)]
-        )
+
+        # boq_id on purchase.order is non-stored — query M2M table directly
+        rfqs = self.env['purchase.order']
+        if boqs.ids:
+            self.env.cr.execute(
+                "SELECT purchase_id FROM boq_boq_purchase_order_rel WHERE boq_id IN %s",
+                (tuple(boqs.ids),)
+            )
+            rfq_ids = [r[0] for r in self.env.cr.fetchall()]
+            if rfq_ids:
+                rfqs = self.env['purchase.order'].browse(rfq_ids)
 
         state_counts = {}
         for state, _label in self._fields['state'].selection:
@@ -500,9 +508,17 @@ class BoqBoq(models.Model):
         """
         company_domain = [('company_id', '=', self.env.company.id)]
         boqs = self.search(company_domain)
-        rfqs = self.env['purchase.order'].search(
-            [('boq_id', 'in', boqs.ids)]
-        )
+
+        # boq_id on purchase.order is non-stored — query M2M table directly
+        # rfq_boq_map: {purchase_id: boq_id}
+        rfq_boq_map = {}
+        if boqs.ids:
+            self.env.cr.execute(
+                "SELECT purchase_id, boq_id FROM boq_boq_purchase_order_rel WHERE boq_id IN %s",
+                (tuple(boqs.ids),)
+            )
+            rfq_boq_map = {row[0]: row[1] for row in self.env.cr.fetchall()}
+        rfqs = self.env['purchase.order'].browse(list(rfq_boq_map.keys())) if rfq_boq_map else self.env['purchase.order']
 
         # Build boq_id → project info map
         boq_info = {
@@ -547,8 +563,9 @@ class BoqBoq(models.Model):
             if rfq_state_label not in entry['rfq_states']:
                 entry['rfq_states'].append(rfq_state_label)
 
-            if rfq.boq_id and rfq.boq_id.id in boq_info:
-                b = boq_info[rfq.boq_id.id]
+            boq_id_val = rfq_boq_map.get(rfq.id)
+            if boq_id_val and boq_id_val in boq_info:
+                b = boq_info[boq_id_val]
                 pname = b['project_name']
                 if pname not in entry['project_names']:
                     entry['project_names'].append(pname)

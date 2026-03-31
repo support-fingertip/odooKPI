@@ -38,7 +38,7 @@
         <field name="name">RFQs from BOQ</field>
         <field name="res_model">purchase.order</field>
         <field name="view_mode">list,form</field>
-        <field name="domain">[('boq_id', '!=', False)]</field>
+        <field name="domain">[]</field>
         <field name="context">{'search_default_draft': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">No RFQs linked to a BOQ yet!</p>
