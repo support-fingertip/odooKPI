@@ -162,6 +162,28 @@ class BoqOrderLine(models.Model):
     # ── Notes ─────────────────────────────────────────────────────────────
     notes = fields.Char(string='Remarks')
 
+    # ── _auto_init: guarantee M2M relation table on every startup ─────────
+    def _auto_init(self):
+        """
+        Create boq_order_line_tax_rel unconditionally before super() runs.
+
+        Odoo does NOT auto-create M2M relation tables for installed modules
+        unless the module is explicitly upgraded (-u).  By creating the table
+        here with IF NOT EXISTS we ensure it is present on every server
+        startup, eliminating the UndefinedTable crash without requiring an
+        explicit module upgrade by the administrator.
+        """
+        self.env.cr.execute("""
+            CREATE TABLE IF NOT EXISTS boq_order_line_tax_rel (
+                line_id INTEGER NOT NULL
+                    REFERENCES boq_order_line(id) ON DELETE CASCADE,
+                tax_id  INTEGER NOT NULL
+                    REFERENCES account_tax(id)    ON DELETE CASCADE,
+                PRIMARY KEY (line_id, tax_id)
+            );
+        """)
+        return super()._auto_init()
+
     # ── Computes ──────────────────────────────────────────────────────────
     @api.depends('product_id')
     def _compute_from_product(self):
