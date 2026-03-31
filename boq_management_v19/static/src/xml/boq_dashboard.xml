@@ -6,7 +6,7 @@
     Vendor-wise RFQ summary with margin %, project stage, payment status.
 -->
 <t t-name="boq_management_v19.BoqDashboard">
-    <div class="boq_dashboard o_action">
+    <div class="boq_dashboard o_action" style="overflow-y:auto;height:100%;color-scheme:light;">
 
         <!-- ── LOADING STATE ─────────────────────────────────────────── -->
         <t t-if="state.loading">
@@ -152,6 +152,7 @@
                     <i class="fa fa-search boq_filter_icon"/>
                     <input type="text"
                            class="form-control form-control-sm boq_vendor_filter_input"
+                           style="background-color:#fff;color:#212529;border-color:#ced4da;"
                            placeholder="Search vendors…"
                            t-model="state.filterVendor"/>
                     <t t-if="state.filterVendor">
@@ -260,7 +261,8 @@
                  ║  DYNAMIC VENDOR NOTEBOOK                              ║
                  ╚═══════════════════════════════════════════════════════╝ -->
             <t t-if="state.selectedVendor">
-                <div class="boq_vendor_notebook card mx-4 mb-4 shadow-sm" t-ref="notebook">
+                <div class="boq_vendor_notebook card mx-4 mb-4 shadow-sm" t-ref="notebook"
+                     style="color-scheme:light;background:#fff;color:#212529;">
 
                     <!-- Notebook Header with Tabs -->
                     <div class="card-header d-flex align-items-center justify-content-between p-0 ps-3">
