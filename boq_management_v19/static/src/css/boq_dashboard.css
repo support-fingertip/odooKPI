@@ -3,10 +3,11 @@
    ============================================================ */
 
 /* ── Odoo action container scroll fix ───────────────────────── */
-.o_action_manager > .o_action.boq_dashboard,
-.o_client_action_container > .boq_dashboard {
+/* Odoo 17+ wraps client actions in .o_action; make it scroll */
+.o_action.boq_dashboard {
     overflow-y: auto !important;
     height: 100% !important;
+    position: relative !important;
 }
 
 /* ── Page wrapper ───────────────────────────────────────────── */
@@ -14,7 +15,7 @@
     background: #f8f9fa !important;
     min-height: 100%;
     font-family: inherit;
-    overflow-y: auto;
+    color-scheme: light;
     color: #212529 !important;
 }
 
