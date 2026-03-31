@@ -6,9 +6,9 @@
         Inherit the standard purchase.order form to:
         1. Show BOQ Reference smart button (opens linked BOQ record)
         2. Show BOQ Reference field in main group
-        3. Show Description / Notes field visibly
-        4. Ensure Total Tax is clearly labelled in order totals
-        Madhan review fix: description + total tax fields were missing from view.
+        3. Make Description field visible in order lines
+        Note: Odoo 19 renders the totals footer via the `tax_totals` widget
+        which already includes a "Total Tax" row natively — no extra xpath needed.
     -->
 
     <!-- ═══════════════════════════════════════════════════════════════════
@@ -40,27 +40,23 @@
                        invisible="not boq_id"/>
             </xpath>
 
-            <!-- ── 3. Make Description (name) visible in RFQ order lines ── -->
+            <!-- ── 3. Make Description (name) visible in order lines ──────── -->
             <!--
-                In Odoo 19 the purchase order line `name` column may be hidden
-                or optional. Force it visible so users can read/edit the line
-                description without toggling optional columns.
+                In the standard Odoo 19 purchase form the `name` column on
+                order lines may be optional/hidden.  Force optional="show" so
+                users always see the description without toggling columns.
             -->
             <xpath expr="//field[@name='order_line']//field[@name='name']"
                    position="attributes">
                 <attribute name="optional">show</attribute>
-                <attribute name="column_invisible">False</attribute>
             </xpath>
 
-            <!-- ── 4. Total Tax row in order totals footer ───────────────── -->
             <!--
-                Relabel amount_tax to "Total Tax" so it is clearly identified.
-                The standard purchase form already renders this row; this just
-                makes the label unambiguous.
+                Total Tax in footer:
+                Odoo 19 renders purchase totals via the `tax_totals` widget
+                which already includes a "Total Tax" row automatically.
+                No additional xpath is required — the row is present by default.
             -->
-            <xpath expr="//field[@name='amount_tax']" position="attributes">
-                <attribute name="string">Total Tax</attribute>
-            </xpath>
 
         </field>
     </record>
