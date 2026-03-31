@@ -113,9 +113,21 @@ class BoqOrderLine(models.Model):
              '"Create RFQ" will generate a purchase RFQ per vendor.',
     )
 
-    # ── Tax / Total / Margin (no DB columns — all non-stored computed) ────
-    # tax_ids Many2many removed: its relation table requires a module upgrade.
-    # tax_amount = 0 and total_value = subtotal until upgrade is run.
+    # ── Taxes ─────────────────────────────────────────────────────────────
+    # Relation table boq_order_line_tax_rel is pre-created by migration
+    # 19.0.1.0.2 (CREATE TABLE IF NOT EXISTS), so fresh installs and
+    # upgrades both work without UndefinedTable errors.
+    tax_ids = fields.Many2many(
+        comodel_name='account.tax',
+        relation='boq_order_line_tax_rel',
+        column1='line_id',
+        column2='tax_id',
+        string='Taxes',
+        domain=[('type_tax_use', 'in', ('purchase', 'all'))],
+        help='Taxes applied to this line. Affects Tax Amount and Total (incl. Tax).',
+    )
+
+    # ── Tax / Total / Margin ──────────────────────────────────────────────
     tax_amount = fields.Float(
         string='Tax Amount',
         compute='_compute_total_value',
@@ -127,7 +139,7 @@ class BoqOrderLine(models.Model):
         compute='_compute_total_value',
         store=False,
         digits='Product Price',
-        help='Equal to Subtotal until taxes are configured after module upgrade.',
+        help='Subtotal + computed taxes from tax_ids.',
     )
 
     # ── Cost & Margin ──────────────────────────────────────────────────────
@@ -169,13 +181,24 @@ class BoqOrderLine(models.Model):
             base = line.qty * line.unit_price
             line.subtotal = base * (1.0 - line.discount / 100.0)
 
-    @api.depends('subtotal')
+    @api.depends('subtotal', 'tax_ids', 'qty', 'unit_price', 'discount')
     def _compute_total_value(self):
-        # tax_ids removed (relation table requires module upgrade).
-        # total_value mirrors subtotal; tax_amount is 0 until upgrade.
         for line in self:
-            line.tax_amount = 0.0
-            line.total_value = line.subtotal
+            if line.tax_ids:
+                # price_unit after discount — taxes compute per unit × qty
+                price_after_disc = line.unit_price * (1.0 - line.discount / 100.0)
+                taxes = line.tax_ids.compute_all(
+                    price_after_disc,
+                    currency=line.currency_id or None,
+                    quantity=line.qty,
+                    product=line.product_id or None,
+                    partner=line.boq_id.partner_id or None,
+                )
+                line.tax_amount = taxes['total_included'] - taxes['total_excluded']
+                line.total_value = taxes['total_included']
+            else:
+                line.tax_amount = 0.0
+                line.total_value = line.subtotal
 
     @api.depends('unit_price', 'discount', 'cost_price')
     def _compute_margin(self):
