@@ -144,12 +144,24 @@
                 <h5 class="mb-0 fw-bold">
                     <i class="fa fa-users me-2 text-primary"/>
                     Vendor-wise RFQ Summary
+                    <span class="badge bg-secondary rounded-pill ms-2 small">
+                        <t t-esc="filteredVendors.length"/>
+                    </span>
                 </h5>
-                <input type="text"
-                       class="form-control form-control-sm"
-                       style="max-width:220px"
-                       placeholder="Filter vendors…"
-                       t-model="state.filterVendor"/>
+                <div class="boq_vendor_filter_wrap">
+                    <i class="fa fa-search boq_filter_icon"/>
+                    <input type="text"
+                           class="form-control form-control-sm boq_vendor_filter_input"
+                           placeholder="Search vendors…"
+                           t-model="state.filterVendor"/>
+                    <t t-if="state.filterVendor">
+                        <button class="boq_filter_clear btn btn-sm p-0"
+                                t-on-click="clearFilter"
+                                title="Clear filter">
+                            <i class="fa fa-times-circle text-muted"/>
+                        </button>
+                    </t>
+                </div>
             </div>
 
             <!-- No vendors message -->
@@ -169,7 +181,7 @@
             <!-- Vendor Cards Grid -->
             <div class="boq_vendor_grid px-4 pb-4">
                 <t t-foreach="filteredVendors" t-as="vendor" t-key="vendor.vendor_id">
-                    <div class="boq_vendor_card"
+                    <div t-attf-class="boq_vendor_card {{ state.selectedVendor and state.selectedVendor.vendor_id === vendor.vendor_id ? 'boq_vendor_card_active' : '' }}"
                          t-on-click="() => this.selectVendor(vendor)">
 
                         <!-- Card Header -->
@@ -248,7 +260,7 @@
                  ║  DYNAMIC VENDOR NOTEBOOK                              ║
                  ╚═══════════════════════════════════════════════════════╝ -->
             <t t-if="state.selectedVendor">
-                <div class="boq_vendor_notebook card mx-4 mb-4 shadow-sm">
+                <div class="boq_vendor_notebook card mx-4 mb-4 shadow-sm" t-ref="notebook">
 
                     <!-- Notebook Header with Tabs -->
                     <div class="card-header d-flex align-items-center justify-content-between p-0 ps-3">

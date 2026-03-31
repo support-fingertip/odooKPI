@@ -4,7 +4,7 @@
  * Task 4: Vendor-wise RFQ summary, margin %, project stage, payment status.
  */
 
-import { Component, useState, onWillStart, onMounted } from "@odoo/owl";
+import { Component, useState, onWillStart, onPatched, useRef } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 
@@ -50,9 +50,11 @@ export class BoqDashboard extends Component {
     };
 
     setup() {
-        this.orm        = useService("orm");
-        this.action     = useService("action");
+        this.orm          = useService("orm");
+        this.action       = useService("action");
         this.notification = useService("notification");
+        this.notebookRef  = useRef("notebook");
+        this._scrollPending = false;
 
         this.state = useState({
             loading: true,
@@ -65,6 +67,12 @@ export class BoqDashboard extends Component {
         });
 
         onWillStart(() => this._loadAll());
+        onPatched(() => {
+            if (this._scrollPending && this.notebookRef.el) {
+                this._scrollPending = false;
+                this.notebookRef.el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        });
     }
 
     // ── Data loading ────────────────────────────────────────────────────────
@@ -101,10 +109,15 @@ export class BoqDashboard extends Component {
     selectVendor(vendor) {
         this.state.selectedVendor = vendor;
         this.state.activeTab = "summary";
+        this._scrollPending = true;
     }
 
     closeNotebook() {
         this.state.selectedVendor = null;
+    }
+
+    clearFilter() {
+        this.state.filterVendor = "";
     }
 
     setActiveTab(tab) {
