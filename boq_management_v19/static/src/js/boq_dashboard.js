@@ -97,7 +97,7 @@ export class BoqDashboard extends Component {
             name: "RFQs",
             res_model: "purchase.order",
             view_mode: "list,form",
-            domain: [["partner_id", "=", vendorId], ["boq_id", "!=", false]],
+            domain: [["partner_id", "=", vendorId]],
             target: "current",
         });
     }
