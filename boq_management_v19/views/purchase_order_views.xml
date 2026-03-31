@@ -69,7 +69,12 @@
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_rfq"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='partner_id']" position="after">
+            <!--
+                Append BOQ Ref column to the end of the RFQ list.
+                Targets <list> directly — robust regardless of which other
+                columns exist in the Odoo 19 purchase_rfq list view.
+            -->
+            <xpath expr="//list" position="inside">
                 <field name="boq_id" string="BOQ Ref" optional="show"/>
             </xpath>
         </field>
