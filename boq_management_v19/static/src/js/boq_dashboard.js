@@ -91,7 +91,9 @@ export class BoqDashboard extends Component {
         this.action.doAction("boq_management_v19.action_boq_rfq_list");
     }
 
-    openVendorRfqs(vendorId) {
+    onVendorCardClick(ev) {
+        const vendorId = parseInt(ev.currentTarget.dataset.vendorId, 10);
+        if (!vendorId) return;
         this.action.doAction({
             type: "ir.actions.act_window",
             name: "RFQs",
