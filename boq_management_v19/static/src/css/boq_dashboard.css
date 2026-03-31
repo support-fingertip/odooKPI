@@ -2,22 +2,39 @@
    BOQ Dashboard Styles — Task 4 (Odoo 19)
    ============================================================ */
 
+/* ── Odoo action container scroll fix ───────────────────────── */
+.o_action_manager > .o_action.boq_dashboard,
+.o_client_action_container > .boq_dashboard {
+    overflow-y: auto !important;
+    height: 100% !important;
+}
+
 /* ── Page wrapper ───────────────────────────────────────────── */
 .boq_dashboard {
-    background: #f8f9fa;
-    min-height: 100vh;
+    background: #f8f9fa !important;
+    min-height: 100%;
     font-family: inherit;
+    overflow-y: auto;
+    color: #212529 !important;
 }
 
 /* ── Header bar ─────────────────────────────────────────────── */
 .boq_dash_header {
-    background: #fff;
+    background: #fff !important;
     border-bottom: 1px solid #dee2e6 !important;
+    color: #212529 !important;
+}
+
+.boq_dash_header h4,
+.boq_dash_header small,
+.boq_dash_header .text-muted {
+    color: inherit !important;
 }
 
 /* ── Stat Cards ─────────────────────────────────────────────── */
 .boq_stat_card {
-    background: #fff;
+    background: #fff !important;
+    color: #212529 !important;
     border: 1px solid #e9ecef;
     border-radius: 12px;
     padding: 20px 24px;
@@ -67,7 +84,8 @@
 
 /* ── Vendor Card ─────────────────────────────────────────────── */
 .boq_vendor_card {
-    background: #fff;
+    background: #fff !important;
+    color: #212529 !important;
     border: 1px solid #e9ecef;
     border-radius: 14px;
     padding: 20px;
@@ -225,14 +243,23 @@
     padding-left: 30px !important;
     padding-right: 30px !important;
     border-radius: 20px !important;
-    border: 1px solid #ced4da;
+    border: 1px solid #ced4da !important;
+    background-color: #fff !important;
+    color: #212529 !important;
     transition: border-color 0.15s, box-shadow 0.15s;
 }
 
+.boq_vendor_filter_input::placeholder {
+    color: #6c757d !important;
+    opacity: 1;
+}
+
 .boq_vendor_filter_input:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15) !important;
     outline: none;
+    background-color: #fff !important;
+    color: #212529 !important;
 }
 
 .boq_filter_clear {
@@ -251,10 +278,12 @@
 
 /* ── Vendor notebook panel ───────────────────────────────────── */
 .boq_vendor_notebook {
-    border: 1px solid #dee2e6;
+    border: 1px solid #dee2e6 !important;
     border-radius: 14px;
     overflow: hidden;
     scroll-margin-top: 16px;
+    background: #fff !important;
+    color: #212529 !important;
     animation: boq_notebook_in 0.22s ease;
 }
 
@@ -264,9 +293,20 @@
 }
 
 .boq_vendor_notebook .card-header {
-    background: #fff;
-    border-bottom: 1px solid #dee2e6;
+    background: #fff !important;
+    border-bottom: 1px solid #dee2e6 !important;
     min-height: 48px;
+}
+
+.boq_vendor_notebook .card-body {
+    background: #fff !important;
+    color: #212529 !important;
+}
+
+/* Title bar inside notebook */
+.boq_vendor_notebook .bg-light {
+    background: #f8f9fa !important;
+    color: #212529 !important;
 }
 
 .boq_vendor_notebook .nav-tabs .nav-link {
@@ -275,18 +315,35 @@
     border-radius: 0;
     padding: 12px 18px;
     font-size: 0.87rem;
+    color: #6c757d !important;
+    background: none !important;
     transition: color 0.15s, border-color 0.15s;
 }
 
 .boq_vendor_notebook .nav-tabs .nav-link.active {
     border-bottom-color: #0d6efd;
-    color: #0d6efd;
-    background: none;
+    color: #0d6efd !important;
+    background: none !important;
 }
 
 .boq_vendor_notebook .nav-tabs .nav-link:hover:not(.active) {
     border-bottom-color: #dee2e6;
-    color: #495057;
+    color: #495057 !important;
+}
+
+/* Stat boxes inside notebook */
+.boq_vendor_notebook .border {
+    background: #fff !important;
+    color: #212529 !important;
+}
+
+.boq_vendor_notebook .text-muted {
+    color: #6c757d !important;
+}
+
+.boq_vendor_notebook .fw-bold,
+.boq_vendor_notebook .fw-semibold {
+    color: #212529 !important;
 }
 
 /* ── Responsive tweaks ───────────────────────────────────────── */
