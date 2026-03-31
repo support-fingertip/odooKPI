@@ -55,6 +55,8 @@ export class BoqDashboard extends Component {
             vendors: [],
             error: null,
             filterVendor: "",
+            selectedVendor: null,
+            activeTab: "summary",
         });
 
         onWillStart(() => this._loadAll());
@@ -89,6 +91,19 @@ export class BoqDashboard extends Component {
 
     openRfqs() {
         this.action.doAction("boq_management_v19.action_boq_rfq_list");
+    }
+
+    selectVendor(vendor) {
+        this.state.selectedVendor = vendor;
+        this.state.activeTab = "summary";
+    }
+
+    closeNotebook() {
+        this.state.selectedVendor = null;
+    }
+
+    setActiveTab(tab) {
+        this.state.activeTab = tab;
     }
 
     openVendorRfqs(vendorId) {
