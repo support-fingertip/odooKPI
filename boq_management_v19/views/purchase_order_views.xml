@@ -40,11 +40,23 @@
                        invisible="not boq_id"/>
             </xpath>
 
-            <!-- ── 3. Relabel the existing Total Tax line in order totals ── -->
+            <!-- ── 3. Make Description (name) visible in RFQ order lines ── -->
             <!--
-                Standard purchase form renders amount_tax in the totals footer.
-                We simply ensure the string label is clear ("Total Tax").
-                The `total_tax` related field equals amount_tax — both are available.
+                In Odoo 19 the purchase order line `name` column may be hidden
+                or optional. Force it visible so users can read/edit the line
+                description without toggling optional columns.
+            -->
+            <xpath expr="//field[@name='order_line']//field[@name='name']"
+                   position="attributes">
+                <attribute name="optional">show</attribute>
+                <attribute name="column_invisible">False</attribute>
+            </xpath>
+
+            <!-- ── 4. Total Tax row in order totals footer ───────────────── -->
+            <!--
+                Relabel amount_tax to "Total Tax" so it is clearly identified.
+                The standard purchase form already renders this row; this just
+                makes the label unambiguous.
             -->
             <xpath expr="//field[@name='amount_tax']" position="attributes">
                 <attribute name="string">Total Tax</attribute>
