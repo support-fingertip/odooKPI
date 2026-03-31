@@ -41,22 +41,10 @@
             </xpath>
 
             <!-- ── 3. Make Description (name) visible in order lines ──────── -->
-            <!--
-                In the standard Odoo 19 purchase form the `name` column on
-                order lines may be optional/hidden.  Force optional="show" so
-                users always see the description without toggling columns.
-            -->
             <xpath expr="//field[@name='order_line']//field[@name='name']"
                    position="attributes">
                 <attribute name="optional">show</attribute>
             </xpath>
-
-            <!--
-                Total Tax in footer:
-                Odoo 19 renders purchase totals via the `tax_totals` widget
-                which already includes a "Total Tax" row automatically.
-                No additional xpath is required — the row is present by default.
-            -->
 
         </field>
     </record>
@@ -69,16 +57,12 @@
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_rfq"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='partner_id']" position="after">
+            <xpath expr="//list" position="inside">
                 <field name="boq_id" string="BOQ Ref" optional="show"/>
             </xpath>
         </field>
     </record>
 
-    <!-- ═══════════════════════════════════════════════════════════════════
-         BOQ-SPECIFIC RFQ ACTION — filtered to RFQs linked to any BOQ
-         Placed in BOQ → Reporting menu (sequence 10)
-    ═══════════════════════════════════════════════════════════════════════ -->
     <record id="action_boq_rfq_list" model="ir.actions.act_window">
         <field name="name">RFQs from BOQ</field>
         <field name="res_model">purchase.order</field>
@@ -86,14 +70,8 @@
         <field name="domain">[('boq_id', '!=', False)]</field>
         <field name="context">{'search_default_draft': 1}</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                No RFQs linked to a BOQ yet!
-            </p>
-            <p>
-                Open a BOQ record, assign vendors to line items, then click
-                <b>Create RFQ</b> to generate purchase quotations linked
-                to the BOQ automatically.
-            </p>
+            <p class="o_view_nocontent_smiling_face">No RFQs linked to a BOQ yet!</p>
+            <p>Open a BOQ, assign vendors to lines, then click <b>Create RFQ</b>.</p>
         </field>
     </record>
 

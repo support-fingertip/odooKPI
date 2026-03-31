@@ -516,52 +516,12 @@
 </record>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     BOQ — SEARCH VIEW
-═══════════════════════════════════════════════════════════════════════ -->
-<record id="view_boq_boq_search" model="ir.ui.view">
-    <field name="name">boq.boq.search</field>
-    <field name="model">boq.boq</field>
-    <field name="arch" type="xml">
-        <search string="Search BOQ">
-            <field name="name" string="Reference"/>
-            <field name="partner_id"/>
-            <field name="project_name"/>
-            <field name="user_id"/>
-            <separator/>
-            <filter string="My BOQs"   name="my_boqs"
-                    domain="[('user_id','=',uid)]"/>
-            <filter string="Draft"     name="draft"
-                    domain="[('state','=','draft')]"/>
-            <filter string="Submitted" name="submitted"
-                    domain="[('state','=','submitted')]"/>
-            <filter string="Approved"  name="approved"
-                    domain="[('state','=','approved')]"/>
-            <filter string="Done"      name="done"
-                    domain="[('state','=','done')]"/>
-            <filter string="Urgent"    name="urgent"
-                    domain="[('priority','=','1')]"/>
-            <group expand="0" string="Group By">
-                <filter string="Customer"    name="grp_partner"
-                        context="{'group_by': 'partner_id'}"/>
-                <filter string="Status"      name="grp_state"
-                        context="{'group_by': 'state'}"/>
-                <filter string="Assigned To" name="grp_user"
-                        context="{'group_by': 'user_id'}"/>
-                <filter string="Month"       name="grp_month"
-                        context="{'group_by': 'date:month'}"/>
-            </group>
-        </search>
-    </field>
-</record>
-
-<!-- ═══════════════════════════════════════════════════════════════════════
      BOQ — WINDOW ACTION
 ═══════════════════════════════════════════════════════════════════════ -->
 <record id="action_boq_boq" model="ir.actions.act_window">
     <field name="name">Bills of Quantities</field>
     <field name="res_model">boq.boq</field>
     <field name="view_mode">list,kanban,form</field>
-    <field name="search_view_id" ref="view_boq_boq_search"/>
     <field name="context">{'search_default_draft': 1}</field>
     <field name="help" type="html">
         <p class="o_view_nocontent_smiling_face">
