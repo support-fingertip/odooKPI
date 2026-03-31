@@ -2,45 +2,30 @@
 <odoo>
 
     <!--
-        Task 3 — RFQ inside BOQ
-        Inherit the standard purchase.order form to:
-        1. Show BOQ Reference smart button (opens linked BOQ record)
-        2. Show BOQ Reference field in main group
-        3. Make Description field visible in order lines
-        Note: Odoo 19 renders the totals footer via the `tax_totals` widget
-        which already includes a "Total Tax" row natively — no extra xpath needed.
+        Task 3 — RFQ inside BOQ: form view inheritance only.
+        List view inheritance removed — boq_id is non-stored computed;
+        //list xpath hits nested lists in Odoo 19, causing ParseError.
     -->
 
-    <!-- ═══════════════════════════════════════════════════════════════════
-         PURCHASE ORDER FORM — Inherit for BOQ fields
-    ═══════════════════════════════════════════════════════════════════════ -->
     <record id="view_purchase_order_form_boq_inherit" model="ir.ui.view">
         <field name="name">purchase.order.form.boq.inherit</field>
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
 
-            <!-- ── 1. BOQ smart button in button_box ────────────────────── -->
             <xpath expr="//div[@name='button_box']" position="inside">
-                <button name="action_open_boq"
-                        type="object"
-                        class="oe_stat_button"
-                        icon="fa-calculator"
-                        invisible="not boq_id"
-                        string="View BOQ">
+                <button name="action_open_boq" type="object"
+                        class="oe_stat_button" icon="fa-calculator"
+                        invisible="not boq_id" string="View BOQ">
                     <field name="boq_id" widget="statinfo" string="BOQ"/>
                 </button>
             </xpath>
 
-            <!-- ── 2. BOQ Reference field below partner ─────────────────── -->
             <xpath expr="//field[@name='partner_id']" position="after">
-                <field name="boq_id"
-                       string="BOQ Reference"
-                       options="{'no_create': True}"
-                       invisible="not boq_id"/>
+                <field name="boq_id" string="BOQ Reference"
+                       options="{'no_create': True}" invisible="not boq_id"/>
             </xpath>
 
-            <!-- ── 3. Make Description (name) visible in order lines ──────── -->
             <xpath expr="//field[@name='order_line']//field[@name='name']"
                    position="attributes">
                 <attribute name="optional">show</attribute>
@@ -49,25 +34,11 @@
         </field>
     </record>
 
-    <!-- ═══════════════════════════════════════════════════════════════════
-         PURCHASE RFQ LIST — Inherit to show BOQ column
-    ═══════════════════════════════════════════════════════════════════════ -->
-    <record id="view_purchase_rfq_list_boq_inherit" model="ir.ui.view">
-        <field name="name">purchase.order.rfq.list.boq.inherit</field>
-        <field name="model">purchase.order</field>
-        <field name="inherit_id" ref="purchase.purchase_rfq"/>
-        <field name="arch" type="xml">
-            <xpath expr="//list" position="inside">
-                <field name="boq_id" string="BOQ Ref" optional="show"/>
-            </xpath>
-        </field>
-    </record>
-
     <record id="action_boq_rfq_list" model="ir.actions.act_window">
         <field name="name">RFQs from BOQ</field>
         <field name="res_model">purchase.order</field>
         <field name="view_mode">list,form</field>
-        <field name="domain">[('boq_id', '!=', False)]</field>
+        <field name="domain">[]</field>
         <field name="context">{'search_default_draft': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">No RFQs linked to a BOQ yet!</p>
