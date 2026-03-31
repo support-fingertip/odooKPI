@@ -42,7 +42,12 @@ function stateBadgeClass(state) {
 // ═══════════════════════════════════════════════════════════════════════════════
 export class BoqDashboard extends Component {
     static template = "boq_management_v19.BoqDashboard";
-    static props = {};
+    static props = {
+        action:            { type: Object,   optional: true },
+        actionId:          { optional: true },
+        updateActionState: { type: Function, optional: true },
+        className:         { type: String,   optional: true },
+    };
 
     setup() {
         this.orm        = useService("orm");
