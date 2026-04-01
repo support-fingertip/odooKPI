@@ -302,11 +302,13 @@ class BoqBoq(models.Model):
             rec.rfq_count = len(rec.rfq_ids)
 
     # ── _compute_totals ────────────────────────────────────────────────────
-    # IMPORTANT: Only depend on `line_ids.*` (the unfiltered O2M).
-    # Domain-filtered O2M fields like `electrical_line_ids` cannot reliably
-    # propagate stored-compute triggers in Odoo ORM — the inverse lookup
-    # across a domain filter silently drops triggers, causing stale values.
-    @api.depends('line_ids.subtotal', 'line_ids.tax_amount', 'line_ids.category_id')
+    # IMPORTANT: Only depend on stored `line_ids.*` fields.
+    # tax_amount on boq.order.line is store=False — using a non-stored computed
+    # field in @api.depends causes Odoo ORM to silently drop ALL triggers in the
+    # decorator, making every total show 0. Use tax_ids (stored M2M) instead;
+    # tax_amount is still evaluated in the body via .mapped().
+    @api.depends('line_ids.subtotal', 'line_ids.tax_ids', 'line_ids.qty',
+                 'line_ids.unit_price', 'line_ids.discount', 'line_ids.category_id')
     def _compute_totals(self):
         for rec in self:
             lines = rec.line_ids
