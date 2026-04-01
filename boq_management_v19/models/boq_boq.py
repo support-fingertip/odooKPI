@@ -413,7 +413,7 @@ class BoqBoq(models.Model):
                     'name': line.product_name or line.product_id.display_name,
                     'product_qty': line.qty,
                     'product_uom_id': line.uom_id.id or line.product_id.uom_po_id.id,
-                    'price_unit': line.unit_price,
+                    'price_unit': 0,
                     'date_planned': today,
                 })
             created_orders |= po
