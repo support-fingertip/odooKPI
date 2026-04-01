@@ -262,17 +262,14 @@ class BoqBoq(models.Model):
     total_tax = fields.Monetary(
         string='Total Tax',
         compute='_compute_totals',
-        store=True,
-        precompute=True,
+        store=False,
         currency_field='currency_id',
     )
     grand_total = fields.Monetary(
         string='Grand Total',
         compute='_compute_totals',
-        store=True,
-        precompute=True,
+        store=False,
         currency_field='currency_id',
-        tracking=True,
     )
     line_count = fields.Integer(
         string='Lines',
