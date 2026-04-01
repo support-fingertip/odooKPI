@@ -46,4 +46,17 @@
         </field>
     </record>
 
+    <!-- ── Vendors list (suppliers that appear on BOQ lines) ─────────── -->
+    <record id="action_boq_vendor_list" model="ir.actions.act_window">
+        <field name="name">Vendors</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('supplier_rank', '&gt;', 0)]</field>
+        <field name="context">{'search_default_supplier_rank': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No vendors found.</p>
+            <p>Vendors are suppliers assigned on BOQ lines when creating RFQs.</p>
+        </field>
+    </record>
+
 </odoo>

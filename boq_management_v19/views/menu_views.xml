@@ -53,6 +53,13 @@
               sequence="10"
               groups="boq_management_v19.group_boq_manager"/>
 
+    <menuitem id="menu_boq_vendor_list"
+              name="Vendors"
+              parent="menu_boq_report"
+              action="action_boq_vendor_list"
+              sequence="20"
+              groups="boq_management_v19.group_boq_manager"/>
+
     <!-- ── Configuration section ── -->
     <menuitem id="menu_boq_config"
               name="Configuration"

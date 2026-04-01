@@ -75,7 +75,8 @@
                 <div class="boq_dash_stat_row d-flex flex-wrap gap-3 p-4">
 
                     <!-- Total BOQs -->
-                    <div class="boq_stat_card flex-fill" t-on-click="openAllBoqs">
+                    <div class="boq_stat_card flex-fill" t-on-click="openAllBoqs"
+                         style="cursor:pointer;">
                         <div class="boq_stat_icon bg-primary-subtle text-primary">
                             <i class="fa fa-calculator fa-2x"/>
                         </div>
@@ -87,7 +88,7 @@
                         </div>
                     </div>
 
-                    <!-- Total Value -->
+                    <!-- Untaxed Amount -->
                     <div class="boq_stat_card flex-fill">
                         <div class="boq_stat_icon bg-success-subtle text-success">
                             <i class="fa fa-money fa-2x"/>
@@ -96,13 +97,40 @@
                             <div class="boq_stat_value small">
                                 <t t-esc="fmtCurrency(state.stats.total_value)"/>
                             </div>
-                            <div class="boq_stat_label">Total BOQ Value</div>
+                            <div class="boq_stat_label">Untaxed Amount</div>
+                        </div>
+                    </div>
+
+                    <!-- Total Tax -->
+                    <div class="boq_stat_card flex-fill">
+                        <div class="boq_stat_icon bg-warning-subtle text-warning">
+                            <i class="fa fa-percent fa-2x"/>
+                        </div>
+                        <div class="boq_stat_body">
+                            <div class="boq_stat_value small">
+                                <t t-esc="fmtCurrency(state.stats.total_tax)"/>
+                            </div>
+                            <div class="boq_stat_label">Total Tax</div>
+                        </div>
+                    </div>
+
+                    <!-- Grand Total -->
+                    <div class="boq_stat_card flex-fill boq_stat_card_grand">
+                        <div class="boq_stat_icon bg-info-subtle text-info">
+                            <i class="fa fa-bar-chart fa-2x"/>
+                        </div>
+                        <div class="boq_stat_body">
+                            <div class="boq_stat_value small">
+                                <t t-esc="fmtCurrency(state.stats.grand_total)"/>
+                            </div>
+                            <div class="boq_stat_label">Grand Total (incl. Tax)</div>
                         </div>
                     </div>
 
                     <!-- RFQs -->
-                    <div class="boq_stat_card flex-fill" t-on-click="openRfqs">
-                        <div class="boq_stat_icon bg-info-subtle text-info">
+                    <div class="boq_stat_card flex-fill" t-on-click="openRfqs"
+                         style="cursor:pointer;">
+                        <div class="boq_stat_icon bg-secondary-subtle text-secondary">
                             <i class="fa fa-shopping-cart fa-2x"/>
                         </div>
                         <div class="boq_stat_body">
@@ -120,7 +148,7 @@
 
                     <!-- RFQ Total Value -->
                     <div class="boq_stat_card flex-fill">
-                        <div class="boq_stat_icon bg-warning-subtle text-warning">
+                        <div class="boq_stat_icon" style="background:rgba(108,117,125,.12);color:#6c757d;">
                             <i class="fa fa-file-text-o fa-2x"/>
                         </div>
                         <div class="boq_stat_body">
@@ -466,6 +494,20 @@
                                                         </tr>
                                                     </t>
                                                 </tbody>
+                                                <tfoot class="table-light">
+                                                    <tr>
+                                                        <td class="fw-bold" colspan="2">Totals</td>
+                                                        <td class="text-end fw-bold">
+                                                            <t t-esc="fmtCurrency(vendorBoqSummaryTotals.subtotal)"/>
+                                                        </td>
+                                                        <td class="text-end fw-bold text-muted">
+                                                            <t t-esc="fmtCurrency(vendorBoqSummaryTotals.tax)"/>
+                                                        </td>
+                                                        <td class="text-end fw-bold text-success">
+                                                            <t t-esc="fmtCurrency(vendorBoqSummaryTotals.subtotal + vendorBoqSummaryTotals.tax)"/>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
                                             </table>
                                         </div>
                                     </t>
