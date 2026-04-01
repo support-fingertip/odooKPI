@@ -165,14 +165,15 @@ class BoqOrderLine(models.Model):
     # ── _auto_init: guarantee M2M relation table on every startup ─────────
     def _auto_init(self):
         """
-        Create boq_order_line_tax_rel unconditionally before super() runs.
+        Create boq_order_line_tax_rel unconditionally after super() runs.
 
-        Odoo does NOT auto-create M2M relation tables for installed modules
-        unless the module is explicitly upgraded (-u).  By creating the table
-        here with IF NOT EXISTS we ensure it is present on every server
-        startup, eliminating the UndefinedTable crash without requiring an
-        explicit module upgrade by the administrator.
+        super()._auto_init() creates the boq_order_line table itself.
+        We must call super() FIRST so that the FK reference to
+        boq_order_line(id) is valid when we CREATE the relation table.
+        Calling super() last (the original order) raises
+        "relation boq_order_line does not exist" on a fresh install.
         """
+        result = super()._auto_init()
         self.env.cr.execute("""
             CREATE TABLE IF NOT EXISTS boq_order_line_tax_rel (
                 line_id INTEGER NOT NULL
@@ -182,7 +183,7 @@ class BoqOrderLine(models.Model):
                 PRIMARY KEY (line_id, tax_id)
             );
         """)
-        return super()._auto_init()
+        return result
 
     # ── Computes ──────────────────────────────────────────────────────────
     @api.depends('product_id')
