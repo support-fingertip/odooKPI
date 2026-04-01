@@ -53,7 +53,6 @@ export class BoqDashboard extends Component {
         this.orm          = useService("orm");
         this.action       = useService("action");
         this.notification = useService("notification");
-        this.dashboardRef = useRef("dashboard");   // root scroll container
         this.notebookRef  = useRef("notebook");
         this._scrollPending = false;
 
@@ -73,14 +72,13 @@ export class BoqDashboard extends Component {
                 this._scrollPending = false;
                 const notebook = this.notebookRef.el;
                 requestAnimationFrame(() => {
-                    const dash = this.dashboardRef.el;
-                    if (dash && dash.scrollHeight > dash.clientHeight) {
-                        // dashboard is the scroll container — use offsetTop
-                        // (position relative to offsetParent = dashboard div)
-                        // to avoid any viewport-coordinate mismatch.
-                        dash.scrollTo({ top: notebook.offsetTop - 16, behavior: "smooth" });
+                    // this.el is the component root div (the scroll container).
+                    // offsetTop is always relative to offsetParent = root div
+                    // (position:relative), so the calculation is exact.
+                    const root = this.el;
+                    if (root && root.scrollHeight > root.clientHeight) {
+                        root.scrollTo({ top: notebook.offsetTop - 16, behavior: "smooth" });
                     } else {
-                        // Fallback: let the browser find the scrollable ancestor
                         notebook.scrollIntoView({ behavior: "smooth", block: "start" });
                     }
                 });
