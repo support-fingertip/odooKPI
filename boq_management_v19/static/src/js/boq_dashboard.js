@@ -53,8 +53,8 @@ export class BoqDashboard extends Component {
         this.orm          = useService("orm");
         this.action       = useService("action");
         this.notification = useService("notification");
-        this.dashboardRef = useRef("dashboard");   // root scroll container
-        this.notebookRef  = useRef("notebook");
+        this.scrollContainerRef = useRef("scrollContainer");
+        this.notebookRef        = useRef("notebook");
         this._scrollPending = false;
 
         this.state = useState({
@@ -71,18 +71,15 @@ export class BoqDashboard extends Component {
         onPatched(() => {
             if (this._scrollPending && this.notebookRef.el) {
                 this._scrollPending = false;
-                const notebook = this.notebookRef.el;
+                const notebook  = this.notebookRef.el;
+                const container = this.scrollContainerRef.el;
+                if (!container) return;
                 requestAnimationFrame(() => {
-                    const dash = this.dashboardRef.el;
-                    if (dash && dash.scrollHeight > dash.clientHeight) {
-                        // dashboard is the scroll container — use offsetTop
-                        // (position relative to offsetParent = dashboard div)
-                        // to avoid any viewport-coordinate mismatch.
-                        dash.scrollTo({ top: notebook.offsetTop - 16, behavior: "smooth" });
-                    } else {
-                        // Fallback: let the browser find the scrollable ancestor
-                        notebook.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }
+                    // getBoundingClientRect gives viewport-relative coords.
+                    // The delta brings the notebook 16 px below the container top.
+                    const cRect = container.getBoundingClientRect();
+                    const nRect = notebook.getBoundingClientRect();
+                    container.scrollBy({ top: nRect.top - cRect.top - 16, behavior: "smooth" });
                 });
             }
         });

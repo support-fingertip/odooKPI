@@ -2,14 +2,26 @@
    BOQ Dashboard Styles — Task 4 (Odoo 19)
    ============================================================ */
 
-/* ── Odoo action container ───────────────────────────────────── */
-/* overflow-y:auto + height:100% makes the dashboard itself the  */
-/* scroll container. We target it directly via dashboardRef so   */
-/* offsetTop-based scrollTo is always correct.                   */
+/* ── Root action wrapper ─────────────────────────────────────── */
+/* flex-column so the header is fixed-height and boq_dash_scroll */
+/* fills the remainder. No overflow here — scroll is in child.   */
 .o_action.boq_dashboard {
-    overflow-y: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
     height: 100% !important;
     position: relative !important;
+    overflow: hidden !important;
+}
+
+/* ── Scrollable content body ─────────────────────────────────── */
+/* flex:1 + min-height:0 is the standard "scrollable flex child" */
+/* pattern. Works inside Odoo's flex action manager.             */
+.boq_dash_scroll {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    background: #f8f9fa;
+    position: relative;
 }
 
 /* ── Page wrapper ───────────────────────────────────────────── */
