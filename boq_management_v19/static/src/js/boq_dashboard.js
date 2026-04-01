@@ -53,7 +53,8 @@ export class BoqDashboard extends Component {
         this.orm          = useService("orm");
         this.action       = useService("action");
         this.notification = useService("notification");
-        this.notebookRef  = useRef("notebook");
+        this.scrollContainerRef = useRef("scrollContainer");
+        this.notebookRef        = useRef("notebook");
         this._scrollPending = false;
 
         this.state = useState({
@@ -70,17 +71,15 @@ export class BoqDashboard extends Component {
         onPatched(() => {
             if (this._scrollPending && this.notebookRef.el) {
                 this._scrollPending = false;
-                const notebook = this.notebookRef.el;
+                const notebook  = this.notebookRef.el;
+                const container = this.scrollContainerRef.el;
+                if (!container) return;
                 requestAnimationFrame(() => {
-                    // this.el is the component root div (the scroll container).
-                    // offsetTop is always relative to offsetParent = root div
-                    // (position:relative), so the calculation is exact.
-                    const root = this.el;
-                    if (root && root.scrollHeight > root.clientHeight) {
-                        root.scrollTo({ top: notebook.offsetTop - 16, behavior: "smooth" });
-                    } else {
-                        notebook.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }
+                    // getBoundingClientRect gives viewport-relative coords.
+                    // The delta brings the notebook 16 px below the container top.
+                    const cRect = container.getBoundingClientRect();
+                    const nRect = notebook.getBoundingClientRect();
+                    container.scrollBy({ top: nRect.top - cRect.top - 16, behavior: "smooth" });
                 });
             }
         });
