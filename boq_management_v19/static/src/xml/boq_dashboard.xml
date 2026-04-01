@@ -6,7 +6,8 @@
     Vendor-wise RFQ summary with margin %, project stage, payment status.
 -->
 <t t-name="boq_management_v19.BoqDashboard">
-    <div class="boq_dashboard o_action" style="color-scheme:light;">
+    <div class="boq_dashboard o_action" t-ref="dashboard"
+         style="overflow-y:auto;height:100%;color-scheme:light;">
 
         <!-- ── LOADING STATE ─────────────────────────────────────────── -->
         <t t-if="state.loading">
@@ -344,30 +345,30 @@
 
                         <!-- ── Summary Tab ─────────────────────────────── -->
                         <t t-if="state.activeTab === 'summary'">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <div class="border rounded p-3 text-center">
-                                        <div class="text-muted small mb-1">Total RFQ Value</div>
-                                        <div class="fw-bold fs-5 text-success">
-                                            <t t-esc="fmtCurrency(state.selectedVendor.total_value)"/>
-                                        </div>
-                                    </div>
+                            <div class="boq_totals_table ms-auto">
+                                <div class="boq_totals_row">
+                                    <span class="boq_totals_label">Untaxed Amount</span>
+                                    <span class="boq_totals_amount">
+                                        <t t-esc="fmtCurrency(state.selectedVendor.total_value)"/>
+                                    </span>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="border rounded p-3 text-center">
-                                        <div class="text-muted small mb-1">Total Tax</div>
-                                        <div class="fw-bold fs-5 text-warning">
-                                            <t t-esc="fmtCurrency(state.selectedVendor.total_tax)"/>
-                                        </div>
-                                    </div>
+                                <div class="boq_totals_row">
+                                    <span class="boq_totals_label">Taxes</span>
+                                    <span class="boq_totals_amount">
+                                        <t t-esc="fmtCurrency(state.selectedVendor.total_tax)"/>
+                                    </span>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="border rounded p-3 text-center">
-                                        <div class="text-muted small mb-1">Margin</div>
-                                        <div t-attf-class="fw-bold fs-5 {{ marginClass(state.selectedVendor.margin_percent) }}">
-                                            <t t-esc="state.selectedVendor.margin_percent"/>%
-                                        </div>
-                                    </div>
+                                <div class="boq_totals_row boq_totals_grand">
+                                    <span class="boq_totals_label fw-bold fs-6">Total</span>
+                                    <span class="boq_totals_amount fw-bold fs-6">
+                                        <t t-esc="fmtCurrency((state.selectedVendor.total_value || 0) + (state.selectedVendor.total_tax || 0))"/>
+                                    </span>
+                                </div>
+                                <div class="boq_totals_row boq_totals_margin_row">
+                                    <span class="boq_totals_label">Margin</span>
+                                    <span t-attf-class="boq_totals_amount {{ marginClass(state.selectedVendor.margin_percent) }}">
+                                        <t t-esc="state.selectedVendor.margin_percent"/>%
+                                    </span>
                                 </div>
                             </div>
                         </t>

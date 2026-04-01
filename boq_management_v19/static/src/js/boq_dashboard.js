@@ -53,6 +53,7 @@ export class BoqDashboard extends Component {
         this.orm          = useService("orm");
         this.action       = useService("action");
         this.notification = useService("notification");
+        this.dashboardRef = useRef("dashboard");   // root scroll container
         this.notebookRef  = useRef("notebook");
         this._scrollPending = false;
 
@@ -70,13 +71,18 @@ export class BoqDashboard extends Component {
         onPatched(() => {
             if (this._scrollPending && this.notebookRef.el) {
                 this._scrollPending = false;
-                const el = this.notebookRef.el;
-                // rAF lets the browser finish layout before measuring.
-                // scrollIntoView targets Odoo's .o_main_content (the real
-                // scroll container) because we no longer trap overflow on
-                // the dashboard root div.
+                const notebook = this.notebookRef.el;
                 requestAnimationFrame(() => {
-                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    const dash = this.dashboardRef.el;
+                    if (dash && dash.scrollHeight > dash.clientHeight) {
+                        // dashboard is the scroll container — use offsetTop
+                        // (position relative to offsetParent = dashboard div)
+                        // to avoid any viewport-coordinate mismatch.
+                        dash.scrollTo({ top: notebook.offsetTop - 16, behavior: "smooth" });
+                    } else {
+                        // Fallback: let the browser find the scrollable ancestor
+                        notebook.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
                 });
             }
         });
