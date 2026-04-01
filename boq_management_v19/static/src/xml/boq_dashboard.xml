@@ -6,7 +6,7 @@
     Vendor-wise RFQ summary with margin %, project stage, payment status.
 -->
 <t t-name="boq_management_v19.BoqDashboard">
-    <div class="boq_dashboard o_action" style="overflow-y:auto;height:100%;color-scheme:light;">
+    <div class="boq_dashboard o_action" style="color-scheme:light;">
 
         <!-- ── LOADING STATE ─────────────────────────────────────────── -->
         <t t-if="state.loading">
