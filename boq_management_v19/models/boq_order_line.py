@@ -162,29 +162,6 @@ class BoqOrderLine(models.Model):
     # ── Notes ─────────────────────────────────────────────────────────────
     notes = fields.Char(string='Remarks')
 
-    # ── _auto_init: guarantee M2M relation table on every startup ─────────
-    def _auto_init(self):
-        """
-        Create boq_order_line_tax_rel unconditionally after super() runs.
-
-        super()._auto_init() creates the boq_order_line table itself.
-        We must call super() FIRST so that the FK reference to
-        boq_order_line(id) is valid when we CREATE the relation table.
-        Calling super() last (the original order) raises
-        "relation boq_order_line does not exist" on a fresh install.
-        """
-        result = super()._auto_init()
-        self.env.cr.execute("""
-            CREATE TABLE IF NOT EXISTS boq_order_line_tax_rel (
-                line_id INTEGER NOT NULL
-                    REFERENCES boq_order_line(id) ON DELETE CASCADE,
-                tax_id  INTEGER NOT NULL
-                    REFERENCES account_tax(id)    ON DELETE CASCADE,
-                PRIMARY KEY (line_id, tax_id)
-            );
-        """)
-        return result
-
     # ── Computes ──────────────────────────────────────────────────────────
     @api.depends('product_id')
     def _compute_from_product(self):
