@@ -252,6 +252,21 @@ class BoqBoq(models.Model):
         currency_field='currency_id',
     )
     total_amount = fields.Monetary(
+        string='Untaxed Amount',
+        compute='_compute_totals',
+        store=True,
+        precompute=True,
+        currency_field='currency_id',
+        tracking=True,
+    )
+    total_tax = fields.Monetary(
+        string='Total Tax',
+        compute='_compute_totals',
+        store=True,
+        precompute=True,
+        currency_field='currency_id',
+    )
+    grand_total = fields.Monetary(
         string='Grand Total',
         compute='_compute_totals',
         store=True,
@@ -291,7 +306,7 @@ class BoqBoq(models.Model):
     # Domain-filtered O2M fields like `electrical_line_ids` cannot reliably
     # propagate stored-compute triggers in Odoo ORM — the inverse lookup
     # across a domain filter silently drops triggers, causing stale values.
-    @api.depends('line_ids.subtotal', 'line_ids.category_id')
+    @api.depends('line_ids.subtotal', 'line_ids.tax_amount', 'line_ids.category_id')
     def _compute_totals(self):
         for rec in self:
             lines = rec.line_ids
@@ -307,6 +322,8 @@ class BoqBoq(models.Model):
             rec.hvac_total       = cat_sum('hvac')
             rec.finishing_total  = cat_sum('finishing')
             rec.total_amount     = sum(lines.mapped('subtotal'))
+            rec.total_tax        = sum(lines.mapped('tax_amount'))
+            rec.grand_total      = rec.total_amount + rec.total_tax
             rec.line_count       = len(lines)
 
     # ── Sequence / Create ─────────────────────────────────────────────────

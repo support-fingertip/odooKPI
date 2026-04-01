@@ -71,7 +71,7 @@
                             icon="fa-money">
                         <div class="o_stat_info">
                             <span class="o_stat_value">
-                                <field name="total_amount"
+                                <field name="grand_total"
                                        widget="monetary"
                                        options="{'currency_field': 'currency_id'}"
                                        nolabel="1"/>
@@ -392,6 +392,38 @@
                     </page>
 
                 </notebook>
+
+                <!-- ── TOTALS FOOTER (like purchase order) ───────────── -->
+                <div class="row justify-content-end mt-2 mb-3">
+                    <div class="col-sm-6 col-md-5 col-lg-4">
+                        <div class="border rounded overflow-hidden">
+                            <div class="d-flex justify-content-between px-3 py-2 border-bottom">
+                                <span class="text-muted">Untaxed Amount</span>
+                                <field name="total_amount"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       readonly="1" nolabel="1"
+                                       class="fw-semibold text-end"/>
+                            </div>
+                            <div class="d-flex justify-content-between px-3 py-2 border-bottom">
+                                <span class="text-muted">Total Tax</span>
+                                <field name="total_tax"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       readonly="1" nolabel="1"
+                                       class="text-end"/>
+                            </div>
+                            <div class="d-flex justify-content-between px-3 py-2 fw-bold bg-light">
+                                <span>Total</span>
+                                <field name="grand_total"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"
+                                       readonly="1" nolabel="1"
+                                       class="text-end fs-6"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- ── hidden fields required by view expressions ─────── -->
                 <field name="currency_id"     invisible="1"/>
