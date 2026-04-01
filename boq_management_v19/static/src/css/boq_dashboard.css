@@ -2,11 +2,14 @@
    BOQ Dashboard Styles — Task 4 (Odoo 19)
    ============================================================ */
 
-/* ── Odoo action wrapper — let .o_main_content own scrolling ── */
-/* Do NOT set overflow or height here; those trap scroll inside  */
-/* a child container and the outer Odoo scroll never moves.      */
+/* ── Odoo action container ───────────────────────────────────── */
+/* overflow-y:auto + height:100% makes the dashboard itself the  */
+/* scroll container. We target it directly via dashboardRef so   */
+/* offsetTop-based scrollTo is always correct.                   */
 .o_action.boq_dashboard {
-    position: relative;
+    overflow-y: auto !important;
+    height: 100% !important;
+    position: relative !important;
 }
 
 /* ── Page wrapper ───────────────────────────────────────────── */
@@ -399,6 +402,58 @@
 .boq_vendor_notebook .fw-bold,
 .boq_vendor_notebook .fw-semibold {
     color: #212529 !important;
+}
+
+/* ── Notebook totals table (like Odoo purchase order footer) ─── */
+.boq_totals_table {
+    width: 100%;
+    max-width: 440px;
+    margin-left: auto;        /* right-align within card-body */
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff !important;
+}
+
+.boq_totals_row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 20px;
+    border-bottom: 1px solid #f0f2f5;
+    color: #212529;
+}
+
+.boq_totals_row:last-child {
+    border-bottom: none;
+}
+
+.boq_totals_label {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.boq_totals_amount {
+    font-size: 0.9rem;
+    color: #212529;
+    min-width: 120px;
+    text-align: right;
+}
+
+/* Grand total row — mimics Odoo's "Total:" row */
+.boq_totals_grand {
+    background: #f8f9fa !important;
+    border-top: 2px solid #dee2e6 !important;
+    border-bottom: 2px solid #dee2e6 !important;
+}
+
+.boq_totals_grand .boq_totals_label,
+.boq_totals_grand .boq_totals_amount {
+    color: #212529 !important;
+}
+
+.boq_totals_margin_row .boq_totals_label {
+    color: #6c757d;
 }
 
 /* ── Responsive tweaks ───────────────────────────────────────── */
