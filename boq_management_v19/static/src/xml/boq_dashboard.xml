@@ -354,6 +354,58 @@
 
                             <!-- ── Summary Tab ─────────────────────────── -->
                             <t t-if="state.activeTab === 'summary'">
+
+                                <!-- Lines loading spinner -->
+                                <t t-if="state.vendorLinesLoading">
+                                    <div class="text-center py-3">
+                                        <div class="spinner-border spinner-border-sm text-primary"/>
+                                        <span class="ms-2 text-muted small">Loading lines…</span>
+                                    </div>
+                                </t>
+
+                                <!-- BOQ Order Lines Table -->
+                                <t t-elif="state.vendorLines.length">
+                                    <div class="boq_lines_table_wrap mb-3">
+                                        <table class="boq_lines_table w-100">
+                                            <thead>
+                                                <tr>
+                                                    <th>BOQ</th>
+                                                    <th>Description</th>
+                                                    <th class="text-end">Qty</th>
+                                                    <th class="text-end">Unit Price</th>
+                                                    <th class="text-end">Cost Price</th>
+                                                    <th class="text-end">Disc %</th>
+                                                    <th class="text-end">Subtotal</th>
+                                                    <th class="text-end">Tax</th>
+                                                    <th class="text-end">Margin %</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.vendorLines" t-as="ln" t-key="ln_index">
+                                                    <tr>
+                                                        <td class="text-muted small"><t t-esc="ln.boq_name"/></td>
+                                                        <td><t t-esc="ln.product_name"/></td>
+                                                        <td class="text-end"><t t-esc="ln.qty"/></td>
+                                                        <td class="text-end"><t t-esc="fmtCurrency(ln.unit_price)"/></td>
+                                                        <td class="text-end"><t t-esc="fmtCurrency(ln.cost_price)"/></td>
+                                                        <td class="text-end"><t t-esc="ln.discount"/>%</td>
+                                                        <td class="text-end fw-semibold"><t t-esc="fmtCurrency(ln.subtotal)"/></td>
+                                                        <td class="text-end"><t t-esc="fmtCurrency(ln.tax_amount)"/></td>
+                                                        <td t-attf-class="text-end {{ marginClass(ln.margin_percent) }}">
+                                                            <t t-esc="ln.margin_percent"/>%
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </t>
+
+                                <t t-else="">
+                                    <p class="text-muted small fst-italic mb-3">No BOQ lines found for this vendor.</p>
+                                </t>
+
+                                <!-- Totals table (bottom-right, like BOQ form) -->
                                 <div class="boq_totals_table">
                                     <div class="boq_totals_row">
                                         <span class="boq_totals_label">Untaxed Amount</span>
@@ -380,6 +432,7 @@
                                         </span>
                                     </div>
                                 </div>
+
                             </t>
 
                             <!-- ── Projects Tab ────────────────────────── -->
