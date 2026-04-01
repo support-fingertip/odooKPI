@@ -173,6 +173,7 @@ class BoqOrderLine(models.Model):
         startup, eliminating the UndefinedTable crash without requiring an
         explicit module upgrade by the administrator.
         """
+        res = super()._auto_init()
         self.env.cr.execute("""
             CREATE TABLE IF NOT EXISTS boq_order_line_tax_rel (
                 line_id INTEGER NOT NULL
@@ -182,7 +183,7 @@ class BoqOrderLine(models.Model):
                 PRIMARY KEY (line_id, tax_id)
             );
         """)
-        return super()._auto_init()
+        return res
 
     # ── Computes ──────────────────────────────────────────────────────────
     @api.depends('product_id')
