@@ -2,12 +2,11 @@
    BOQ Dashboard Styles — Task 4 (Odoo 19)
    ============================================================ */
 
-/* ── Odoo action container scroll fix ───────────────────────── */
-/* Odoo 17+ wraps client actions in .o_action; make it scroll */
+/* ── Odoo action wrapper — let .o_main_content own scrolling ── */
+/* Do NOT set overflow or height here; those trap scroll inside  */
+/* a child container and the outer Odoo scroll never moves.      */
 .o_action.boq_dashboard {
-    overflow-y: auto !important;
-    height: 100% !important;
-    position: relative !important;
+    position: relative;
 }
 
 /* ── Page wrapper ───────────────────────────────────────────── */
@@ -337,7 +336,7 @@
     border: 1px solid #dee2e6 !important;
     border-radius: 14px;
     overflow: hidden;
-    scroll-margin-top: 16px;
+    scroll-margin-top: 80px;   /* clear Odoo's sticky top bar */
     background: #fff !important;
     color: #212529 !important;
     animation: boq_notebook_in 0.22s ease;

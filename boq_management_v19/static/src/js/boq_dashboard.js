@@ -71,22 +71,12 @@ export class BoqDashboard extends Component {
             if (this._scrollPending && this.notebookRef.el) {
                 this._scrollPending = false;
                 const el = this.notebookRef.el;
-                // Use rAF so the browser completes layout before we measure/scroll
+                // rAF lets the browser finish layout before measuring.
+                // scrollIntoView targets Odoo's .o_main_content (the real
+                // scroll container) because we no longer trap overflow on
+                // the dashboard root div.
                 requestAnimationFrame(() => {
-                    // Walk up to find the real scroll container (works inside Odoo's nested frames)
-                    let container = el.parentElement;
-                    while (container && container !== document.body) {
-                        const { overflowY } = window.getComputedStyle(container);
-                        if (overflowY === "auto" || overflowY === "scroll") break;
-                        container = container.parentElement;
-                    }
-                    if (container && container !== document.body) {
-                        const cRect = container.getBoundingClientRect();
-                        const eRect = el.getBoundingClientRect();
-                        container.scrollBy({ top: eRect.top - cRect.top - 16, behavior: "smooth" });
-                    } else {
-                        el.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }
+                    el.scrollIntoView({ behavior: "smooth", block: "start" });
                 });
             }
         });
