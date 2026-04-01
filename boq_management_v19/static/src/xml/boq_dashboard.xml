@@ -155,14 +155,32 @@
                            style="background-color:#fff;color:#212529;border-color:#ced4da;"
                            placeholder="Search vendors…"
                            t-model="state.filterVendor"/>
-                    <t t-if="state.filterVendor">
-                        <button class="boq_filter_clear btn btn-sm p-0"
-                                t-on-click="clearFilter"
-                                title="Clear filter">
-                            <i class="fa fa-times-circle text-muted"/>
-                        </button>
-                    </t>
+                    <button t-attf-class="boq_filter_clear btn btn-sm p-0 {{ state.filterVendor ? '' : 'invisible' }}"
+                            t-on-click="clearFilter"
+                            title="Clear filter">
+                        <i class="fa fa-times-circle text-muted"/>
+                    </button>
                 </div>
+            </div>
+
+            <!-- Vendor totals bar (like standard Odoo list footer) -->
+            <div class="boq_vendor_totals_bar px-4 pb-3 d-flex flex-wrap gap-3 align-items-center">
+                <span class="boq_totals_chip">
+                    <i class="fa fa-building-o me-1"/>
+                    <t t-esc="vendorTotals.count"/> vendor<t t-if="vendorTotals.count !== 1">s</t>
+                    <t t-if="state.filterVendor"> of <t t-esc="state.vendors.length"/></t>
+                </span>
+                <span class="boq_totals_chip">
+                    <i class="fa fa-shopping-cart me-1"/>
+                    <t t-esc="vendorTotals.totalRfqs"/> RFQ<t t-if="vendorTotals.totalRfqs !== 1">s</t>
+                </span>
+                <span class="boq_totals_chip boq_totals_value">
+                    <i class="fa fa-money me-1"/>
+                    Total: <strong><t t-esc="fmtCurrency(vendorTotals.totalValue)"/></strong>
+                </span>
+                <span class="boq_totals_chip">
+                    Tax: <t t-esc="fmtCurrency(vendorTotals.totalTax)"/>
+                </span>
             </div>
 
             <!-- No vendors message -->
@@ -187,8 +205,13 @@
 
                         <!-- Card Header -->
                         <div class="boq_vendor_header">
-                            <div class="boq_vendor_avatar">
-                                <t t-esc="(vendor.vendor_name || '?').charAt(0).toUpperCase()"/>
+                            <div t-attf-class="boq_vendor_avatar {{ state.selectedVendor and state.selectedVendor.vendor_id === vendor.vendor_id ? 'boq_vendor_avatar_active' : '' }}">
+                                <t t-if="state.selectedVendor and state.selectedVendor.vendor_id === vendor.vendor_id">
+                                    <i class="fa fa-check"/>
+                                </t>
+                                <t t-else="">
+                                    <t t-esc="(vendor.vendor_name || '?').charAt(0).toUpperCase()"/>
+                                </t>
                             </div>
                             <div class="boq_vendor_info">
                                 <div class="boq_vendor_name fw-bold">

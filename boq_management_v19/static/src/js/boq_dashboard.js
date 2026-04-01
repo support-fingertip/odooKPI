@@ -70,7 +70,24 @@ export class BoqDashboard extends Component {
         onPatched(() => {
             if (this._scrollPending && this.notebookRef.el) {
                 this._scrollPending = false;
-                this.notebookRef.el.scrollIntoView({ behavior: "smooth", block: "start" });
+                const el = this.notebookRef.el;
+                // Use rAF so the browser completes layout before we measure/scroll
+                requestAnimationFrame(() => {
+                    // Walk up to find the real scroll container (works inside Odoo's nested frames)
+                    let container = el.parentElement;
+                    while (container && container !== document.body) {
+                        const { overflowY } = window.getComputedStyle(container);
+                        if (overflowY === "auto" || overflowY === "scroll") break;
+                        container = container.parentElement;
+                    }
+                    if (container && container !== document.body) {
+                        const cRect = container.getBoundingClientRect();
+                        const eRect = el.getBoundingClientRect();
+                        container.scrollBy({ top: eRect.top - cRect.top - 16, behavior: "smooth" });
+                    } else {
+                        el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                });
             }
         });
     }
@@ -142,6 +159,14 @@ export class BoqDashboard extends Component {
         return this.state.vendors.filter(v =>
             (v.vendor_name || "").toLowerCase().includes(q)
         );
+    }
+
+    get vendorTotals() {
+        const vendors = this.filteredVendors;
+        const totalValue = vendors.reduce((s, v) => s + (v.total_value || 0), 0);
+        const totalTax   = vendors.reduce((s, v) => s + (v.total_tax   || 0), 0);
+        const totalRfqs  = vendors.reduce((s, v) => s + (v.rfq_count   || 0), 0);
+        return { totalValue, totalTax, totalRfqs, count: vendors.length };
     }
 
     get currencySymbol() {

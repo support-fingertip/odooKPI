@@ -213,14 +213,69 @@
 
 /* ── Selected vendor card ────────────────────────────────────── */
 .boq_vendor_card_active {
-    border-color: #0d6efd !important;
-    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.18), 0 6px 24px rgba(0, 0, 0, 0.1);
+    border: 2px solid #0d6efd !important;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.20), 0 8px 28px rgba(0, 0, 0, 0.12) !important;
     transform: translateY(-3px);
+    background: #f5f8ff !important;
+    position: relative;
+}
+
+/* Accent stripe along the top of the selected card */
+.boq_vendor_card_active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #0d6efd, #6610f2);
+    border-radius: 14px 14px 0 0;
 }
 
 .boq_vendor_card_active .boq_vendor_click_hint {
     opacity: 1;
     color: #0d6efd;
+}
+
+/* Active avatar (shows checkmark) */
+.boq_vendor_avatar_active {
+    background: linear-gradient(135deg, #0d6efd, #6610f2) !important;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.3);
+    animation: boq_avatar_pop 0.2s ease;
+}
+
+@keyframes boq_avatar_pop {
+    from { transform: scale(0.85); }
+    to   { transform: scale(1); }
+}
+
+/* ── Vendor totals bar ───────────────────────────────────────── */
+.boq_vendor_totals_bar {
+    border-top: 1px solid #e9ecef;
+    border-bottom: 1px solid #e9ecef;
+    background: #fff !important;
+    font-size: 0.82rem;
+    color: #495057;
+    margin-bottom: 4px;
+}
+
+.boq_totals_chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: #f0f2f5;
+    color: #495057;
+    font-size: 0.8rem;
+    border: 1px solid #e2e6ea;
+}
+
+.boq_totals_value {
+    background: #e8f0fe;
+    color: #0d6efd;
+    border-color: #c8d8fb;
+    font-weight: 500;
 }
 
 /* ── Vendor filter widget ────────────────────────────────────── */
