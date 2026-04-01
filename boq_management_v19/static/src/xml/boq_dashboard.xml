@@ -522,19 +522,19 @@
                                     <div class="boq_totals_row">
                                         <span class="boq_totals_label">Untaxed Amount</span>
                                         <span class="boq_totals_amount">
-                                            <t t-esc="fmtCurrency(state.selectedVendor.total_value)"/>
+                                            <t t-esc="fmtCurrency(vendorBoqSummaryTotals.subtotal)"/>
                                         </span>
                                     </div>
                                     <div class="boq_totals_row">
                                         <span class="boq_totals_label">Taxes</span>
                                         <span class="boq_totals_amount">
-                                            <t t-esc="fmtCurrency(state.selectedVendor.total_tax)"/>
+                                            <t t-esc="fmtCurrency(vendorBoqSummaryTotals.tax)"/>
                                         </span>
                                     </div>
                                     <div class="boq_totals_row boq_totals_grand">
                                         <span class="boq_totals_label fw-bold fs-6">Total</span>
                                         <span class="boq_totals_amount fw-bold fs-6">
-                                            <t t-esc="fmtCurrency((state.selectedVendor.total_value || 0) + (state.selectedVendor.total_tax || 0))"/>
+                                            <t t-esc="fmtCurrency(vendorBoqSummaryTotals.subtotal + vendorBoqSummaryTotals.tax)"/>
                                         </span>
                                     </div>
                                     <div class="boq_totals_row boq_totals_margin_row">
