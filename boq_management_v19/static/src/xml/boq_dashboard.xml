@@ -355,57 +355,127 @@
                             <!-- ── Summary Tab ─────────────────────────── -->
                             <t t-if="state.activeTab === 'summary'">
 
-                                <!-- Lines loading spinner -->
-                                <t t-if="state.vendorLinesLoading">
-                                    <div class="text-center py-3">
-                                        <div class="spinner-border spinner-border-sm text-primary"/>
-                                        <span class="ms-2 text-muted small">Loading lines…</span>
+                                <!-- ① Metric chips row -->
+                                <div class="boq_summary_metrics d-flex flex-wrap gap-3 mb-4">
+                                    <div class="boq_summary_metric">
+                                        <div class="boq_summary_metric_icon bg-primary-subtle text-primary">
+                                            <i class="fa fa-shopping-cart"/>
+                                        </div>
+                                        <div>
+                                            <div class="boq_summary_metric_value">
+                                                <t t-esc="state.selectedVendor.rfq_count"/>
+                                            </div>
+                                            <div class="boq_summary_metric_label">RFQs</div>
+                                        </div>
                                     </div>
-                                </t>
+                                    <div class="boq_summary_metric">
+                                        <div class="boq_summary_metric_icon bg-success-subtle text-success">
+                                            <i class="fa fa-money"/>
+                                        </div>
+                                        <div>
+                                            <div class="boq_summary_metric_value small">
+                                                <t t-esc="fmtCurrency(state.selectedVendor.total_value)"/>
+                                            </div>
+                                            <div class="boq_summary_metric_label">Untaxed Amount</div>
+                                        </div>
+                                    </div>
+                                    <div class="boq_summary_metric">
+                                        <div class="boq_summary_metric_icon bg-warning-subtle text-warning">
+                                            <i class="fa fa-percent"/>
+                                        </div>
+                                        <div>
+                                            <div class="boq_summary_metric_value small">
+                                                <t t-esc="fmtCurrency(state.selectedVendor.total_tax)"/>
+                                            </div>
+                                            <div class="boq_summary_metric_label">Tax</div>
+                                        </div>
+                                    </div>
+                                    <div class="boq_summary_metric boq_summary_metric_total">
+                                        <div class="boq_summary_metric_icon bg-info-subtle text-info">
+                                            <i class="fa fa-calculator"/>
+                                        </div>
+                                        <div>
+                                            <div class="boq_summary_metric_value small">
+                                                <t t-esc="fmtCurrency((state.selectedVendor.total_value || 0) + (state.selectedVendor.total_tax || 0))"/>
+                                            </div>
+                                            <div class="boq_summary_metric_label">Total</div>
+                                        </div>
+                                    </div>
+                                    <div class="boq_summary_metric ms-auto">
+                                        <div t-attf-class="boq_summary_metric_icon {{ marginClass(state.selectedVendor.margin_percent) === 'boq_margin_high' ? 'bg-success-subtle' : marginClass(state.selectedVendor.margin_percent) === 'boq_margin_neg' ? 'bg-danger-subtle' : 'bg-secondary-subtle' }}">
+                                            <i t-attf-class="fa fa-line-chart {{ marginClass(state.selectedVendor.margin_percent) }}"/>
+                                        </div>
+                                        <div>
+                                            <div t-attf-class="boq_summary_metric_value {{ marginClass(state.selectedVendor.margin_percent) }}">
+                                                <t t-esc="state.selectedVendor.margin_percent"/>%
+                                            </div>
+                                            <div class="boq_summary_metric_label">Margin</div>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                <!-- BOQ Order Lines Table -->
-                                <t t-elif="state.vendorLines.length">
-                                    <div class="boq_lines_table_wrap mb-3">
-                                        <table class="boq_lines_table w-100">
-                                            <thead>
-                                                <tr>
-                                                    <th>BOQ</th>
-                                                    <th>Description</th>
-                                                    <th class="text-end">Qty</th>
-                                                    <th class="text-end">Unit Price</th>
-                                                    <th class="text-end">Cost Price</th>
-                                                    <th class="text-end">Disc %</th>
-                                                    <th class="text-end">Subtotal</th>
-                                                    <th class="text-end">Tax</th>
-                                                    <th class="text-end">Margin %</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <t t-foreach="state.vendorLines" t-as="ln" t-key="ln_index">
+                                <!-- ② BOQ breakdown table -->
+                                <div class="mb-3">
+                                    <div class="boq_summary_section_title mb-2">
+                                        <i class="fa fa-calculator me-1 text-primary"/>
+                                        BOQ Breakdown
+                                    </div>
+
+                                    <!-- Loading -->
+                                    <t t-if="state.vendorLinesLoading">
+                                        <div class="text-center py-3">
+                                            <div class="spinner-border spinner-border-sm text-primary"/>
+                                            <span class="ms-2 text-muted small">Loading…</span>
+                                        </div>
+                                    </t>
+
+                                    <!-- Grouped table -->
+                                    <t t-elif="vendorBoqSummary.length">
+                                        <div class="boq_summary_table_wrap">
+                                            <table class="boq_summary_table w-100">
+                                                <thead>
                                                     <tr>
-                                                        <td class="text-muted small"><t t-esc="ln.boq_name"/></td>
-                                                        <td><t t-esc="ln.product_name"/></td>
-                                                        <td class="text-end"><t t-esc="ln.qty"/></td>
-                                                        <td class="text-end"><t t-esc="fmtCurrency(ln.unit_price)"/></td>
-                                                        <td class="text-end"><t t-esc="fmtCurrency(ln.cost_price)"/></td>
-                                                        <td class="text-end"><t t-esc="ln.discount"/>%</td>
-                                                        <td class="text-end fw-semibold"><t t-esc="fmtCurrency(ln.subtotal)"/></td>
-                                                        <td class="text-end"><t t-esc="fmtCurrency(ln.tax_amount)"/></td>
-                                                        <td t-attf-class="text-end {{ marginClass(ln.margin_percent) }}">
-                                                            <t t-esc="ln.margin_percent"/>%
-                                                        </td>
+                                                        <th>BOQ Reference</th>
+                                                        <th class="text-center">Items</th>
+                                                        <th class="text-end">Subtotal</th>
+                                                        <th class="text-end">Tax</th>
+                                                        <th class="text-end">Total</th>
                                                     </tr>
-                                                </t>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </t>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-foreach="vendorBoqSummary" t-as="grp" t-key="grp_index">
+                                                        <tr>
+                                                            <td>
+                                                                <i class="fa fa-file-text-o me-1 text-muted"/>
+                                                                <t t-esc="grp.boq_name"/>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <span class="badge bg-secondary rounded-pill">
+                                                                    <t t-esc="grp.items"/>
+                                                                </span>
+                                                            </td>
+                                                            <td class="text-end fw-semibold">
+                                                                <t t-esc="fmtCurrency(grp.subtotal)"/>
+                                                            </td>
+                                                            <td class="text-end text-muted">
+                                                                <t t-esc="fmtCurrency(grp.tax)"/>
+                                                            </td>
+                                                            <td class="text-end fw-bold">
+                                                                <t t-esc="fmtCurrency(grp.subtotal + grp.tax)"/>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </t>
 
-                                <t t-else="">
-                                    <p class="text-muted small fst-italic mb-3">No BOQ lines found for this vendor.</p>
-                                </t>
+                                    <t t-else="">
+                                        <p class="text-muted small fst-italic">No BOQ lines found for this vendor.</p>
+                                    </t>
+                                </div>
 
-                                <!-- Totals table (bottom-right, like BOQ form) -->
+                                <!-- ③ Totals footer (right-aligned, like Odoo PO) -->
                                 <div class="boq_totals_table">
                                     <div class="boq_totals_row">
                                         <span class="boq_totals_label">Untaxed Amount</span>

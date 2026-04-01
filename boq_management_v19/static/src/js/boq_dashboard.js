@@ -188,6 +188,21 @@ export class BoqDashboard extends Component {
         return formatCurrency(val, this.currencySymbol, this.currencyPosition);
     }
 
+    // ── Grouped BOQ summary for the Summary tab ─────────────────────────────
+    get vendorBoqSummary() {
+        const groups = {};
+        for (const ln of this.state.vendorLines) {
+            const key = ln.boq_name || "—";
+            if (!groups[key]) {
+                groups[key] = { boq_name: key, items: 0, subtotal: 0, tax: 0 };
+            }
+            groups[key].items++;
+            groups[key].subtotal += ln.subtotal || 0;
+            groups[key].tax      += ln.tax_amount || 0;
+        }
+        return Object.values(groups).sort((a, b) => a.boq_name.localeCompare(b.boq_name));
+    }
+
     marginClass(pct) { return marginClass(pct); }
     stateBadgeClass(state) { return stateBadgeClass(state); }
 
