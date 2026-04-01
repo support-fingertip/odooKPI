@@ -228,57 +228,51 @@ class BoqBoq(models.Model):
 
     # ── Totals ────────────────────────────────────────────────────────────
     electrical_total = fields.Monetary(
-        compute='_compute_totals', store=True, precompute=True,
+        compute='_compute_totals', store=False,
         currency_field='currency_id',
     )
     civil_total = fields.Monetary(
-        compute='_compute_totals', store=True, precompute=True,
+        compute='_compute_totals', store=False,
         currency_field='currency_id',
     )
     lighting_total = fields.Monetary(
-        compute='_compute_totals', store=True, precompute=True,
+        compute='_compute_totals', store=False,
         currency_field='currency_id',
     )
     plumbing_total = fields.Monetary(
-        compute='_compute_totals', store=True, precompute=True,
+        compute='_compute_totals', store=False,
         currency_field='currency_id',
     )
     hvac_total = fields.Monetary(
-        compute='_compute_totals', store=True, precompute=True,
+        compute='_compute_totals', store=False,
         currency_field='currency_id',
     )
     finishing_total = fields.Monetary(
-        compute='_compute_totals', store=True, precompute=True,
+        compute='_compute_totals', store=False,
         currency_field='currency_id',
     )
     total_amount = fields.Monetary(
         string='Untaxed Amount',
         compute='_compute_totals',
-        store=True,
-        precompute=True,
+        store=False,
         currency_field='currency_id',
-        tracking=True,
     )
     total_tax = fields.Monetary(
         string='Total Tax',
         compute='_compute_totals',
-        store=True,
-        precompute=True,
+        store=False,
         currency_field='currency_id',
     )
     grand_total = fields.Monetary(
         string='Grand Total',
         compute='_compute_totals',
-        store=True,
-        precompute=True,
+        store=False,
         currency_field='currency_id',
-        tracking=True,
     )
     line_count = fields.Integer(
         string='Lines',
         compute='_compute_totals',
-        store=True,
-        precompute=True,
+        store=False,
     )
 
     # ── Linked Purchase RFQs ──────────────────────────────────────────────
