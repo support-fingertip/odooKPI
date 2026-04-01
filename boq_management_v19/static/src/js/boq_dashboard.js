@@ -65,6 +65,8 @@ export class BoqDashboard extends Component {
             filterVendor: "",
             selectedVendor: null,
             activeTab: "summary",
+            vendorLines: [],
+            vendorLinesLoading: false,
         });
 
         onWillStart(() => this._loadAll());
@@ -116,10 +118,22 @@ export class BoqDashboard extends Component {
         this.action.doAction("boq_management_v19.action_boq_rfq_list");
     }
 
-    selectVendor(vendor) {
+    async selectVendor(vendor) {
         this.state.selectedVendor = vendor;
         this.state.activeTab = "summary";
+        this.state.vendorLines = [];
+        this.state.vendorLinesLoading = true;
         this._scrollPending = true;
+        try {
+            const lines = await this.orm.call(
+                "boq.boq", "get_vendor_boq_lines", [vendor.vendor_id]
+            );
+            this.state.vendorLines = lines;
+        } catch (_) {
+            this.state.vendorLines = [];
+        } finally {
+            this.state.vendorLinesLoading = false;
+        }
     }
 
     closeNotebook() {

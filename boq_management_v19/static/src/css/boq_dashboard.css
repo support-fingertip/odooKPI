@@ -439,6 +439,50 @@
     color: #212529 !important;
 }
 
+/* ── BOQ lines table in Summary tab ─────────────────────────── */
+.boq_lines_table_wrap {
+    overflow-x: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+}
+
+.boq_lines_table {
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    color: #212529;
+    min-width: 700px;
+}
+
+.boq_lines_table thead tr {
+    background: #f0f2f5;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.boq_lines_table th {
+    padding: 8px 12px;
+    font-weight: 600;
+    color: #495057;
+    white-space: nowrap;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.boq_lines_table td {
+    padding: 7px 12px;
+    border-bottom: 1px solid #f0f2f5;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.boq_lines_table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.boq_lines_table tbody tr:hover td {
+    background: #f8f9ff;
+}
+
 /* ── Notebook totals table (like Odoo purchase order footer) ─── */
 .boq_totals_table {
     width: 100%;

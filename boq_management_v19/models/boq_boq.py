@@ -600,3 +600,35 @@ class BoqBoq(models.Model):
         # Sort by total_value desc
         result.sort(key=lambda x: x['total_value'], reverse=True)
         return result
+
+    @api.model
+    def get_vendor_boq_lines(self, vendor_id):
+        """
+        Return all BOQ order lines assigned to vendor_id so the dashboard
+        Summary tab can show a line-level breakdown (like the BOQ form view).
+        """
+        partner = self.env['res.partner'].browse(vendor_id)
+        if not partner.exists():
+            return []
+
+        company_domain = [('company_id', '=', self.env.company.id)]
+        boqs = self.search(company_domain)
+
+        rows = []
+        for boq in boqs:
+            for line in boq.line_ids:
+                if partner not in line.vendor_ids:
+                    continue
+                rows.append({
+                    'boq_name':      boq.name or '—',
+                    'product_name':  line.product_name or (line.product_id.name if line.product_id else '—'),
+                    'qty':           line.qty,
+                    'unit_price':    line.unit_price,
+                    'cost_price':    line.cost_price,
+                    'discount':      line.discount,
+                    'subtotal':      line.subtotal,
+                    'tax_amount':    line.tax_amount,
+                    'total_value':   line.total_value,
+                    'margin_percent': round(line.margin_percent, 2),
+                })
+        return rows
