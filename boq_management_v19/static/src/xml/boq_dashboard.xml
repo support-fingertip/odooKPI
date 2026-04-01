@@ -140,7 +140,7 @@
 
                 <!-- ── STATUS BADGES ──────────────────────────────── -->
                 <div class="d-flex flex-wrap gap-2 px-4 pb-3">
-                    <span class="fw-semibold text-muted small me-2 align-self-center">Status breakdown:</span>
+                    <span class="fw-semibold small me-2 align-self-center boq_section_label">Status breakdown:</span>
                     <t t-foreach="stateSummary" t-as="s" t-key="s.key">
                         <span t-attf-class="badge rounded-pill {{ s.cls }} px-3 py-2">
                             <t t-esc="s.label"/>: <t t-esc="s.val"/>
@@ -152,7 +152,7 @@
                      ║  VENDOR SUMMARY SECTION                               ║
                      ╚═══════════════════════════════════════════════════════╝ -->
                 <div class="px-4 pb-2 d-flex align-items-center justify-content-between">
-                    <h5 class="mb-0 fw-bold">
+                    <h5 class="mb-0 fw-bold boq_section_title">
                         <i class="fa fa-users me-2 text-primary"/>
                         Vendor-wise RFQ Summary
                         <span class="badge bg-secondary rounded-pill ms-2 small">
@@ -274,11 +274,16 @@
                                 </div>
                             </div>
 
-                            <!-- Click hint -->
-                            <div class="boq_vendor_click_hint text-end">
-                                <small class="text-primary">
-                                    <i class="fa fa-arrow-right"/> View Details
+                            <!-- View Details → opens vendor RFQ list -->
+                            <div class="boq_vendor_click_hint d-flex justify-content-between align-items-center">
+                                <small class="text-muted fst-italic" style="font-size:0.72rem;">
+                                    Click card to preview
                                 </small>
+                                <button class="btn btn-sm btn-outline-primary boq_view_details_btn"
+                                        t-on-click.stop="() => this.openVendorRfqs(vendor.vendor_id)"
+                                        title="Open vendor RFQs">
+                                    <i class="fa fa-external-link me-1"/>View Details
+                                </button>
                             </div>
 
                         </div>
