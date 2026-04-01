@@ -305,28 +305,54 @@ class BoqBoq(models.Model):
     # IMPORTANT: Only depend on stored `line_ids.*` fields.
     # tax_amount on boq.order.line is store=False — using a non-stored computed
     # field in @api.depends causes Odoo ORM to silently drop ALL triggers in the
-    # decorator, making every total show 0. Use tax_ids (stored M2M) instead;
-    # tax_amount is still evaluated in the body via .mapped().
+    # decorator, making every total show 0.  We therefore compute taxes inline
+    # here using tax_ids.compute_all() directly, mirroring _compute_total_value
+    # on the line, so no non-stored field is ever accessed through mapped().
     @api.depends('line_ids.subtotal', 'line_ids.tax_ids', 'line_ids.qty',
-                 'line_ids.unit_price', 'line_ids.discount', 'line_ids.category_id')
+                 'line_ids.unit_price', 'line_ids.discount', 'line_ids.category_id',
+                 'partner_id')
     def _compute_totals(self):
         for rec in self:
             lines = rec.line_ids
+
             def cat_sum(code):
                 return sum(
                     l.subtotal for l in lines
                     if l.category_id and l.category_id.code == code
                 )
+
             rec.electrical_total = cat_sum('electrical')
             rec.civil_total      = cat_sum('civil')
             rec.lighting_total   = cat_sum('lighting')
             rec.plumbing_total   = cat_sum('plumbing')
             rec.hvac_total       = cat_sum('hvac')
             rec.finishing_total  = cat_sum('finishing')
-            rec.total_amount     = sum(lines.mapped('subtotal'))
-            rec.total_tax        = sum(lines.mapped('tax_amount'))
-            rec.grand_total      = rec.total_amount + rec.total_tax
-            rec.line_count       = len(lines)
+
+            subtotal = sum(lines.mapped('subtotal'))
+
+            # ── Compute taxes inline (avoid non-stored tax_amount) ──────
+            # Mirrors _compute_total_value logic on boq.order.line.
+            tax_total = 0.0
+            for line in lines:
+                if line.tax_ids and (line.qty or line.unit_price):
+                    price_after_disc = line.unit_price * (
+                        1.0 - (line.discount or 0.0) / 100.0
+                    )
+                    taxes = line.tax_ids.compute_all(
+                        price_after_disc,
+                        currency=line.currency_id or None,
+                        quantity=line.qty,
+                        product=line.product_id or None,
+                        partner=rec.partner_id or None,
+                    )
+                    tax_total += (
+                        taxes['total_included'] - taxes['total_excluded']
+                    )
+
+            rec.total_amount = subtotal
+            rec.total_tax    = tax_total
+            rec.grand_total  = subtotal + tax_total
+            rec.line_count   = len(lines)
 
     # ── Sequence / Create ─────────────────────────────────────────────────
     @api.model_create_multi
@@ -503,12 +529,16 @@ class BoqBoq(models.Model):
             state_counts[state] = len(boqs.filtered(lambda b, s=state: b.state == s))
 
         total_value = sum(boqs.mapped('total_amount'))
+        total_tax   = sum(boqs.mapped('total_tax'))
+        grand_total = sum(boqs.mapped('grand_total'))
         rfq_total = sum(rfqs.mapped('amount_total'))
         rfq_tax = sum(rfqs.mapped('amount_tax'))
 
         return {
             'total_boqs': len(boqs),
             'total_value': total_value,
+            'total_tax': total_tax,
+            'grand_total': grand_total,
             'state_counts': state_counts,
             'total_rfqs': len(rfqs),
             'rfq_draft': len(rfqs.filtered(lambda r: r.state in ('draft', 'sent'))),

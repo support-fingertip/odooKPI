@@ -110,12 +110,28 @@ export class BoqDashboard extends Component {
     }
 
     // ── Navigation helpers ──────────────────────────────────────────────────
+    // NOTE: Passing full action objects (with explicit `views`) avoids the
+    //       Odoo 19 _preprocessAction bug where string XML-ID resolution can
+    //       return an action dict that lacks the `views` property, causing:
+    //       TypeError: can't access property "map", action.views is undefined
     openAllBoqs() {
-        this.action.doAction("boq_management_v19.action_boq_boq");
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Bills of Quantities",
+            res_model: "boq.boq",
+            views: [[false, "list"], [false, "kanban"], [false, "form"]],
+            target: "current",
+        });
     }
 
     openRfqs() {
-        this.action.doAction("boq_management_v19.action_boq_rfq_list");
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "RFQs from BOQ",
+            res_model: "purchase.order",
+            views: [[false, "list"], [false, "form"]],
+            target: "current",
+        });
     }
 
     async selectVendor(vendor) {
@@ -153,8 +169,8 @@ export class BoqDashboard extends Component {
             type: "ir.actions.act_window",
             name: "RFQs",
             res_model: "purchase.order",
-            view_mode: "list,form",
-            domain: [["partner_id", "=", vendorId], ["boq_id", "!=", false]],
+            views: [[false, "list"], [false, "form"]],
+            domain: [["partner_id", "=", vendorId]],
             target: "current",
         });
     }
@@ -201,6 +217,16 @@ export class BoqDashboard extends Component {
             groups[key].tax      += ln.tax_amount || 0;
         }
         return Object.values(groups).sort((a, b) => a.boq_name.localeCompare(b.boq_name));
+    }
+
+    get vendorBoqSummaryTotals() {
+        return this.vendorBoqSummary.reduce(
+            (acc, g) => ({
+                subtotal: acc.subtotal + g.subtotal,
+                tax:      acc.tax      + g.tax,
+            }),
+            { subtotal: 0, tax: 0 }
+        );
     }
 
     marginClass(pct) { return marginClass(pct); }
