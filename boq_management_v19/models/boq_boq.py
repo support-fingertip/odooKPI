@@ -749,7 +749,7 @@ class BoqBoq(models.Model):
             try:
                 rated_pos = self.env['purchase.order'].search([
                     ('partner_id', 'in', vendor_partner_ids),
-                    ('vendor_rating', '!=', False),
+                    ('vendor_rating', 'in', ['1', '2', '3', '4', '5']),
                 ])
                 rating_buckets = {}
                 for rpo in rated_pos:
@@ -903,7 +903,7 @@ class BoqBoq(models.Model):
         try:
             rated_pos = self.env['purchase.order'].search([
                 ('partner_id', '=', vendor_id),
-                ('vendor_rating', '!=', False),
+                ('vendor_rating', 'in', ['1', '2', '3', '4', '5']),
             ], order='vendor_rating_date desc, id desc')
         except Exception:
             return []
