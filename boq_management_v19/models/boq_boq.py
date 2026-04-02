@@ -882,3 +882,90 @@ class BoqBoq(models.Model):
                     'margin_percent': margin_pct,
                 })
         return rows
+
+    @api.model
+    def get_vendor_po_ratings(self, vendor_id):
+        """
+        Return all rated Purchase Orders for vendor_id.
+
+        Used by the BOQ Dashboard → vendor notebook → Ratings tab to show
+        a full per-PO rating history (Task 3 — Place 3: BOQ Dashboard).
+
+        Every section is wrapped in try/except so missing columns never crash.
+        """
+        try:
+            partner = self.env['res.partner'].browse(vendor_id)
+            if not partner.exists():
+                return []
+        except Exception:
+            return []
+
+        try:
+            rated_pos = self.env['purchase.order'].search([
+                ('partner_id', '=', vendor_id),
+                ('vendor_rating', '!=', False),
+            ], order='vendor_rating_date desc, id desc')
+        except Exception:
+            return []
+
+        try:
+            currency_symbol   = self.env.company.currency_id.symbol or '$'
+            currency_position = self.env.company.currency_id.position or 'before'
+        except Exception:
+            currency_symbol   = '$'
+            currency_position = 'before'
+
+        _rating_labels = {
+            '1': '1 — Poor',
+            '2': '2 — Fair',
+            '3': '3 — Good',
+            '4': '4 — Very Good',
+            '5': '5 — Excellent',
+        }
+        _po_state_labels = {
+            'draft':      'RFQ',
+            'sent':       'Sent',
+            'to approve': 'To Approve',
+            'purchase':   'Purchase Order',
+            'done':       'Done',
+            'cancel':     'Cancelled',
+        }
+
+        rows = []
+        for po in rated_pos:
+            try:
+                rating_val = po.vendor_rating or ''
+                filled = int(rating_val) if rating_val else 0
+                rating_display = '★' * filled + '☆' * (5 - filled)
+            except Exception:
+                rating_val     = ''
+                rating_display = '—'
+
+            try:
+                rated_by_name = po.vendor_rated_by.name or '—'
+            except Exception:
+                rated_by_name = '—'
+
+            try:
+                rating_date = (
+                    po.vendor_rating_date.strftime('%Y-%m-%d')
+                    if po.vendor_rating_date else '—'
+                )
+            except Exception:
+                rating_date = '—'
+
+            rows.append({
+                'po_id':          po.id,
+                'po_name':        po.name or '—',
+                'po_state':       _po_state_labels.get(po.state, po.state),
+                'amount_total':   po.amount_total or 0.0,
+                'rating':         rating_val,
+                'rating_label':   _rating_labels.get(rating_val, '—'),
+                'rating_display': rating_display,
+                'rating_date':    rating_date,
+                'rated_by_name':  rated_by_name,
+                'comment':        po.vendor_rating_comment or '',
+                'currency_symbol':   currency_symbol,
+                'currency_position': currency_position,
+            })
+        return rows

@@ -67,6 +67,9 @@ export class BoqDashboard extends Component {
             activeTab: "summary",
             vendorLines: [],
             vendorLinesLoading: false,
+            // Task 3 — Place 3: per-PO rating history for selected vendor
+            vendorRatings: [],
+            vendorRatingsLoading: false,
         });
 
         onWillStart(() => this._loadAll());
@@ -138,22 +141,30 @@ export class BoqDashboard extends Component {
         this.state.selectedVendor = vendor;
         this.state.activeTab = "summary";
         this.state.vendorLines = [];
+        this.state.vendorRatings = [];
         this.state.vendorLinesLoading = true;
+        this.state.vendorRatingsLoading = true;
         this._scrollPending = true;
         try {
-            const lines = await this.orm.call(
-                "boq.boq", "get_vendor_boq_lines", [vendor.vendor_id]
-            );
-            this.state.vendorLines = lines;
+            // Fetch BOQ lines and PO rating history in parallel (Task 3 — Place 3)
+            const [lines, ratings] = await Promise.all([
+                this.orm.call("boq.boq", "get_vendor_boq_lines",  [vendor.vendor_id]),
+                this.orm.call("boq.boq", "get_vendor_po_ratings", [vendor.vendor_id]),
+            ]);
+            this.state.vendorLines   = lines;
+            this.state.vendorRatings = ratings;
         } catch (_) {
-            this.state.vendorLines = [];
+            this.state.vendorLines   = [];
+            this.state.vendorRatings = [];
         } finally {
-            this.state.vendorLinesLoading = false;
+            this.state.vendorLinesLoading   = false;
+            this.state.vendorRatingsLoading = false;
         }
     }
 
     closeNotebook() {
-        this.state.selectedVendor = null;
+        this.state.selectedVendor   = null;
+        this.state.vendorRatings    = [];
     }
 
     clearFilter() {

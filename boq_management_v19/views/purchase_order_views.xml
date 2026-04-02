@@ -38,8 +38,16 @@
                  VENDOR RATING SECTION  (Task 1 + Task 3)
                  Visible: after payment is released
                  Editable: BOQ Manager group only
+
+                 payment_released is declared as a hidden field BEFORE the
+                 conditional div so Odoo 19 always includes it in the
+                 initial fields fetch, ensuring the invisible condition on
+                 the wrapper div is evaluated correctly on first render.
                  ══════════════════════════════════════════════════════════ -->
             <xpath expr="//chatter" position="before">
+                <!-- Sentinel: always fetched, drives the rating section visibility -->
+                <field name="payment_released" invisible="1"/>
+
                 <div class="o_group" invisible="not payment_released"
                      style="border-top: 2px solid #dee2e6; margin-top: 12px; padding-top: 12px;">
 
@@ -98,8 +106,6 @@
                                groups="!boq_management_v19.group_boq_manager"/>
                     </group>
 
-                    <!-- Hidden payment_released field to drive visibility -->
-                    <field name="payment_released" invisible="1"/>
                 </div>
             </xpath>
 
