@@ -232,6 +232,15 @@ export class BoqDashboard extends Component {
     marginClass(pct) { return marginClass(pct); }
     stateBadgeClass(state) { return stateBadgeClass(state); }
 
+    /**
+     * ratingStars(avg) — Task 3 (BOQ Dashboard vendor cards)
+     * Returns a filled+empty star string, e.g. "★★★☆☆" for avg=3.2
+     */
+    ratingStars(avg) {
+        const filled = Math.round(avg || 0);
+        return '★'.repeat(filled) + '☆'.repeat(5 - filled);
+    }
+
     get stateLabels() {
         return {
             draft: "Draft",

@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- ═══════════════════════════════════════════════════════
-         RES.PARTNER — Inherit form: add BOQ smart button
-    ═══════════════════════════════════════════════════════ -->
+    <!-- ═══════════════════════════════════════════════════════════════════
+         RES.PARTNER — Inherit form view
+         • BOQ smart button (existing)
+         • Vendor average rating display (Task 2 + Task 3)
+    ═══════════════════════════════════════════════════════════════════════ -->
     <record id="view_res_partner_boq_v19" model="ir.ui.view">
         <field name="name">res.partner.form.boq.v19</field>
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
+
+            <!-- ── Smart button box ──────────────────────────────────── -->
             <xpath expr="//div[@name='button_box']" position="inside">
+
+                <!-- BOQ count button -->
                 <button type="object"
                         name="action_view_boqs"
                         class="oe_stat_button"
@@ -17,7 +23,70 @@
                         invisible="boq_count == 0">
                     <field name="boq_count" widget="statinfo" string="BOQs"/>
                 </button>
+
+                <!-- Vendor Ratings button (Task 3 — Place 1: vendor profile) -->
+                <button type="object"
+                        name="action_view_vendor_ratings"
+                        class="oe_stat_button"
+                        icon="fa-star"
+                        invisible="vendor_rating_count == 0">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="vendor_avg_rating"
+                                   widget="float"
+                                   digits="[2,1]"/>
+                            / 5
+                        </span>
+                        <span class="o_stat_text">
+                            Avg Rating (<field name="vendor_rating_count"/> POs)
+                        </span>
+                    </div>
+                </button>
+
             </xpath>
+
+            <!-- ── Vendor Rating panel in form (Task 3 — Place 1) ────── -->
+            <!-- Insert after the standard "Sales &amp; Purchase" tab or before chatter -->
+            <xpath expr="//div[@class='oe_chatter']" position="before">
+                <div invisible="vendor_avg_rating == 0"
+                     style="border-top: 2px solid #dee2e6; margin-top: 12px; padding-top: 12px;">
+
+                    <h4 style="color: #875A7B; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa fa-star" style="color: #F5A623;"/>
+                        Vendor Performance Rating
+                    </h4>
+
+                    <div class="o_group">
+                        <group string="Overall Rating">
+                            <field name="vendor_avg_rating"
+                                   string="Average Rating (out of 5)"
+                                   widget="float"
+                                   digits="[3,2]"
+                                   readonly="1"/>
+                            <field name="vendor_rating_display"
+                                   string="Stars"
+                                   readonly="1"/>
+                            <field name="vendor_rating_count"
+                                   string="Total Rated POs"
+                                   readonly="1"/>
+                        </group>
+                    </div>
+
+                    <div style="margin-top: 8px;">
+                        <button type="object"
+                                name="action_view_vendor_ratings"
+                                class="btn btn-sm btn-outline-primary"
+                                invisible="vendor_rating_count == 0">
+                            <i class="fa fa-list me-1"/>View All Rated POs
+                        </button>
+                    </div>
+
+                    <!-- Hidden fields used by invisible conditions -->
+                    <field name="vendor_avg_rating" invisible="1"/>
+                    <field name="vendor_rating_count" invisible="1"/>
+                </div>
+            </xpath>
+
         </field>
     </record>
 
