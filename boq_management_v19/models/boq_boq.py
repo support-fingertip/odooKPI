@@ -26,21 +26,30 @@ class BoqBoq(models.Model):
 
     def _auto_init(self):
         """
-        Pre-create ALL M2M relation tables declared on boq.boq BEFORE the
-        ORM's super()._auto_init() runs — same pattern as boq.order.line.
+        Pre-create M2M tables BEFORE super() during install/upgrade.
+        For server restarts without -u, see _register_hook() below.
+        """
+        self._ensure_boq_tables()
+        return super()._auto_init()
 
-        Tables pre-created:
-          boq_boq_purchase_order_rel — rfq_ids     M2M ↔ purchase.order
-          boq_boq_category_rel       — category_ids M2M ↔ boq.category
+    @api.model
+    def _register_hook(self):
+        """
+        Called on EVERY Odoo server startup when the registry is built.
+        Ensures boq.boq M2M tables exist before any ORM query runs,
+        preventing UndefinedTable errors on servers restarted without -u.
+        """
+        self._ensure_boq_tables()
+        return super()._register_hook()
 
-        This prevents psycopg2.errors.UndefinedTable from bubbling up to the
-        JSON-RPC layer and appearing as "Odoo Server Error" on the dashboard
-        when get_dashboard_stats() tries to query boq_boq_purchase_order_rel
-        on a server that has not been upgraded with -u yet.
+    def _ensure_boq_tables(self):
+        """
+        Idempotent DDL: create boq.boq M2M relation tables.
+        Safe to call from both _auto_init and _register_hook.
         """
         cr = self.env.cr
 
-        # rfq_ids M2M — queried directly in get_dashboard_stats / get_vendor_summary
+        # rfq_ids M2M — queried directly in dashboard methods
         cr.execute("""
             CREATE TABLE IF NOT EXISTS boq_boq_purchase_order_rel (
                 boq_id      INTEGER NOT NULL,
@@ -49,7 +58,7 @@ class BoqBoq(models.Model):
             )
         """)
 
-        # category_ids M2M — needed by _compute_tab_flags on form load
+        # category_ids M2M — needed by _compute_tab_flags
         cr.execute("""
             CREATE TABLE IF NOT EXISTS boq_boq_category_rel (
                 boq_id      INTEGER NOT NULL,
@@ -57,8 +66,6 @@ class BoqBoq(models.Model):
                 PRIMARY KEY (boq_id, category_id)
             )
         """)
-
-        return super()._auto_init()
 
     # ── Identity ──────────────────────────────────────────────────────────
     name = fields.Char(

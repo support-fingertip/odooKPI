@@ -162,33 +162,33 @@ class BoqOrderLine(models.Model):
     # ── Notes ─────────────────────────────────────────────────────────────
     notes = fields.Char(string='Remarks')
 
-    # ── _auto_init: guarantee ALL M2M relation tables exist ──────────────
+    # ── Schema bootstrap: runs on EVERY server start ─────────────────────
     def _auto_init(self):
         """
-        Pre-create ALL M2M relation tables for boq.order.line BEFORE calling
-        super()._auto_init().
+        Pre-create M2M tables BEFORE super() during install/upgrade.
+        For server restarts without -u, see _register_hook() below.
+        """
+        self._ensure_boq_line_tables()
+        return super()._auto_init()
 
-        WHY BEFORE super():
-          Odoo's ORM _auto_init() inspects declared Many2many fields and tries
-          to ALTER or query the relation tables.  If the tables don't exist yet
-          (fresh install, partial upgrade, or server restart after code change
-          without -u), the ORM raises psycopg2.errors.UndefinedTable which
-          propagates all the way to the JSON-RPC layer and shows as
-          "Odoo Server Error" on the dashboard.
+    @api.model
+    def _register_hook(self):
+        """
+        Called on EVERY Odoo server startup when the registry is built.
+        Ensures boq_order_line M2M tables exist before any ORM query runs,
+        preventing UndefinedTable errors on servers restarted without -u.
+        """
+        self._ensure_boq_line_tables()
+        return super()._register_hook()
 
-        Using IF NOT EXISTS makes every call fully idempotent — safe on:
-          • Fresh module installation
-          • Module upgrade (-u boq_management_v19)
-          • Server restart without upgrade
-          • Rollback / partial upgrade recovery
-
-        Tables pre-created here:
-          boq_order_line_tax_rel    — tax_ids   M2M ↔ account.tax
-          boq_order_line_vendor_rel — vendor_ids M2M ↔ res.partner
+    def _ensure_boq_line_tables(self):
+        """
+        Idempotent DDL: create both M2M relation tables with IF NOT EXISTS.
+        Safe to call from _auto_init AND _register_hook.
         """
         cr = self.env.cr
 
-        # tax_ids M2M — must exist before ORM tries to sync account.tax M2M
+        # tax_ids M2M — boq.order.line ↔ account.tax
         cr.execute("""
             CREATE TABLE IF NOT EXISTS boq_order_line_tax_rel (
                 line_id INTEGER NOT NULL,
@@ -197,7 +197,7 @@ class BoqOrderLine(models.Model):
             )
         """)
 
-        # vendor_ids M2M — must exist before ORM tries to sync res.partner M2M
+        # vendor_ids M2M — boq.order.line ↔ res.partner
         cr.execute("""
             CREATE TABLE IF NOT EXISTS boq_order_line_vendor_rel (
                 line_id    INTEGER NOT NULL,
@@ -205,8 +205,6 @@ class BoqOrderLine(models.Model):
                 PRIMARY KEY (line_id, partner_id)
             )
         """)
-
-        return super()._auto_init()
 
     # ── Computes ──────────────────────────────────────────────────────────
     @api.depends('product_id')

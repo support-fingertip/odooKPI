@@ -32,13 +32,29 @@ class PurchaseOrderBoqExtend(models.Model):
 
     def _auto_init(self):
         """
-        Pre-create vendor-rating columns on purchase_order with
-        'ADD COLUMN IF NOT EXISTS' so that ANY SELECT on purchase.order
-        never fails with 'column does not exist', even if a previous
-        module upgrade rolled back before the ORM could create them.
+        Called during module install / upgrade.
+        _register_hook() handles server restarts without -u.
+        """
+        return super()._auto_init()
 
-        Odoo's super()._auto_init() detects existing columns and skips
-        re-creation — so this is fully idempotent and safe.
+    @api.model
+    def _register_hook(self):
+        """
+        Called by Odoo on EVERY server startup when the model registry is
+        built — whether or not the module is being upgraded with -u.
+
+        WHY THIS MATTERS:
+          _auto_init() only runs during install / upgrade.  When someone
+          pulls new code and restarts Odoo without -u, the Python model
+          declares vendor_rating as a field but the DB column doesn't exist.
+          Odoo's ORM immediately starts issuing SELECT queries that include
+          ALL declared fields (e.g. in mail's _get_activity_groups()) and
+          the very first page load crashes with:
+            psycopg2.errors.UndefinedColumn:
+              column purchase_order.vendor_rating does not exist
+
+          By running ADD COLUMN IF NOT EXISTS here, we guarantee the columns
+          exist before any ORM query is executed, with zero migration overhead.
         """
         cr = self.env.cr
         cr.execute("""
@@ -46,9 +62,9 @@ class PurchaseOrderBoqExtend(models.Model):
                 ADD COLUMN IF NOT EXISTS vendor_rating         VARCHAR,
                 ADD COLUMN IF NOT EXISTS vendor_rating_comment TEXT,
                 ADD COLUMN IF NOT EXISTS vendor_rating_date    DATE,
-                ADD COLUMN IF NOT EXISTS vendor_rated_by       INTEGER;
+                ADD COLUMN IF NOT EXISTS vendor_rated_by       INTEGER
         """)
-        return super()._auto_init()
+        return super()._register_hook()
 
     # ════════════════════════════════════════════════════════════════════════
     # A) BOQ Back-link (non-stored — derived from rfq_ids M2M)
