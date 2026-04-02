@@ -52,12 +52,22 @@
                         <small class="text-muted">Vendor-wise RFQ summary, margins and project status</small>
                     </div>
                 </div>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 flex-wrap">
                     <button class="btn btn-sm btn-outline-primary" t-on-click="openAllBoqs">
                         <i class="fa fa-calculator me-1"/>All BOQs
                     </button>
                     <button class="btn btn-sm btn-outline-secondary" t-on-click="openRfqs">
                         <i class="fa fa-shopping-cart me-1"/>RFQs
+                    </button>
+                    <!-- ── Vendor Rating shortcuts (Task 3 — Place 3) ── -->
+                    <button class="btn btn-sm btn-outline-success" t-on-click="openVendors"
+                            title="View vendors with their average ratings">
+                        <i class="fa fa-building me-1"/>Vendors
+                    </button>
+                    <button class="btn btn-sm" t-on-click="openVendorRatings"
+                            style="background:#fff8e1;border-color:#F5A623;color:#875A7B;"
+                            title="View all vendor PO ratings">
+                        <i class="fa fa-star me-1" style="color:#F5A623;"/>Vendor Ratings
                     </button>
                     <button class="btn btn-sm btn-light" t-on-click="refresh">
                         <i class="fa fa-refresh me-1"/>Refresh
@@ -159,6 +169,27 @@
                                 RFQ Value
                                 <span class="text-muted small d-block">
                                     Tax: <t t-esc="fmtCurrency(state.stats.rfq_total_tax)"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Vendor Ratings stat card (Task 3 — Place 3) ── -->
+                    <div class="boq_stat_card flex-fill"
+                         t-on-click="openVendorRatings"
+                         style="cursor:pointer;border-left:3px solid #F5A623;">
+                        <div class="boq_stat_icon"
+                             style="background:rgba(245,166,35,.15);color:#F5A623;">
+                            <i class="fa fa-star fa-2x"/>
+                        </div>
+                        <div class="boq_stat_body">
+                            <div class="boq_stat_value" style="color:#875A7B;">
+                                <t t-esc="state.stats.rated_vendors_count || 0"/>
+                            </div>
+                            <div class="boq_stat_label">
+                                Rated Vendors
+                                <span class="text-muted small d-block">
+                                    <t t-esc="state.stats.rated_pos_count || 0"/> PO<t t-if="(state.stats.rated_pos_count || 0) !== 1">s</t> rated
                                 </span>
                             </div>
                         </div>

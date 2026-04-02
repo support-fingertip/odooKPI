@@ -618,18 +618,34 @@ class BoqBoq(models.Model):
             currency_symbol   = '$'
             currency_position = 'before'
 
+        # ── Vendor Rating stats (Task 3 — Place 3: BOQ Dashboard stat card) ──
+        # Count POs that carry a real 1–5 rating, and distinct vendors rated.
+        rated_vendors_count = 0
+        rated_pos_count     = 0
+        try:
+            rated_pos_all = self.env['purchase.order'].search([
+                ('vendor_rating', 'in', ['1', '2', '3', '4', '5']),
+            ])
+            rated_pos_count     = len(rated_pos_all)
+            rated_vendors_count = len(set(rated_pos_all.mapped('partner_id').ids))
+        except Exception:
+            pass
+
         return {
-            'total_boqs':       len(boqs),
-            'total_value':      total_value,
-            'total_tax':        total_tax,
-            'grand_total':      grand_total,
-            'state_counts':     state_counts,
-            'total_rfqs':       len(rfqs),
-            'rfq_draft':        rfq_draft_count,
-            'rfq_total_value':  rfq_total,
-            'rfq_total_tax':    rfq_tax,
-            'currency_symbol':  currency_symbol,
-            'currency_position': currency_position,
+            'total_boqs':          len(boqs),
+            'total_value':         total_value,
+            'total_tax':           total_tax,
+            'grand_total':         grand_total,
+            'state_counts':        state_counts,
+            'total_rfqs':          len(rfqs),
+            'rfq_draft':           rfq_draft_count,
+            'rfq_total_value':     rfq_total,
+            'rfq_total_tax':       rfq_tax,
+            'currency_symbol':     currency_symbol,
+            'currency_position':   currency_position,
+            # Vendor rating aggregates for the stat card
+            'rated_vendors_count': rated_vendors_count,
+            'rated_pos_count':     rated_pos_count,
         }
 
     @api.model
