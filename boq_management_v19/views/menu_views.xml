@@ -12,16 +12,23 @@
               web_icon="boq_management_v19,static/src/img/boq_icon.png"
               groups="boq_management_v19.group_boq_user"/>
 
-    <!-- ── Dashboard — placed BEFORE the BOQ list section (sequence 5 < 10) ── -->
-    <!-- Task 4: Dashboard sits next to / before BOQ, NOT inside Purchase > RFQ -->
+    <!-- ── BOQ Dashboard ─────────────────────────────────────────────── -->
     <menuitem id="menu_boq_dashboard"
-              name="Dashboard"
+              name="BOQ Dashboard"
               parent="menu_boq_root"
               action="action_boq_dashboard"
               sequence="5"
               groups="boq_management_v19.group_boq_user"/>
 
-    <!-- ── Main section ── -->
+    <!-- ── Tradeways Dashboard (Task 4) ─────────────────────────────── -->
+    <menuitem id="menu_tradeways_dashboard"
+              name="Tradeways Dashboard"
+              parent="menu_boq_root"
+              action="action_tradeways_dashboard"
+              sequence="6"
+              groups="boq_management_v19.group_boq_user"/>
+
+    <!-- ── Main BOQ section ──────────────────────────────────────────── -->
     <menuitem id="menu_boq_main"
               name="BOQ"
               parent="menu_boq_root"
@@ -39,7 +46,27 @@
               action="action_boq_boq"
               sequence="20"/>
 
-    <!-- ── Reporting section ── -->
+    <!-- ── Tradeways section (Task 4) ───────────────────────────────── -->
+    <menuitem id="menu_tradeways_root"
+              name="Tradeways"
+              parent="menu_boq_root"
+              sequence="30"
+              groups="boq_management_v19.group_boq_user"/>
+
+    <menuitem id="menu_tradeways_vendors"
+              name="Vendors"
+              parent="menu_tradeways_root"
+              action="action_tradeways_vendor"
+              sequence="10"/>
+
+    <menuitem id="menu_tradeways_ratings"
+              name="Ratings"
+              parent="menu_tradeways_root"
+              action="action_tradeways_rating"
+              sequence="20"
+              groups="boq_management_v19.group_boq_manager"/>
+
+    <!-- ── Reporting section ─────────────────────────────────────────── -->
     <menuitem id="menu_boq_report"
               name="Reporting"
               parent="menu_boq_root"
@@ -60,7 +87,7 @@
               sequence="20"
               groups="boq_management_v19.group_boq_manager"/>
 
-    <!-- ── Configuration section ── -->
+    <!-- ── Configuration section ─────────────────────────────────────── -->
     <menuitem id="menu_boq_config"
               name="Configuration"
               parent="menu_boq_root"

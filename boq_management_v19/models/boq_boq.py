@@ -577,10 +577,11 @@ class BoqBoq(models.Model):
         for rfq in rfqs:
             vid = rfq.partner_id.id
             if vid not in vendor_map:
+                partner = rfq.partner_id
                 vendor_map[vid] = {
                     'vendor_id': vid,
-                    'vendor_name': rfq.partner_id.name,
-                    'vendor_email': rfq.partner_id.email or '',
+                    'vendor_name': partner.name,
+                    'vendor_email': partner.email or '',
                     'rfq_count': 0,
                     'total_value': 0.0,
                     'total_tax': 0.0,
@@ -588,6 +589,10 @@ class BoqBoq(models.Model):
                     'states': [],
                     'project_names': [],
                     'rfq_states': [],
+                    # Task 2 + Task 3 — vendor rating aggregates
+                    'avg_rating': round(partner.vendor_avg_rating, 2),
+                    'rating_count': partner.vendor_rating_count,
+                    'rating_display': partner.vendor_rating_display or '—',
                 }
             entry = vendor_map[vid]
             entry['rfq_count'] += 1

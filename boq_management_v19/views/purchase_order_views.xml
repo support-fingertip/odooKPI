@@ -3,8 +3,8 @@
 
     <!--
         Task 3 — RFQ inside BOQ: form view inheritance only.
-        List view inheritance removed — boq_id is non-stored computed;
-        //list xpath hits nested lists in Odoo 19, causing ParseError.
+        Task 1 — Vendor Rating section: visible after payment released,
+                  editable by BOQ Manager only.
     -->
 
     <record id="view_purchase_order_form_boq_inherit" model="ir.ui.view">
@@ -13,6 +13,7 @@
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
 
+            <!-- ── BOQ smart button ─────────────────────────────────── -->
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button name="action_open_boq" type="object"
                         class="oe_stat_button" icon="fa-calculator"
@@ -21,16 +22,100 @@
                 </button>
             </xpath>
 
+            <!-- ── BOQ Reference field after partner ────────────────── -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="boq_id" string="BOQ Reference"
                        options="{'no_create': True}" invisible="not boq_id"/>
             </xpath>
 
+            <!-- ── Optional column for line descriptions ────────────── -->
             <xpath expr="//field[@name='order_line']//field[@name='name']"
                    position="attributes">
                 <attribute name="optional">show</attribute>
             </xpath>
 
+            <!-- ══════════════════════════════════════════════════════════
+                 VENDOR RATING SECTION  (Task 1 + Task 3)
+                 Visible: after payment is released
+                 Editable: BOQ Manager group only
+                 ══════════════════════════════════════════════════════════ -->
+            <xpath expr="//div[@class='oe_chatter']" position="before">
+                <div class="o_group" invisible="not payment_released"
+                     style="border-top: 2px solid #dee2e6; margin-top: 12px; padding-top: 12px;">
+
+                    <!-- Section header -->
+                    <div style="grid-column: 1 / -1; margin-bottom: 8px;">
+                        <h4 style="color: #875A7B; margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa fa-star" style="color: #F5A623;"/>
+                            Vendor Performance Rating
+                            <span class="badge rounded-pill"
+                                  style="background: #28a745; font-size: 0.75rem; padding: 3px 10px;"
+                                  invisible="not vendor_rating">
+                                Rated
+                            </span>
+                            <span class="badge rounded-pill"
+                                  style="background: #17a2b8; font-size: 0.75rem; padding: 3px 10px;"
+                                  invisible="vendor_rating">
+                                Awaiting Rating
+                            </span>
+                        </h4>
+                        <small style="color: #6c757d;">
+                            Payment confirmed — please rate this vendor's performance on this PO.
+                            Only BOQ Managers can submit ratings.
+                        </small>
+                    </div>
+
+                    <!-- Rating stars + comment (editable by manager only) -->
+                    <group col="2">
+                        <field name="vendor_rating"
+                               widget="priority"
+                               string="Rating (1–5 Stars)"
+                               groups="boq_management_v19.group_boq_manager"/>
+                        <field name="vendor_rating"
+                               string="Rating"
+                               readonly="True"
+                               groups="!boq_management_v19.group_boq_manager"/>
+                        <field name="rating_display"
+                               string="Stars"
+                               readonly="1"
+                               invisible="not vendor_rating"/>
+                        <field name="vendor_rating_date"
+                               string="Rated On"
+                               invisible="not vendor_rating"/>
+                        <field name="vendor_rated_by"
+                               string="Rated By"
+                               invisible="not vendor_rating"/>
+                    </group>
+                    <group col="1">
+                        <field name="vendor_rating_comment"
+                               string="Rating Comment / Remarks"
+                               placeholder="Add performance notes for this vendor on this PO…"
+                               groups="boq_management_v19.group_boq_manager"/>
+                        <field name="vendor_rating_comment"
+                               string="Rating Comment"
+                               readonly="1"
+                               invisible="not vendor_rating_comment"
+                               groups="!boq_management_v19.group_boq_manager"/>
+                    </group>
+
+                    <!-- Hidden payment_released field to drive visibility -->
+                    <field name="payment_released" invisible="1"/>
+                </div>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ── Vendor rating list view inheritance — add rating column ────── -->
+    <record id="view_purchase_order_list_boq_rating_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.list.boq.rating.inherit</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_rfq"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <field name="vendor_rating" optional="show" string="Rating" readonly="1"/>
+                <field name="payment_released" optional="hide" string="Payment Released" readonly="1"/>
+            </xpath>
         </field>
     </record>
 

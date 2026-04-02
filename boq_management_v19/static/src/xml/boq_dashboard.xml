@@ -287,9 +287,31 @@
                                 </div>
                             </div>
 
-                            <!-- Card Footer: project &amp; status -->
+                            <!-- Card Footer: project, status + rating (Task 3) -->
                             <div class="boq_vendor_footer">
-                                <div class="boq_vendor_footer_row">
+                                <!-- Vendor Rating row -->
+                                <div class="boq_vendor_footer_row" style="justify-content:space-between;align-items:center;">
+                                    <div style="display:flex;align-items:center;gap:6px;">
+                                        <i class="fa fa-star" style="color:#F5A623;"/>
+                                        <span class="fw-semibold small">
+                                            <t t-if="vendor.avg_rating > 0">
+                                                <t t-esc="vendor.avg_rating.toFixed(1)"/> / 5
+                                                <span class="text-muted" style="font-size:0.72rem;">
+                                                    (<t t-esc="vendor.rating_count"/> PO<t t-if="vendor.rating_count !== 1">s</t>)
+                                                </span>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="text-muted fst-italic" style="font-size:0.78rem;">Not rated yet</span>
+                                            </t>
+                                        </span>
+                                    </div>
+                                    <t t-if="vendor.avg_rating > 0">
+                                        <span style="color:#F5A623;font-size:0.85rem;letter-spacing:1px;">
+                                            <t t-esc="ratingStars(vendor.avg_rating)"/>
+                                        </span>
+                                    </t>
+                                </div>
+                                <div class="boq_vendor_footer_row mt-1">
                                     <i class="fa fa-folder-o me-1 text-muted"/>
                                     <span class="text-muted small" style="word-break:break-all">
                                         <t t-esc="vendor.project_names"/>
@@ -438,6 +460,30 @@
                                                 <t t-esc="state.selectedVendor.margin_percent"/>%
                                             </div>
                                             <div class="boq_summary_metric_label">Margin</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Vendor Rating metric chip (Task 3) -->
+                                    <div class="boq_summary_metric">
+                                        <div class="boq_summary_metric_icon"
+                                             style="background:rgba(245,166,35,.15);color:#F5A623;">
+                                            <i class="fa fa-star"/>
+                                        </div>
+                                        <div>
+                                            <div class="boq_summary_metric_value" style="color:#875A7B;">
+                                                <t t-if="state.selectedVendor.avg_rating > 0">
+                                                    <t t-esc="state.selectedVendor.avg_rating.toFixed(1)"/> / 5
+                                                </t>
+                                                <t t-else="">—</t>
+                                            </div>
+                                            <div class="boq_summary_metric_label">
+                                                Vendor Rating
+                                                <t t-if="state.selectedVendor.rating_count > 0">
+                                                    <span class="text-muted" style="font-size:0.7rem;">
+                                                        (<t t-esc="state.selectedVendor.rating_count"/> PO<t t-if="state.selectedVendor.rating_count !== 1">s</t>)
+                                                    </span>
+                                                </t>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
