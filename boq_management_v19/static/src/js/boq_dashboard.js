@@ -137,6 +137,37 @@ export class BoqDashboard extends Component {
         });
     }
 
+    /**
+     * openVendors — Task 3 (BOQ Dashboard shortcut)
+     * Opens the vendor list (res.partner suppliers) with avg_rating columns.
+     */
+    openVendors() {
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Vendors",
+            res_model: "res.partner",
+            views: [[false, "list"], [false, "kanban"], [false, "form"]],
+            domain: [["supplier_rank", ">", 0]],
+            target: "current",
+        });
+    }
+
+    /**
+     * openVendorRatings — Task 3 (BOQ Dashboard shortcut)
+     * Opens the rated PO list showing every vendor rating ever submitted.
+     */
+    openVendorRatings() {
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Vendor Ratings",
+            res_model: "purchase.order",
+            views: [[false, "list"], [false, "form"]],
+            domain: [["vendor_rating", "in", ["1", "2", "3", "4", "5"]]],
+            context: { "search_default_group_partner_id": 1 },
+            target: "current",
+        });
+    }
+
     async selectVendor(vendor) {
         this.state.selectedVendor = vendor;
         this.state.activeTab = "summary";
