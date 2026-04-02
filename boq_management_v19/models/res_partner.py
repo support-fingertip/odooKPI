@@ -47,17 +47,17 @@ class ResPartner(models.Model):
     vendor_avg_rating = fields.Float(
         string='Average Vendor Rating',
         compute='_compute_vendor_avg_rating',
-        store=True,
+        store=False,        # non-stored: no DB column needed, safe on all Odoo versions
         digits=(16, 2),
         help=(
             'Average of all PO vendor ratings given to this vendor. '
-            'Auto-recalculates whenever a PO rating is added or changed.'
+            'Recalculates on each read.'
         ),
     )
     vendor_rating_count = fields.Integer(
         string='Rated POs',
         compute='_compute_vendor_avg_rating',
-        store=True,
+        store=False,        # non-stored: no DB column needed
         help='Number of Purchase Orders that have been rated for this vendor.',
     )
     vendor_rating_display = fields.Char(

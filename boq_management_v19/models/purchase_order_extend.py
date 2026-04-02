@@ -131,7 +131,7 @@ class PurchaseOrderBoqExtend(models.Model):
     payment_released = fields.Boolean(
         string='Payment Released',
         compute='_compute_payment_released',
-        store=True,
+        store=False,        # non-stored: no DB column needed, recalculates on read
         help=(
             'True when the PO is confirmed (state=purchase/done) AND '
             'all linked vendor bills are posted and fully paid.'
