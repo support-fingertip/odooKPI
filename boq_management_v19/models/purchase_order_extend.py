@@ -30,6 +30,26 @@ class PurchaseOrderBoqExtend(models.Model):
     """
     _inherit = 'purchase.order'
 
+    def _auto_init(self):
+        """
+        Pre-create vendor-rating columns on purchase_order with
+        'ADD COLUMN IF NOT EXISTS' so that ANY SELECT on purchase.order
+        never fails with 'column does not exist', even if a previous
+        module upgrade rolled back before the ORM could create them.
+
+        Odoo's super()._auto_init() detects existing columns and skips
+        re-creation — so this is fully idempotent and safe.
+        """
+        cr = self.env.cr
+        cr.execute("""
+            ALTER TABLE purchase_order
+                ADD COLUMN IF NOT EXISTS vendor_rating         VARCHAR,
+                ADD COLUMN IF NOT EXISTS vendor_rating_comment TEXT,
+                ADD COLUMN IF NOT EXISTS vendor_rating_date    DATE,
+                ADD COLUMN IF NOT EXISTS vendor_rated_by       INTEGER;
+        """)
+        return super()._auto_init()
+
     # ════════════════════════════════════════════════════════════════════════
     # A) BOQ Back-link (non-stored — derived from rfq_ids M2M)
     # ════════════════════════════════════════════════════════════════════════

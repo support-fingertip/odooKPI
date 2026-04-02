@@ -589,10 +589,10 @@ class BoqBoq(models.Model):
                     'states': [],
                     'project_names': [],
                     'rfq_states': [],
-                    # Task 2 + Task 3 — vendor rating aggregates
-                    'avg_rating': round(partner.vendor_avg_rating, 2),
-                    'rating_count': partner.vendor_rating_count,
-                    'rating_display': partner.vendor_rating_display or '—',
+                    # Rating fields populated via batch query below (Task 2 + 3)
+                    'avg_rating': 0.0,
+                    'rating_count': 0,
+                    'rating_display': '—',
                 }
             entry = vendor_map[vid]
             entry['rfq_count'] += 1
@@ -620,6 +620,31 @@ class BoqBoq(models.Model):
                 state = b['state']
                 if state not in entry['states']:
                     entry['states'].append(state)
+
+        # ── Batch-fetch vendor ratings (Task 2 + Task 3) ────────────────────
+        # One query for ALL vendor-rated POs — no N+1 per partner.
+        vendor_partner_ids = list(vendor_map.keys())
+        if vendor_partner_ids:
+            try:
+                rated_pos = self.env['purchase.order'].search([
+                    ('partner_id', 'in', vendor_partner_ids),
+                    ('vendor_rating', '!=', False),
+                ])
+                rating_buckets = {}
+                for rpo in rated_pos:
+                    pid = rpo.partner_id.id
+                    rating_buckets.setdefault(pid, []).append(int(rpo.vendor_rating))
+                for pid, ratings in rating_buckets.items():
+                    if pid in vendor_map:
+                        avg = round(sum(ratings) / len(ratings), 2)
+                        filled = round(avg)
+                        vendor_map[pid]['avg_rating']    = avg
+                        vendor_map[pid]['rating_count']  = len(ratings)
+                        vendor_map[pid]['rating_display'] = '★' * filled + '☆' * (5 - filled)
+            except Exception:
+                # vendor_rating column may not exist yet on fresh installs;
+                # silently skip rating data rather than breaking the dashboard.
+                pass
 
         # Compute margin per vendor using BOQ lines
         vendor_margins = {}
