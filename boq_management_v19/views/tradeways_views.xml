@@ -191,12 +191,15 @@
                 <field name="name" string="Name"/>
                 <field name="contact_name" string="Contact"/>
                 <field name="email" string="Email"/>
-                <filter name="active" string="Active" domain="[('state','=','active')]"/>
-                <filter name="inactive" string="Inactive" domain="[('state','=','inactive')]"/>
-                <separator/>
-                <filter name="rated" string="Rated" domain="[('rating_count','>',0)]"/>
-                <filter name="unrated" string="Not Rated" domain="[('rating_count','=',0)]"/>
-                <group expand="0" string="Group By">
+                <group string="Status">
+                    <filter name="active" string="Active" domain="[('state','=','active')]"/>
+                    <filter name="inactive" string="Inactive" domain="[('state','=','inactive')]"/>
+                </group>
+                <group string="Rating">
+                    <filter name="rated" string="Rated" domain="[('rating_count','>',0)]"/>
+                    <filter name="unrated" string="Not Rated" domain="[('rating_count','=',0)]"/>
+                </group>
+                <group string="Group By">
                     <filter name="group_trade_type" string="Trade Type"
                             context="{'group_by': 'trade_type'}"/>
                     <filter name="group_state" string="Status"
