@@ -2,12 +2,9 @@
 <odoo>
 
     <!--
-    ═══════════════════════════════════════════════════════════════════════════
-    PURCHASE ORDER — BOQ + Vendor Rating Inheritance
-    ═══════════════════════════════════════════════════════════════════════════
-    Task 1 — Vendor rating visible ONLY after payment is released.
-             Editable by BOQ Manager group only (manager = person who rates).
-    Task 3 — Place 2: rating shown on the individual PO record.
+        Task 3 — RFQ inside BOQ: form view inheritance only.
+        List view inheritance removed — boq_id is non-stored computed;
+        //list xpath hits nested lists in Odoo 19, causing ParseError.
     -->
 
     <record id="view_purchase_order_form_boq_inherit" model="ir.ui.view">
@@ -16,7 +13,6 @@
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
 
-            <!-- ── BOQ smart button ─────────────────────────────────────── -->
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button name="action_open_boq" type="object"
                         class="oe_stat_button" icon="fa-calculator"
@@ -25,218 +21,19 @@
                 </button>
             </xpath>
 
-            <!-- ── BOQ Reference field after partner ─────────────────────── -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="boq_id" string="BOQ Reference"
                        options="{'no_create': True}" invisible="not boq_id"/>
             </xpath>
 
-            <!-- ── Optional column for line descriptions ─────────────────── -->
             <xpath expr="//field[@name='order_line']//field[@name='name']"
                    position="attributes">
                 <attribute name="optional">show</attribute>
             </xpath>
 
-            <!-- ═══════════════════════════════════════════════════════════
-                 VENDOR RATING SECTION — Task 1 + Task 3 (Place 2)
-                 ─────────────────────────────────────────────────────────
-                 • Shown   : ONLY after payment_released = True
-                 • Editable: BOQ Manager group only
-                 • payment_released (invisible sentinel) is declared FIRST so
-                   Odoo 19 includes it in the initial field-fetch, ensuring
-                   the wrapper div's invisible condition is evaluated correctly
-                   on first render.
-                 ═══════════════════════════════════════════════════════════ -->
-            <xpath expr="//chatter" position="before">
-
-                <!-- Sentinel fields — always fetched, drive section visibility -->
-                <field name="payment_released" invisible="1"/>
-                <field name="is_rated"         invisible="1"/>
-
-                <!-- ── Vendor Rating Section (only visible after payment) ── -->
-                <div class="o_group mt-3"
-                     style="border-top: 2px solid #dee2e6; padding-top: 14px;"
-                     invisible="not payment_released">
-
-                    <!-- Section header ──────────────────────────────────── -->
-                    <div style="grid-column: 1 / -1; margin-bottom: 10px;">
-                        <h4 style="color: #875A7B; margin: 0 0 4px 0;
-                                   display: flex; align-items: center; gap: 8px;">
-                            <i class="fa fa-star" style="color: #F5A623;"/>
-                            Vendor Rating
-                            <!-- "Rated" badge — shown once a real rating exists -->
-                            <span class="badge rounded-pill"
-                                  style="background: #28a745; font-size: 0.72rem; padding: 3px 10px;"
-                                  invisible="not is_rated">
-                                Rated
-                            </span>
-                            <!-- "Awaiting Rating" badge — shown before any rating -->
-                            <span class="badge rounded-pill"
-                                  style="background: #17a2b8; font-size: 0.72rem; padding: 3px 10px;"
-                                  invisible="is_rated">
-                                Awaiting Rating
-                            </span>
-                        </h4>
-                        <small style="color: #6c757d;">
-                            Payment confirmed — please rate this vendor's performance on this PO.
-                            Only <strong>BOQ Managers</strong> can submit ratings.
-                        </small>
-                    </div>
-
-                    <!-- Rating input (Manager: editable 5-star priority widget) -->
-                    <group col="2" groups="boq_management_v19.group_boq_manager">
-                        <field name="vendor_rating"
-                               widget="priority"
-                               string="Rating (1–5 Stars)"
-                               nolabel="0"/>
-                        <field name="rating_display"
-                               string="Stars"
-                               readonly="1"
-                               invisible="not is_rated"/>
-                        <field name="vendor_rating_date"
-                               string="Rated On"
-                               invisible="not is_rated"/>
-                        <field name="vendor_rated_by"
-                               string="Rated By"
-                               invisible="not is_rated"/>
-                    </group>
-
-                    <!-- Rating read-only view (non-manager) -->
-                    <group col="2" groups="!boq_management_v19.group_boq_manager">
-                        <field name="vendor_rating"
-                               string="Rating"
-                               readonly="1"/>
-                        <field name="rating_display"
-                               string="Stars"
-                               readonly="1"
-                               invisible="not is_rated"/>
-                        <field name="vendor_rating_date"
-                               string="Rated On"
-                               invisible="not is_rated"/>
-                        <field name="vendor_rated_by"
-                               string="Rated By"
-                               invisible="not is_rated"/>
-                    </group>
-
-                    <!-- Comment (Manager: editable; others: read-only if exists) -->
-                    <group col="1" groups="boq_management_v19.group_boq_manager">
-                        <field name="vendor_rating_comment"
-                               string="Performance Remarks"
-                               placeholder="Add performance notes for this vendor on this PO…"/>
-                    </group>
-                    <group col="1" groups="!boq_management_v19.group_boq_manager">
-                        <field name="vendor_rating_comment"
-                               string="Performance Remarks"
-                               readonly="1"
-                               invisible="not vendor_rating_comment"/>
-                    </group>
-
-                </div>
-
-            </xpath>
-
         </field>
     </record>
 
-    <!-- ═══════════════════════════════════════════════════════════════════
-         VENDOR RATING LIST VIEW
-         Task 3 — Place 2 (also used by "PO Ratings" menu under Vendor Ratings)
-         Shows all rated Purchase Orders with rating summary columns.
-    ═══════════════════════════════════════════════════════════════════════ -->
-    <record id="view_vendor_rating_po_list" model="ir.ui.view">
-        <field name="name">purchase.order.vendor.rating.list</field>
-        <field name="model">purchase.order</field>
-        <field name="arch" type="xml">
-            <list string="Vendor PO Ratings"
-                  default_order="vendor_rating_date desc, id desc"
-                  decoration-success="vendor_rating in ('4','5')"
-                  decoration-warning="vendor_rating == '3'"
-                  decoration-danger="vendor_rating == '1'"
-                  create="false">
-                <field name="name"               string="PO Reference"/>
-                <field name="partner_id"         string="Vendor"/>
-                <field name="date_order"         string="Order Date"/>
-                <field name="amount_total"       string="Total Amount"
-                       widget="monetary" optional="show"/>
-                <field name="currency_id"        invisible="1"/>
-                <field name="state"              string="PO Status"
-                       widget="badge"
-                       decoration-success="state == 'done'"
-                       decoration-info="state == 'purchase'"
-                       decoration-warning="state in ('draft','sent')"/>
-                <field name="vendor_rating"      string="Rating"
-                       widget="selection"/>
-                <field name="rating_display"     string="Stars"  optional="show"/>
-                <field name="vendor_rating_date" string="Rated On"/>
-                <field name="vendor_rated_by"    string="Rated By"/>
-                <field name="vendor_rating_comment"
-                       string="Remarks"         optional="hide"/>
-            </list>
-        </field>
-    </record>
-
-    <!-- ═══════════════════════════════════════════════════════════════════
-         VENDOR RATING SEARCH VIEW
-         Filters and group-bys for the PO Ratings list.
-    ═══════════════════════════════════════════════════════════════════════ -->
-    <record id="view_vendor_rating_po_search" model="ir.ui.view">
-        <field name="name">purchase.order.vendor.rating.search</field>
-        <field name="model">purchase.order</field>
-        <field name="arch" type="xml">
-            <search string="Vendor Ratings">
-                <field name="partner_id" string="Vendor"/>
-                <field name="name"       string="PO Reference"/>
-                <!-- Filters -->
-                <filter name="excellent" string="Excellent (5★)"
-                        domain="[('vendor_rating','=','5')]"/>
-                <filter name="very_good" string="Very Good (4★)"
-                        domain="[('vendor_rating','=','4')]"/>
-                <filter name="good"      string="Good (3★)"
-                        domain="[('vendor_rating','=','3')]"/>
-                <filter name="fair"      string="Fair (2★)"
-                        domain="[('vendor_rating','=','2')]"/>
-                <filter name="poor"      string="Poor (1★)"
-                        domain="[('vendor_rating','=','1')]"/>
-                <separator/>
-                <filter name="rated_by_me" string="Rated by Me"
-                        domain="[('vendor_rated_by','=',uid)]"/>
-                <!-- Group by -->
-                <group expand="0" string="Group By">
-                    <filter name="group_vendor" string="Vendor"
-                            context="{'group_by': 'partner_id'}"/>
-                    <filter name="group_rating" string="Rating"
-                            context="{'group_by': 'vendor_rating'}"/>
-                    <filter name="group_rated_by" string="Rated By"
-                            context="{'group_by': 'vendor_rated_by'}"/>
-                    <filter name="group_month" string="Rating Month"
-                            context="{'group_by': 'vendor_rating_date:month'}"/>
-                </group>
-            </search>
-        </field>
-    </record>
-
-    <!-- ═══════════════════════════════════════════════════════════════════
-         ACTIONS
-    ═══════════════════════════════════════════════════════════════════════ -->
-
-    <!-- Action: All rated POs (for "PO Ratings" menu under Vendor Ratings) -->
-    <record id="action_vendor_po_ratings" model="ir.actions.act_window">
-        <field name="name">Vendor PO Ratings</field>
-        <field name="res_model">purchase.order</field>
-        <field name="view_mode">list,form</field>
-        <field name="view_id" ref="view_vendor_rating_po_list"/>
-        <field name="search_view_id" ref="view_vendor_rating_po_search"/>
-        <field name="domain">[('vendor_rating', 'in', ['1','2','3','4','5'])]</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">No vendor ratings yet!</p>
-            <p>
-                Ratings appear here after a <b>BOQ Manager</b> rates a vendor on a
-                Purchase Order whose payment has been fully released.
-            </p>
-        </field>
-    </record>
-
-    <!-- Action: RFQs from BOQ (Reporting section) -->
     <record id="action_boq_rfq_list" model="ir.actions.act_window">
         <field name="name">RFQs from BOQ</field>
         <field name="res_model">purchase.order</field>
@@ -249,7 +46,7 @@
         </field>
     </record>
 
-    <!-- Action: Vendor list (Reporting section) -->
+    <!-- ── Vendors list (suppliers that appear on BOQ lines) ─────────── -->
     <record id="action_boq_vendor_list" model="ir.actions.act_window">
         <field name="name">Vendors</field>
         <field name="res_model">res.partner</field>

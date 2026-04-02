@@ -1,26 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- ══════════════════════════════════════════════════════════════════════
+    <!-- ══════════════════════════════════════════════════════
          BOQ MANAGEMENT — Application Menu (Odoo 19 Enterprise)
-    ══════════════════════════════════════════════════════════════════════════ -->
+    ══════════════════════════════════════════════════════ -->
 
-    <!-- ── Root app menu ─────────────────────────────────────────────────── -->
+    <!-- Root app menu -->
     <menuitem id="menu_boq_root"
               name="BOQ"
               sequence="85"
               web_icon="boq_management_v19,static/src/img/boq_icon.png"
               groups="boq_management_v19.group_boq_user"/>
 
-    <!-- ── BOQ Dashboard ─────────────────────────────────────────────────── -->
+    <!-- ── Dashboard — placed BEFORE the BOQ list section (sequence 5 < 10) ── -->
+    <!-- Task 4: Dashboard sits next to / before BOQ, NOT inside Purchase > RFQ -->
     <menuitem id="menu_boq_dashboard"
-              name="BOQ Dashboard"
+              name="Dashboard"
               parent="menu_boq_root"
               action="action_boq_dashboard"
               sequence="5"
               groups="boq_management_v19.group_boq_user"/>
 
-    <!-- ── Main BOQ section ──────────────────────────────────────────────── -->
+    <!-- ── Main section ── -->
     <menuitem id="menu_boq_main"
               name="BOQ"
               parent="menu_boq_root"
@@ -38,36 +39,7 @@
               action="action_boq_boq"
               sequence="20"/>
 
-    <!-- ══════════════════════════════════════════════════════════════════════
-         VENDOR RATINGS SECTION
-         Replaces the old "Tradeways" section.
-         Uses standard res.partner (Vendors) + purchase.order (PO Ratings).
-         Task 1 / Task 2 / Task 3 — all collected here.
-    ══════════════════════════════════════════════════════════════════════════ -->
-
-    <menuitem id="menu_vendor_ratings_root"
-              name="Vendor Ratings"
-              parent="menu_boq_root"
-              sequence="30"
-              groups="boq_management_v19.group_boq_user"/>
-
-    <!-- Vendors — shows all suppliers with avg_rating, stars, rated PO count -->
-    <menuitem id="menu_vendor_ratings_vendors"
-              name="Vendors"
-              parent="menu_vendor_ratings_root"
-              action="action_vendor_rating_vendors"
-              sequence="10"
-              groups="boq_management_v19.group_boq_user"/>
-
-    <!-- PO Ratings — shows all rated Purchase Orders (Manager only) -->
-    <menuitem id="menu_vendor_ratings_po_list"
-              name="PO Ratings"
-              parent="menu_vendor_ratings_root"
-              action="action_vendor_po_ratings"
-              sequence="20"
-              groups="boq_management_v19.group_boq_manager"/>
-
-    <!-- ── Reporting section ─────────────────────────────────────────────── -->
+    <!-- ── Reporting section ── -->
     <menuitem id="menu_boq_report"
               name="Reporting"
               parent="menu_boq_root"
@@ -88,7 +60,7 @@
               sequence="20"
               groups="boq_management_v19.group_boq_manager"/>
 
-    <!-- ── Configuration section ─────────────────────────────────────────── -->
+    <!-- ── Configuration section ── -->
     <menuitem id="menu_boq_config"
               name="Configuration"
               parent="menu_boq_root"

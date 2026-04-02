@@ -67,9 +67,6 @@ export class BoqDashboard extends Component {
             activeTab: "summary",
             vendorLines: [],
             vendorLinesLoading: false,
-            // Task 3 — Place 3: per-PO rating history for selected vendor
-            vendorRatings: [],
-            vendorRatingsLoading: false,
         });
 
         onWillStart(() => this._loadAll());
@@ -137,65 +134,26 @@ export class BoqDashboard extends Component {
         });
     }
 
-    /**
-     * openVendors — Task 3 (BOQ Dashboard shortcut)
-     * Opens the vendor list (res.partner suppliers) with avg_rating columns.
-     */
-    openVendors() {
-        this.action.doAction({
-            type: "ir.actions.act_window",
-            name: "Vendors",
-            res_model: "res.partner",
-            views: [[false, "list"], [false, "kanban"], [false, "form"]],
-            domain: [["supplier_rank", ">", 0]],
-            target: "current",
-        });
-    }
-
-    /**
-     * openVendorRatings — Task 3 (BOQ Dashboard shortcut)
-     * Opens the rated PO list showing every vendor rating ever submitted.
-     */
-    openVendorRatings() {
-        this.action.doAction({
-            type: "ir.actions.act_window",
-            name: "Vendor Ratings",
-            res_model: "purchase.order",
-            views: [[false, "list"], [false, "form"]],
-            domain: [["vendor_rating", "in", ["1", "2", "3", "4", "5"]]],
-            context: { "search_default_group_partner_id": 1 },
-            target: "current",
-        });
-    }
-
     async selectVendor(vendor) {
         this.state.selectedVendor = vendor;
         this.state.activeTab = "summary";
         this.state.vendorLines = [];
-        this.state.vendorRatings = [];
         this.state.vendorLinesLoading = true;
-        this.state.vendorRatingsLoading = true;
         this._scrollPending = true;
         try {
-            // Fetch BOQ lines and PO rating history in parallel (Task 3 — Place 3)
-            const [lines, ratings] = await Promise.all([
-                this.orm.call("boq.boq", "get_vendor_boq_lines",  [vendor.vendor_id]),
-                this.orm.call("boq.boq", "get_vendor_po_ratings", [vendor.vendor_id]),
-            ]);
-            this.state.vendorLines   = lines;
-            this.state.vendorRatings = ratings;
+            const lines = await this.orm.call(
+                "boq.boq", "get_vendor_boq_lines", [vendor.vendor_id]
+            );
+            this.state.vendorLines = lines;
         } catch (_) {
-            this.state.vendorLines   = [];
-            this.state.vendorRatings = [];
+            this.state.vendorLines = [];
         } finally {
-            this.state.vendorLinesLoading   = false;
-            this.state.vendorRatingsLoading = false;
+            this.state.vendorLinesLoading = false;
         }
     }
 
     closeNotebook() {
-        this.state.selectedVendor   = null;
-        this.state.vendorRatings    = [];
+        this.state.selectedVendor = null;
     }
 
     clearFilter() {
@@ -273,15 +231,6 @@ export class BoqDashboard extends Component {
 
     marginClass(pct) { return marginClass(pct); }
     stateBadgeClass(state) { return stateBadgeClass(state); }
-
-    /**
-     * ratingStars(avg) — Task 3 (BOQ Dashboard vendor cards)
-     * Returns a filled+empty star string, e.g. "★★★☆☆" for avg=3.2
-     */
-    ratingStars(avg) {
-        const filled = Math.round(avg || 0);
-        return '★'.repeat(filled) + '☆'.repeat(5 - filled);
-    }
 
     get stateLabels() {
         return {

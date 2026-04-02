@@ -1,22 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- ═══════════════════════════════════════════════════════════════════
-         RES.PARTNER — Form view inheritance
-         • BOQ smart button (existing)
-         • Vendor Rating smart button (Task 3 — Place 1: vendor profile)
-         • Vendor Performance Rating panel beneath the chatter
-    ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- ═══════════════════════════════════════════════════════
+         RES.PARTNER — Inherit form: add BOQ smart button
+    ═══════════════════════════════════════════════════════ -->
     <record id="view_res_partner_boq_v19" model="ir.ui.view">
         <field name="name">res.partner.form.boq.v19</field>
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
-
-            <!-- ── Smart button box ─────────────────────────────────────── -->
             <xpath expr="//div[@name='button_box']" position="inside">
-
-                <!-- BOQ count button -->
                 <button type="object"
                         name="action_view_boqs"
                         class="oe_stat_button"
@@ -24,146 +17,7 @@
                         invisible="boq_count == 0">
                     <field name="boq_count" widget="statinfo" string="BOQs"/>
                 </button>
-
-                <!-- Vendor Rating button (Task 3 — Place 1: vendor profile) -->
-                <button type="object"
-                        name="action_view_vendor_ratings"
-                        class="oe_stat_button"
-                        icon="fa-star"
-                        invisible="vendor_rating_count == 0">
-                    <div class="o_stat_info">
-                        <span class="o_stat_value">
-                            <field name="vendor_avg_rating"
-                                   widget="float"
-                                   digits="[2,1]"/>
-                            / 5
-                        </span>
-                        <span class="o_stat_text">
-                            Avg Rating
-                            (<field name="vendor_rating_count"/> PO<t t-if="record.vendor_rating_count.value != 1">s</t>)
-                        </span>
-                    </div>
-                </button>
-
             </xpath>
-
-            <!-- ── Vendor Rating panel — inserted before chatter ─────────── -->
-            <xpath expr="//chatter" position="before">
-                <!-- Sentinel fields for invisible conditions -->
-                <field name="vendor_avg_rating"    invisible="1"/>
-                <field name="vendor_rating_count"  invisible="1"/>
-
-                <div invisible="vendor_avg_rating == 0"
-                     style="border-top: 2px solid #dee2e6; margin-top: 12px; padding-top: 14px;">
-
-                    <h4 style="color: #875A7B; margin-bottom: 10px;
-                               display: flex; align-items: center; gap: 8px;">
-                        <i class="fa fa-star" style="color: #F5A623;"/>
-                        Vendor Rating
-                    </h4>
-
-                    <div class="o_group">
-                        <group string="Overall Performance">
-                            <field name="vendor_avg_rating"
-                                   string="Average Rating (out of 5)"
-                                   widget="float"
-                                   digits="[3,2]"
-                                   readonly="1"/>
-                            <field name="vendor_rating_display"
-                                   string="Stars"
-                                   readonly="1"/>
-                            <field name="vendor_rating_count"
-                                   string="Total Rated POs"
-                                   readonly="1"/>
-                        </group>
-                    </div>
-
-                    <div style="margin-top: 8px;">
-                        <button type="object"
-                                name="action_view_vendor_ratings"
-                                class="btn btn-sm btn-outline-primary"
-                                invisible="vendor_rating_count == 0">
-                            <i class="fa fa-list me-1"/>View All PO Ratings
-                        </button>
-                    </div>
-
-                </div>
-            </xpath>
-
-        </field>
-    </record>
-
-    <!-- ═══════════════════════════════════════════════════════════════════
-         VENDOR LIST VIEW WITH RATINGS
-         Used by the "Vendors" menu under the "Vendor Ratings" section.
-         Shows all suppliers with their avg_rating, star display, and count.
-    ═══════════════════════════════════════════════════════════════════════ -->
-    <record id="view_vendor_rating_partner_list" model="ir.ui.view">
-        <field name="name">res.partner.vendor.rating.list</field>
-        <field name="model">res.partner</field>
-        <field name="arch" type="xml">
-            <list string="Vendors"
-                  default_order="vendor_avg_rating desc, name asc"
-                  decoration-success="vendor_avg_rating &gt;= 4"
-                  decoration-warning="vendor_avg_rating &gt;= 2 and vendor_avg_rating &lt; 4"
-                  decoration-muted="vendor_rating_count == 0">
-                <field name="name"                  string="Vendor Name"/>
-                <field name="phone"                 optional="show"/>
-                <field name="email"                 optional="show"/>
-                <field name="supplier_rank"         invisible="1"/>
-                <field name="vendor_avg_rating"     string="Avg Rating"
-                       widget="float" digits="[3,1]"/>
-                <field name="vendor_rating_display" string="Stars"   optional="show"/>
-                <field name="vendor_rating_count"   string="Rated POs"/>
-            </list>
-        </field>
-    </record>
-
-    <!-- ═══════════════════════════════════════════════════════════════════
-         VENDOR RATING SEARCH VIEW
-         For the Vendors list under Vendor Ratings section.
-    ═══════════════════════════════════════════════════════════════════════ -->
-    <record id="view_vendor_rating_partner_search" model="ir.ui.view">
-        <field name="name">res.partner.vendor.rating.search</field>
-        <field name="model">res.partner</field>
-        <field name="arch" type="xml">
-            <search string="Vendors">
-                <field name="name"  string="Vendor Name"/>
-                <field name="email" string="Email"/>
-                <field name="phone" string="Phone"/>
-                <!-- Filters -->
-                <filter name="rated"     string="Rated"
-                        domain="[('vendor_rating_count','>',0)]"/>
-                <filter name="not_rated" string="Not Rated Yet"
-                        domain="[('vendor_rating_count','=',0)]"/>
-                <filter name="top_rated" string="Top Rated (≥4★)"
-                        domain="[('vendor_avg_rating','>=',4)]"/>
-                <!-- Group by -->
-                <group expand="0" string="Group By">
-                    <filter name="group_country" string="Country"
-                            context="{'group_by': 'country_id'}"/>
-                </group>
-            </search>
-        </field>
-    </record>
-
-    <!-- ═══════════════════════════════════════════════════════════════════
-         ACTION: Vendors with Rating (Vendor Ratings > Vendors menu)
-    ═══════════════════════════════════════════════════════════════════════ -->
-    <record id="action_vendor_rating_vendors" model="ir.actions.act_window">
-        <field name="name">Vendors</field>
-        <field name="res_model">res.partner</field>
-        <field name="view_mode">list,kanban,form</field>
-        <field name="view_id" ref="view_vendor_rating_partner_list"/>
-        <field name="search_view_id" ref="view_vendor_rating_partner_search"/>
-        <field name="domain">[('supplier_rank', '&gt;', 0)]</field>
-        <field name="context">{'search_default_supplier_rank': 1}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">No vendors found.</p>
-            <p>
-                Vendors appear here once they are assigned on a BOQ line.
-                Ratings are added to their Purchase Orders after payment is released.
-            </p>
         </field>
     </record>
 

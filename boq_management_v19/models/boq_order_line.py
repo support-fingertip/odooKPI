@@ -162,49 +162,28 @@ class BoqOrderLine(models.Model):
     # ── Notes ─────────────────────────────────────────────────────────────
     notes = fields.Char(string='Remarks')
 
-    # ── Schema bootstrap: runs on EVERY server start ─────────────────────
+    # ── _auto_init: guarantee M2M relation table on every startup ─────────
     def _auto_init(self):
         """
-        Pre-create M2M tables BEFORE super() during install/upgrade.
-        For server restarts without -u, see _register_hook() below.
-        """
-        self._ensure_boq_line_tables()
-        return super()._auto_init()
+        Create boq_order_line_tax_rel unconditionally before super() runs.
 
-    @api.model
-    def _register_hook(self):
+        Odoo does NOT auto-create M2M relation tables for installed modules
+        unless the module is explicitly upgraded (-u).  By creating the table
+        here with IF NOT EXISTS we ensure it is present on every server
+        startup, eliminating the UndefinedTable crash without requiring an
+        explicit module upgrade by the administrator.
         """
-        Called on EVERY Odoo server startup when the registry is built.
-        Ensures boq_order_line M2M tables exist before any ORM query runs,
-        preventing UndefinedTable errors on servers restarted without -u.
-        """
-        self._ensure_boq_line_tables()
-        return super()._register_hook()
-
-    def _ensure_boq_line_tables(self):
-        """
-        Idempotent DDL: create both M2M relation tables with IF NOT EXISTS.
-        Safe to call from _auto_init AND _register_hook.
-        """
-        cr = self.env.cr
-
-        # tax_ids M2M — boq.order.line ↔ account.tax
-        cr.execute("""
+        res = super()._auto_init()
+        self.env.cr.execute("""
             CREATE TABLE IF NOT EXISTS boq_order_line_tax_rel (
-                line_id INTEGER NOT NULL,
-                tax_id  INTEGER NOT NULL,
+                line_id INTEGER NOT NULL
+                    REFERENCES boq_order_line(id) ON DELETE CASCADE,
+                tax_id  INTEGER NOT NULL
+                    REFERENCES account_tax(id)    ON DELETE CASCADE,
                 PRIMARY KEY (line_id, tax_id)
-            )
+            );
         """)
-
-        # vendor_ids M2M — boq.order.line ↔ res.partner
-        cr.execute("""
-            CREATE TABLE IF NOT EXISTS boq_order_line_vendor_rel (
-                line_id    INTEGER NOT NULL,
-                partner_id INTEGER NOT NULL,
-                PRIMARY KEY (line_id, partner_id)
-            )
-        """)
+        return res
 
     # ── Computes ──────────────────────────────────────────────────────────
     @api.depends('product_id')
