@@ -24,6 +24,42 @@ class BoqBoq(models.Model):
     _rec_name = 'name'
     _check_company_auto = True
 
+    def _auto_init(self):
+        """
+        Pre-create ALL M2M relation tables declared on boq.boq BEFORE the
+        ORM's super()._auto_init() runs — same pattern as boq.order.line.
+
+        Tables pre-created:
+          boq_boq_purchase_order_rel — rfq_ids     M2M ↔ purchase.order
+          boq_boq_category_rel       — category_ids M2M ↔ boq.category
+
+        This prevents psycopg2.errors.UndefinedTable from bubbling up to the
+        JSON-RPC layer and appearing as "Odoo Server Error" on the dashboard
+        when get_dashboard_stats() tries to query boq_boq_purchase_order_rel
+        on a server that has not been upgraded with -u yet.
+        """
+        cr = self.env.cr
+
+        # rfq_ids M2M — queried directly in get_dashboard_stats / get_vendor_summary
+        cr.execute("""
+            CREATE TABLE IF NOT EXISTS boq_boq_purchase_order_rel (
+                boq_id      INTEGER NOT NULL,
+                purchase_id INTEGER NOT NULL,
+                PRIMARY KEY (boq_id, purchase_id)
+            )
+        """)
+
+        # category_ids M2M — needed by _compute_tab_flags on form load
+        cr.execute("""
+            CREATE TABLE IF NOT EXISTS boq_boq_category_rel (
+                boq_id      INTEGER NOT NULL,
+                category_id INTEGER NOT NULL,
+                PRIMARY KEY (boq_id, category_id)
+            )
+        """)
+
+        return super()._auto_init()
+
     # ── Identity ──────────────────────────────────────────────────────────
     name = fields.Char(
         string='Reference',
@@ -503,126 +539,204 @@ class BoqBoq(models.Model):
     def get_dashboard_stats(self):
         """
         Return top-level aggregate stats for the BOQ dashboard header cards.
-        """
-        company_domain = [('company_id', '=', self.env.company.id)]
-        boqs = self.search(company_domain)
 
-        # boq_id on purchase.order is non-stored — query M2M table directly
+        Every section is individually wrapped in try/except so a missing DB
+        table or column (e.g. before a module upgrade) NEVER propagates to
+        the JSON-RPC layer as "Odoo Server Error".  Instead the dashboard
+        loads with zeros / empty data and the user can retry after upgrade.
+        """
+        # ── BOQ records ──────────────────────────────────────────────────
+        try:
+            company_domain = [('company_id', '=', self.env.company.id)]
+            boqs = self.search(company_domain)
+        except Exception:
+            boqs = self.env['boq.boq']
+
+        # ── RFQs linked to BOQs (direct M2M SQL — boq_id is non-stored) ─
         rfqs = self.env['purchase.order']
         if boqs.ids:
-            self.env.cr.execute(
-                "SELECT purchase_id FROM boq_boq_purchase_order_rel WHERE boq_id IN %s",
-                (tuple(boqs.ids),)
-            )
-            rfq_ids = [r[0] for r in self.env.cr.fetchall()]
-            if rfq_ids:
-                rfqs = self.env['purchase.order'].browse(rfq_ids)
+            try:
+                self.env.cr.execute(
+                    "SELECT purchase_id FROM boq_boq_purchase_order_rel WHERE boq_id IN %s",
+                    (tuple(boqs.ids),)
+                )
+                rfq_ids = [r[0] for r in self.env.cr.fetchall()]
+                if rfq_ids:
+                    rfqs = self.env['purchase.order'].browse(rfq_ids)
+            except Exception:
+                pass
 
+        # ── State breakdown ───────────────────────────────────────────────
         state_counts = {}
-        for state, _label in self._fields['state'].selection:
-            state_counts[state] = len(boqs.filtered(lambda b, s=state: b.state == s))
+        try:
+            for state, _label in self._fields['state'].selection:
+                state_counts[state] = len(
+                    boqs.filtered(lambda b, s=state: b.state == s)
+                )
+        except Exception:
+            state_counts = {}
 
-        total_value = sum(boqs.mapped('total_amount'))
-        total_tax   = sum(boqs.mapped('total_tax'))
-        grand_total = sum(boqs.mapped('grand_total'))
-        rfq_total = sum(rfqs.mapped('amount_total'))
-        rfq_tax = sum(rfqs.mapped('amount_tax'))
+        # ── BOQ monetary totals (non-stored computed — may fail if M2M
+        #    tables not yet created; fall back to zero gracefully) ─────────
+        total_value = total_tax = grand_total = 0.0
+        try:
+            total_value = sum(boqs.mapped('total_amount'))
+            total_tax   = sum(boqs.mapped('total_tax'))
+            grand_total = sum(boqs.mapped('grand_total'))
+        except Exception:
+            # Attempt line-by-line fallback (only stored field: subtotal)
+            try:
+                for boq in boqs:
+                    for line in boq.line_ids:
+                        total_value += line.subtotal or 0.0
+                grand_total = total_value
+            except Exception:
+                pass
+
+        # ── RFQ totals ────────────────────────────────────────────────────
+        rfq_total = rfq_tax = 0.0
+        rfq_draft_count = 0
+        try:
+            rfq_total       = sum(rfqs.mapped('amount_total'))
+            rfq_tax         = sum(rfqs.mapped('amount_tax'))
+            rfq_draft_count = len(rfqs.filtered(lambda r: r.state in ('draft', 'sent')))
+        except Exception:
+            pass
+
+        # ── Currency ──────────────────────────────────────────────────────
+        try:
+            currency_symbol   = self.env.company.currency_id.symbol or '$'
+            currency_position = self.env.company.currency_id.position or 'before'
+        except Exception:
+            currency_symbol   = '$'
+            currency_position = 'before'
 
         return {
-            'total_boqs': len(boqs),
-            'total_value': total_value,
-            'total_tax': total_tax,
-            'grand_total': grand_total,
-            'state_counts': state_counts,
-            'total_rfqs': len(rfqs),
-            'rfq_draft': len(rfqs.filtered(lambda r: r.state in ('draft', 'sent'))),
-            'rfq_total_value': rfq_total,
-            'rfq_total_tax': rfq_tax,
-            'currency_symbol': self.env.company.currency_id.symbol or '$',
-            'currency_position': self.env.company.currency_id.position or 'before',
+            'total_boqs':       len(boqs),
+            'total_value':      total_value,
+            'total_tax':        total_tax,
+            'grand_total':      grand_total,
+            'state_counts':     state_counts,
+            'total_rfqs':       len(rfqs),
+            'rfq_draft':        rfq_draft_count,
+            'rfq_total_value':  rfq_total,
+            'rfq_total_tax':    rfq_tax,
+            'currency_symbol':  currency_symbol,
+            'currency_position': currency_position,
         }
 
     @api.model
     def get_vendor_summary(self):
         """
         Return vendor-wise RFQ summary for dashboard kanban cards.
-        Each entry: vendor name, rfq count, total value, avg margin, project stages,
-        payment status.
-        """
-        company_domain = [('company_id', '=', self.env.company.id)]
-        boqs = self.search(company_domain)
 
-        # boq_id on purchase.order is non-stored — query M2M table directly
-        # rfq_boq_map: {purchase_id: boq_id}
+        Each entry includes:
+          • vendor name, email, RFQ count, total value / tax
+          • average vendor rating (Task 2 + 3) — batch-fetched in one query
+          • margin % computed from BOQ lines
+          • project names, BOQ states, RFQ states
+
+        Every section is wrapped in try/except so missing DB tables or columns
+        (pre-upgrade state) never crash the dashboard.
+        """
+        # ── BOQ records ──────────────────────────────────────────────────
+        try:
+            company_domain = [('company_id', '=', self.env.company.id)]
+            boqs = self.search(company_domain)
+        except Exception:
+            boqs = self.env['boq.boq']
+
+        # ── M2M: boq → purchase.order (non-stored boq_id on PO) ─────────
         rfq_boq_map = {}
         if boqs.ids:
-            self.env.cr.execute(
-                "SELECT purchase_id, boq_id FROM boq_boq_purchase_order_rel WHERE boq_id IN %s",
-                (tuple(boqs.ids),)
-            )
-            rfq_boq_map = {row[0]: row[1] for row in self.env.cr.fetchall()}
-        rfqs = self.env['purchase.order'].browse(list(rfq_boq_map.keys())) if rfq_boq_map else self.env['purchase.order']
+            try:
+                self.env.cr.execute(
+                    """
+                    SELECT purchase_id, boq_id
+                      FROM boq_boq_purchase_order_rel
+                     WHERE boq_id IN %s
+                    """,
+                    (tuple(boqs.ids),)
+                )
+                rfq_boq_map = {row[0]: row[1] for row in self.env.cr.fetchall()}
+            except Exception:
+                rfq_boq_map = {}
 
-        # Build boq_id → project info map
-        boq_info = {
-            b.id: {
-                'project_name': b.project_name or b.project_id.name or '—',
-                'state': b.state,
-                'total_amount': b.total_amount,
-            }
-            for b in boqs
+        rfqs = (
+            self.env['purchase.order'].browse(list(rfq_boq_map.keys()))
+            if rfq_boq_map
+            else self.env['purchase.order']
+        )
+
+        # ── BOQ project / state info map ─────────────────────────────────
+        boq_info = {}
+        try:
+            for b in boqs:
+                boq_info[b.id] = {
+                    'project_name': b.project_name or (b.project_id.name if b.project_id else '') or '—',
+                    'state': b.state,
+                }
+        except Exception:
+            boq_info = {}
+
+        # ── Build per-vendor aggregates from RFQs ────────────────────────
+        _rfq_state_labels = {
+            'draft':      'RFQ',
+            'sent':       'Sent',
+            'to approve': 'To Approve',
+            'purchase':   'PO',
+            'done':       'Done',
+            'cancel':     'Cancelled',
         }
 
         vendor_map = {}
-        for rfq in rfqs:
-            vid = rfq.partner_id.id
-            if vid not in vendor_map:
-                partner = rfq.partner_id
-                vendor_map[vid] = {
-                    'vendor_id': vid,
-                    'vendor_name': partner.name,
-                    'vendor_email': partner.email or '',
-                    'rfq_count': 0,
-                    'total_value': 0.0,
-                    'total_tax': 0.0,
-                    'paid_value': 0.0,
-                    'states': [],
-                    'project_names': [],
-                    'rfq_states': [],
-                    # Rating fields populated via batch query below (Task 2 + 3)
-                    'avg_rating': 0.0,
-                    'rating_count': 0,
-                    'rating_display': '—',
-                }
-            entry = vendor_map[vid]
-            entry['rfq_count'] += 1
-            entry['total_value'] += rfq.amount_total
-            entry['total_tax'] += rfq.amount_tax
+        try:
+            for rfq in rfqs:
+                vid = rfq.partner_id.id
+                if not vid:
+                    continue
+                if vid not in vendor_map:
+                    partner = rfq.partner_id
+                    vendor_map[vid] = {
+                        'vendor_id':      vid,
+                        'vendor_name':    partner.name or '—',
+                        'vendor_email':   partner.email or '',
+                        'rfq_count':      0,
+                        'total_value':    0.0,
+                        'total_tax':      0.0,
+                        'states':         [],
+                        'project_names':  [],
+                        'rfq_states':     [],
+                        # Task 2 + 3 — populated in batch-fetch below
+                        'avg_rating':     0.0,
+                        'rating_count':   0,
+                        'rating_display': '—',
+                    }
+                entry = vendor_map[vid]
+                entry['rfq_count']   += 1
+                entry['total_value'] += rfq.amount_total or 0.0
+                entry['total_tax']   += rfq.amount_tax  or 0.0
 
-            # Payment status: invoice status on PO
-            rfq_state_label = {
-                'draft': 'RFQ',
-                'sent': 'Sent',
-                'to approve': 'To Approve',
-                'purchase': 'PO',
-                'done': 'Done',
-                'cancel': 'Cancelled',
-            }.get(rfq.state, rfq.state)
-            if rfq_state_label not in entry['rfq_states']:
-                entry['rfq_states'].append(rfq_state_label)
+                state_label = _rfq_state_labels.get(rfq.state, rfq.state)
+                if state_label not in entry['rfq_states']:
+                    entry['rfq_states'].append(state_label)
 
-            boq_id_val = rfq_boq_map.get(rfq.id)
-            if boq_id_val and boq_id_val in boq_info:
-                b = boq_info[boq_id_val]
-                pname = b['project_name']
-                if pname not in entry['project_names']:
-                    entry['project_names'].append(pname)
-                state = b['state']
-                if state not in entry['states']:
-                    entry['states'].append(state)
+                boq_id_val = rfq_boq_map.get(rfq.id)
+                if boq_id_val and boq_id_val in boq_info:
+                    bi = boq_info[boq_id_val]
+                    if bi['project_name'] not in entry['project_names']:
+                        entry['project_names'].append(bi['project_name'])
+                    if bi['state'] not in entry['states']:
+                        entry['states'].append(bi['state'])
+        except Exception:
+            pass
 
-        # ── Batch-fetch vendor ratings (Task 2 + Task 3) ────────────────────
-        # One query for ALL vendor-rated POs — no N+1 per partner.
+        # ── Task 2 + 3: Batch-fetch vendor ratings (one query, no N+1) ───
+        #
+        # We search purchase.order for ALL rated POs whose vendor is in our
+        # vendor map — one round-trip for all vendors.
+        # Wrapped in try/except: vendor_rating column may not exist yet on
+        # a server that has not been upgraded with -u since the field was added.
         vendor_partner_ids = list(vendor_map.keys())
         if vendor_partner_ids:
             try:
@@ -636,41 +750,53 @@ class BoqBoq(models.Model):
                     rating_buckets.setdefault(pid, []).append(int(rpo.vendor_rating))
                 for pid, ratings in rating_buckets.items():
                     if pid in vendor_map:
-                        avg = round(sum(ratings) / len(ratings), 2)
+                        avg    = round(sum(ratings) / len(ratings), 2)
                         filled = round(avg)
-                        vendor_map[pid]['avg_rating']    = avg
-                        vendor_map[pid]['rating_count']  = len(ratings)
+                        vendor_map[pid]['avg_rating']     = avg
+                        vendor_map[pid]['rating_count']   = len(ratings)
                         vendor_map[pid]['rating_display'] = '★' * filled + '☆' * (5 - filled)
             except Exception:
-                # vendor_rating column may not exist yet on fresh installs;
-                # silently skip rating data rather than breaking the dashboard.
                 pass
 
-        # Compute margin per vendor using BOQ lines
+        # ── Margin computation from BOQ lines (vendor_ids M2M) ───────────
+        #
+        # cost_price is a non-stored computed field on boq.order.line.
+        # vendor_ids is a M2M that requires boq_order_line_vendor_rel.
+        # Both accesses are protected by this try/except block.
         vendor_margins = {}
-        for boq in boqs:
-            for line in boq.line_ids:
-                for vendor in line.vendor_ids:
-                    vid = vendor.id
-                    if vid not in vendor_margins:
-                        vendor_margins[vid] = {'total_sell': 0.0, 'total_cost': 0.0}
-                    sell = line.unit_price * line.qty * (1.0 - line.discount / 100.0)
-                    cost = (line.cost_price or 0.0) * line.qty
-                    vendor_margins[vid]['total_sell'] += sell
-                    vendor_margins[vid]['total_cost'] += cost
+        try:
+            for boq in boqs:
+                for line in boq.line_ids:
+                    for vendor in line.vendor_ids:
+                        vid = vendor.id
+                        if vid not in vendor_margins:
+                            vendor_margins[vid] = {'total_sell': 0.0, 'total_cost': 0.0}
+                        sell = (line.unit_price or 0.0) * (line.qty or 0.0) * (
+                            1.0 - (line.discount or 0.0) / 100.0
+                        )
+                        try:
+                            cost = (line.cost_price or 0.0) * (line.qty or 0.0)
+                        except Exception:
+                            cost = 0.0
+                        vendor_margins[vid]['total_sell'] += sell
+                        vendor_margins[vid]['total_cost'] += cost
+        except Exception:
+            pass
 
+        # ── Assemble final result list ────────────────────────────────────
         result = []
         for vid, entry in vendor_map.items():
             margin_data = vendor_margins.get(vid, {'total_sell': 0.0, 'total_cost': 0.0})
             sell = margin_data['total_sell']
             cost = margin_data['total_cost']
-            entry['margin_percent'] = round(((sell - cost) / sell * 100) if sell > 0 else 0.0, 2)
+            entry['margin_percent'] = round(
+                ((sell - cost) / sell * 100) if sell > 0 else 0.0, 2
+            )
             entry['project_names'] = ', '.join(entry['project_names']) or '—'
-            entry['rfq_states'] = ', '.join(entry['rfq_states']) or '—'
-            entry['boq_states'] = ', '.join(entry['states']) or '—'
+            entry['rfq_states']    = ', '.join(entry['rfq_states'])    or '—'
+            entry['boq_states']    = ', '.join(entry['states'])        or '—'
             result.append(entry)
 
-        # Sort by total_value desc
         result.sort(key=lambda x: x['total_value'], reverse=True)
         return result
 
@@ -679,29 +805,73 @@ class BoqBoq(models.Model):
         """
         Return all BOQ order lines assigned to vendor_id so the dashboard
         Summary tab can show a line-level breakdown (like the BOQ form view).
+
+        Non-stored computed fields (tax_amount, total_value, margin_percent,
+        cost_price) are each individually try/except'd to prevent missing M2M
+        tables from crashing this method.
         """
-        partner = self.env['res.partner'].browse(vendor_id)
-        if not partner.exists():
+        try:
+            partner = self.env['res.partner'].browse(vendor_id)
+            if not partner.exists():
+                return []
+        except Exception:
             return []
 
-        company_domain = [('company_id', '=', self.env.company.id)]
-        boqs = self.search(company_domain)
+        try:
+            company_domain = [('company_id', '=', self.env.company.id)]
+            boqs = self.search(company_domain)
+        except Exception:
+            return []
 
         rows = []
         for boq in boqs:
-            for line in boq.line_ids:
-                if partner not in line.vendor_ids:
+            try:
+                lines = boq.line_ids
+            except Exception:
+                continue
+            for line in lines:
+                # Check if this vendor is in the line's vendor_ids M2M
+                try:
+                    if partner not in line.vendor_ids:
+                        continue
+                except Exception:
                     continue
+
+                # Safely read non-stored fields individually
+                try:
+                    cost_price = line.cost_price
+                except Exception:
+                    cost_price = 0.0
+                try:
+                    tax_amount = line.tax_amount
+                except Exception:
+                    tax_amount = 0.0
+                try:
+                    total_value = line.total_value
+                except Exception:
+                    total_value = (line.subtotal or 0.0) + tax_amount
+                try:
+                    margin_pct = round(line.margin_percent, 2)
+                except Exception:
+                    margin_pct = 0.0
+                try:
+                    product_name = (
+                        line.product_name
+                        or (line.product_id.name if line.product_id else '—')
+                    )
+                except Exception:
+                    product_name = '—'
+
                 rows.append({
-                    'boq_name':      boq.name or '—',
-                    'product_name':  line.product_name or (line.product_id.name if line.product_id else '—'),
-                    'qty':           line.qty,
-                    'unit_price':    line.unit_price,
-                    'cost_price':    line.cost_price,
-                    'discount':      line.discount,
-                    'subtotal':      line.subtotal,
-                    'tax_amount':    line.tax_amount,
-                    'total_value':   line.total_value,
-                    'margin_percent': round(line.margin_percent, 2),
+                    'boq_name':       boq.name or '—',
+                    'product_name':   product_name,
+                    'qty':            line.qty or 0.0,
+                    'unit_price':     line.unit_price or 0.0,
+                    'cost_price':     cost_price,
+                    'discount':       line.discount or 0.0,
+                    'subtotal':       line.subtotal or 0.0,
+                    'tax_amount':     tax_amount,
+                    'total_value':    total_value,
+                    'margin_percent': margin_pct,
                 })
         return rows

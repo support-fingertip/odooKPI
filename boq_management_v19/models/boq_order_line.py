@@ -162,28 +162,51 @@ class BoqOrderLine(models.Model):
     # ── Notes ─────────────────────────────────────────────────────────────
     notes = fields.Char(string='Remarks')
 
-    # ── _auto_init: guarantee M2M relation table on every startup ─────────
+    # ── _auto_init: guarantee ALL M2M relation tables exist ──────────────
     def _auto_init(self):
         """
-        Create boq_order_line_tax_rel unconditionally before super() runs.
+        Pre-create ALL M2M relation tables for boq.order.line BEFORE calling
+        super()._auto_init().
 
-        Odoo does NOT auto-create M2M relation tables for installed modules
-        unless the module is explicitly upgraded (-u).  By creating the table
-        here with IF NOT EXISTS we ensure it is present on every server
-        startup, eliminating the UndefinedTable crash without requiring an
-        explicit module upgrade by the administrator.
+        WHY BEFORE super():
+          Odoo's ORM _auto_init() inspects declared Many2many fields and tries
+          to ALTER or query the relation tables.  If the tables don't exist yet
+          (fresh install, partial upgrade, or server restart after code change
+          without -u), the ORM raises psycopg2.errors.UndefinedTable which
+          propagates all the way to the JSON-RPC layer and shows as
+          "Odoo Server Error" on the dashboard.
+
+        Using IF NOT EXISTS makes every call fully idempotent — safe on:
+          • Fresh module installation
+          • Module upgrade (-u boq_management_v19)
+          • Server restart without upgrade
+          • Rollback / partial upgrade recovery
+
+        Tables pre-created here:
+          boq_order_line_tax_rel    — tax_ids   M2M ↔ account.tax
+          boq_order_line_vendor_rel — vendor_ids M2M ↔ res.partner
         """
-        res = super()._auto_init()
-        self.env.cr.execute("""
+        cr = self.env.cr
+
+        # tax_ids M2M — must exist before ORM tries to sync account.tax M2M
+        cr.execute("""
             CREATE TABLE IF NOT EXISTS boq_order_line_tax_rel (
-                line_id INTEGER NOT NULL
-                    REFERENCES boq_order_line(id) ON DELETE CASCADE,
-                tax_id  INTEGER NOT NULL
-                    REFERENCES account_tax(id)    ON DELETE CASCADE,
+                line_id INTEGER NOT NULL,
+                tax_id  INTEGER NOT NULL,
                 PRIMARY KEY (line_id, tax_id)
-            );
+            )
         """)
-        return res
+
+        # vendor_ids M2M — must exist before ORM tries to sync res.partner M2M
+        cr.execute("""
+            CREATE TABLE IF NOT EXISTS boq_order_line_vendor_rel (
+                line_id    INTEGER NOT NULL,
+                partner_id INTEGER NOT NULL,
+                PRIMARY KEY (line_id, partner_id)
+            )
+        """)
+
+        return super()._auto_init()
 
     # ── Computes ──────────────────────────────────────────────────────────
     @api.depends('product_id')
