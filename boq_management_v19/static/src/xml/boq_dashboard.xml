@@ -368,6 +368,18 @@
                                         <i class="fa fa-flag-o me-1"/>Status
                                     </a>
                                 </li>
+                                <!-- Task 3 — Place 3: Ratings tab in vendor notebook -->
+                                <li class="nav-item">
+                                    <a t-attf-class="nav-link {{ state.activeTab === 'ratings' ? 'active fw-semibold' : 'text-muted' }}"
+                                       href="#" t-on-click.prevent="() => this.setActiveTab('ratings')">
+                                        <i class="fa fa-star me-1" style="color:#F5A623;"/>Ratings
+                                        <t t-if="state.selectedVendor and state.selectedVendor.rating_count > 0">
+                                            <span class="badge bg-warning text-dark ms-1" style="font-size:0.68rem;">
+                                                <t t-esc="state.selectedVendor.rating_count"/>
+                                            </span>
+                                        </t>
+                                    </a>
+                                </li>
                             </ul>
                             <div class="d-flex align-items-center gap-2 pe-3">
                                 <button class="btn btn-sm btn-primary"
@@ -629,6 +641,104 @@
                                         </div>
                                     </div>
                                 </div>
+                            </t>
+
+                            <!-- ── Ratings Tab (Task 3 — Place 3: BOQ Dashboard) ── -->
+                            <t t-elif="state.activeTab === 'ratings'">
+
+                                <!-- Loading spinner -->
+                                <t t-if="state.vendorRatingsLoading">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border spinner-border-sm text-warning" role="status"/>
+                                        <span class="ms-2 text-muted small">Loading ratings…</span>
+                                    </div>
+                                </t>
+
+                                <!-- Ratings table -->
+                                <t t-elif="state.vendorRatings.length">
+
+                                    <!-- Summary banner -->
+                                    <div class="alert d-flex align-items-center gap-3 py-2 mb-3"
+                                         style="background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.4);">
+                                        <i class="fa fa-star fa-lg" style="color:#F5A623;"/>
+                                        <div>
+                                            <strong>Overall Average:</strong>
+                                            <span style="font-size:1.1rem;color:#875A7B;margin:0 6px;">
+                                                <t t-esc="state.selectedVendor.avg_rating.toFixed(1)"/> / 5
+                                            </span>
+                                            <span style="color:#F5A623;letter-spacing:2px;">
+                                                <t t-esc="ratingStars(state.selectedVendor.avg_rating)"/>
+                                            </span>
+                                            <span class="text-muted ms-2 small">
+                                                based on
+                                                <t t-esc="state.vendorRatings.length"/> rated
+                                                PO<t t-if="state.vendorRatings.length !== 1">s</t>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Per-PO ratings table -->
+                                    <div class="boq_summary_table_wrap">
+                                        <table class="boq_summary_table w-100">
+                                            <thead>
+                                                <tr>
+                                                    <th>PO Reference</th>
+                                                    <th>PO State</th>
+                                                    <th class="text-center">Rating</th>
+                                                    <th class="text-center">Stars</th>
+                                                    <th>Rated By</th>
+                                                    <th>Date</th>
+                                                    <th>Comment</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="state.vendorRatings" t-as="r" t-key="r_index">
+                                                    <tr>
+                                                        <td>
+                                                            <i class="fa fa-shopping-cart me-1 text-muted"/>
+                                                            <strong><t t-esc="r.po_name"/></strong>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge bg-secondary rounded-pill small">
+                                                                <t t-esc="r.po_state"/>
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-center fw-semibold" style="color:#875A7B;">
+                                                            <t t-esc="r.rating_label"/>
+                                                        </td>
+                                                        <td class="text-center" style="color:#F5A623;letter-spacing:2px;font-size:1rem;">
+                                                            <t t-esc="r.rating_display"/>
+                                                        </td>
+                                                        <td class="small">
+                                                            <i class="fa fa-user me-1 text-muted"/>
+                                                            <t t-esc="r.rated_by_name"/>
+                                                        </td>
+                                                        <td class="text-muted small">
+                                                            <t t-esc="r.rating_date"/>
+                                                        </td>
+                                                        <td class="text-muted fst-italic small" style="max-width:200px;word-break:break-word;">
+                                                            <t t-esc="r.comment || '—'"/>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </t>
+
+                                <!-- Empty state -->
+                                <t t-else="">
+                                    <div class="text-center py-5 text-muted">
+                                        <i class="fa fa-star-o fa-3x mb-3 d-block" style="color:#ddd;"/>
+                                        <p class="mb-1 fw-semibold">No ratings yet for this vendor.</p>
+                                        <small>
+                                            Ratings are collected only after Purchase Orders are fully
+                                            paid.<br/>Only BOQ Managers can submit ratings.
+                                        </small>
+                                    </div>
+                                </t>
+
                             </t>
 
                         </div><!-- /card-body -->
