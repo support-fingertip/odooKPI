@@ -46,8 +46,8 @@
             </xpath>
 
             <!-- ── Vendor Rating panel in form (Task 3 — Place 1) ────── -->
-            <!-- Insert after the standard "Sales &amp; Purchase" tab or before chatter -->
-            <xpath expr="//div[@class='oe_chatter']" position="before">
+            <!-- Insert before chatter (Odoo 19 uses <chatter/> tag, not oe_chatter div) -->
+            <xpath expr="//chatter" position="before">
                 <div invisible="vendor_avg_rating == 0"
                      style="border-top: 2px solid #dee2e6; margin-top: 12px; padding-top: 12px;">
 

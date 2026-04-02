@@ -39,7 +39,7 @@
                  Visible: after payment is released
                  Editable: BOQ Manager group only
                  ══════════════════════════════════════════════════════════ -->
-            <xpath expr="//div[@class='oe_chatter']" position="before">
+            <xpath expr="//chatter" position="before">
                 <div class="o_group" invisible="not payment_released"
                      style="border-top: 2px solid #dee2e6; margin-top: 12px; padding-top: 12px;">
 
