@@ -78,8 +78,7 @@
                     <notebook>
                         <!-- Ratings Tab -->
                         <page string="Ratings" name="ratings">
-                            <field name="rating_ids" mode="list"
-                                   context="{'default_tradeways_id': id}">
+                            <field name="rating_ids" mode="list">
                                 <list string="Ratings" editable="bottom"
                                       groups="boq_management_v19.group_boq_manager">
                                     <field name="rating" widget="priority"/>
