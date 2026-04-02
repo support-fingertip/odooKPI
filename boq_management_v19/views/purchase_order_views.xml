@@ -106,19 +106,6 @@
         </field>
     </record>
 
-    <!-- ── Vendor rating list view inheritance — add rating column ────── -->
-    <record id="view_purchase_order_list_boq_rating_inherit" model="ir.ui.view">
-        <field name="name">purchase.order.list.boq.rating.inherit</field>
-        <field name="model">purchase.order</field>
-        <field name="inherit_id" ref="purchase.purchase_rfq"/>
-        <field name="arch" type="xml">
-            <xpath expr="//list" position="inside">
-                <field name="vendor_rating" optional="show" string="Rating" readonly="1"/>
-                <field name="payment_released" optional="hide" string="Payment Released" readonly="1"/>
-            </xpath>
-        </field>
-    </record>
-
     <record id="action_boq_rfq_list" model="ir.actions.act_window">
         <field name="name">RFQs from BOQ</field>
         <field name="res_model">purchase.order</field>
