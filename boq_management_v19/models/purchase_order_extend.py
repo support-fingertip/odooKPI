@@ -6,18 +6,25 @@ purchase.order extension for BOQ Management (Odoo 19)
 • Vendor Rating after payment released (Task 1)
   - Rating visible ONLY after PO is confirmed AND all invoices are paid
   - Editable by BOQ Manager group only
-  - Collected once per PO; auto-stamps date + user
+  - Collected from the manager (not developer / admin)
+  - Auto-stamps rating date + rated-by user on save
+• Vendor average rating feeds back to res.partner (Task 2)
+• Rating shown on PO form, vendor profile, and BOQ Dashboard (Task 3)
 """
 from odoo import models, fields, api, _
 
 
-# ─── Rating selection shared constant ──────────────────────────────────────────
+# ─── Rating selection ─────────────────────────────────────────────────────────
+# '0' = "Not Rated" is the FIRST / empty state.
+# With the priority widget this renders exactly 5 clickable star positions
+# (priority widget renders N-1 stars for N options; 6 options → 5 stars).
 RATING_SELECTION = [
-    ('1', '1 — Poor'),
-    ('2', '2 — Fair'),
-    ('3', '3 — Good'),
-    ('4', '4 — Very Good'),
-    ('5', '5 — Excellent'),
+    ('0', 'Not Rated'),
+    ('1', '1 Star  — Poor'),
+    ('2', '2 Stars — Fair'),
+    ('3', '3 Stars — Good'),
+    ('4', '4 Stars — Very Good'),
+    ('5', '5 Stars — Excellent'),
 ]
 
 
@@ -27,6 +34,7 @@ class PurchaseOrderBoqExtend(models.Model):
       1. Back-link to the originating BOQ record (non-stored)
       2. Vendor rating fields (stored) — Task 1
          Rating is locked until payment_released is True.
+         Only BOQ Managers can submit/change ratings.
     """
     _inherit = 'purchase.order'
 
@@ -40,21 +48,19 @@ class PurchaseOrderBoqExtend(models.Model):
     @api.model
     def _register_hook(self):
         """
-        Called by Odoo on EVERY server startup when the model registry is
-        built — whether or not the module is being upgraded with -u.
+        Called by Odoo on EVERY server startup when the model registry is built.
 
         WHY THIS MATTERS:
-          _auto_init() only runs during install / upgrade.  When someone
-          pulls new code and restarts Odoo without -u, the Python model
-          declares vendor_rating as a field but the DB column doesn't exist.
-          Odoo's ORM immediately starts issuing SELECT queries that include
-          ALL declared fields (e.g. in mail's _get_activity_groups()) and
-          the very first page load crashes with:
+          _auto_init() only runs during install / upgrade.  When someone pulls
+          new code and restarts Odoo without -u, the Python model declares
+          vendor_rating as a field but the DB column doesn't exist yet.
+          Odoo's ORM immediately starts issuing SELECT queries that include ALL
+          declared fields, causing:
             psycopg2.errors.UndefinedColumn:
               column purchase_order.vendor_rating does not exist
 
-          By running ADD COLUMN IF NOT EXISTS here, we guarantee the columns
-          exist before any ORM query is executed, with zero migration overhead.
+          ADD COLUMN IF NOT EXISTS here guarantees columns exist before any ORM
+          query is executed — zero migration overhead.
         """
         cr = self.env.cr
         cr.execute("""
@@ -136,18 +142,24 @@ class PurchaseOrderBoqExtend(models.Model):
         }
 
     # ════════════════════════════════════════════════════════════════════════
-    # B) Vendor Rating (Task 1) — stored, locked until payment released
+    # B) Vendor Rating — Task 1
+    #    Stored fields; UI locked until payment_released = True.
+    #    Only BOQ Managers can write ratings (enforced in the view via groups=).
     # ════════════════════════════════════════════════════════════════════════
 
     vendor_rating = fields.Selection(
         selection=RATING_SELECTION,
         string='Vendor Rating',
         tracking=True,
-        help='Rate this vendor after payment is released. Only BOQ Managers can rate.',
+        help=(
+            'Rate this vendor after payment is released. '
+            'Only BOQ Managers can rate. '
+            '0 = no rating submitted yet.'
+        ),
     )
     vendor_rating_comment = fields.Text(
         string='Rating Comment',
-        help='Optional remarks about the vendor performance on this PO.',
+        help='Optional remarks about vendor performance on this PO.',
     )
     vendor_rating_date = fields.Date(
         string='Rating Date',
@@ -163,18 +175,32 @@ class PurchaseOrderBoqExtend(models.Model):
         help='The manager who submitted the rating.',
     )
 
-    # ── payment_released: computed (stored) ──────────────────────────────
+    # ── payment_released — non-stored Boolean ────────────────────────────
     payment_released = fields.Boolean(
         string='Payment Released',
         compute='_compute_payment_released',
-        store=False,        # non-stored: no DB column needed, recalculates on read
+        store=False,
         help=(
             'True when the PO is confirmed (state=purchase/done) AND '
-            'all linked vendor bills are posted and fully paid.'
+            'all linked vendor bills are posted and fully paid. '
+            'The vendor rating section is only shown when this is True.'
         ),
     )
 
-    # ── rating_display: non-stored star string ───────────────────────────
+    # ── Computed helper: was a real rating (1-5) submitted? ─────────────
+    is_rated = fields.Boolean(
+        string='Is Rated',
+        compute='_compute_is_rated',
+        store=False,
+        help='True when a 1–5 rating has been submitted (excludes the "0 = not rated" value).',
+    )
+
+    @api.depends('vendor_rating')
+    def _compute_is_rated(self):
+        for rec in self:
+            rec.is_rated = bool(rec.vendor_rating) and rec.vendor_rating != '0'
+
+    # ── rating_display — non-stored star string ──────────────────────────
     rating_display = fields.Char(
         string='Rating Stars',
         compute='_compute_rating_display',
@@ -184,8 +210,9 @@ class PurchaseOrderBoqExtend(models.Model):
     @api.depends('vendor_rating')
     def _compute_rating_display(self):
         for rec in self:
-            if rec.vendor_rating:
-                filled = int(rec.vendor_rating)
+            val = rec.vendor_rating
+            if val and val != '0':
+                filled = int(val)
                 rec.rating_display = '★' * filled + '☆' * (5 - filled)
             else:
                 rec.rating_display = '—'
@@ -198,17 +225,16 @@ class PurchaseOrderBoqExtend(models.Model):
     )
     def _compute_payment_released(self):
         """
-        Payment is released when:
-        1. PO is in state 'purchase' or 'done'  (confirmed)
-        2. At least one vendor bill exists (invoice_ids filtered to vendor bills)
-        3. ALL vendor bills are posted (state='posted') AND paid
-           (payment_state in ('paid', 'in_payment'))
+        Payment is released when ALL of the following are true:
+          1. PO confirmed: state in ('purchase', 'done')
+          2. At least one vendor bill exists (move_type='in_invoice')
+          3. ALL vendor bills are posted (state='posted') AND fully paid
+             (payment_state in ('paid', 'in_payment'))
         """
         for order in self:
             if order.state not in ('purchase', 'done'):
                 order.payment_released = False
                 continue
-            # Filter to vendor bills only (type='in_invoice')
             bills = order.invoice_ids.filtered(
                 lambda inv: inv.move_type == 'in_invoice'
             )
@@ -216,14 +242,28 @@ class PurchaseOrderBoqExtend(models.Model):
                 order.payment_released = False
                 continue
             all_paid = all(
-                inv.state == 'posted' and inv.payment_state in ('paid', 'in_payment')
+                inv.state == 'posted'
+                and inv.payment_state in ('paid', 'in_payment')
                 for inv in bills
             )
             order.payment_released = all_paid
 
-    # ── Override write to auto-stamp rating date + user ──────────────────
+    # ── Override write: auto-stamp rating date + rated_by user ──────────
     def write(self, vals):
-        if 'vendor_rating' in vals and vals.get('vendor_rating'):
-            vals.setdefault('vendor_rating_date', fields.Date.today())
-            vals.setdefault('vendor_rated_by', self.env.user.id)
+        """
+        When a real rating (1–5) is saved for the first time, auto-stamp:
+          • vendor_rating_date = today
+          • vendor_rated_by    = current user
+
+        If the rating is cleared or set back to '0', clear the stamp fields.
+        """
+        new_rating = vals.get('vendor_rating')
+        if new_rating is not None:
+            if new_rating and new_rating != '0':
+                vals.setdefault('vendor_rating_date', fields.Date.today())
+                vals.setdefault('vendor_rated_by', self.env.user.id)
+            elif new_rating == '0' or not new_rating:
+                # Rating cleared — clear the stamps too
+                vals.setdefault('vendor_rating_date', False)
+                vals.setdefault('vendor_rated_by', False)
         return super().write(vals)
