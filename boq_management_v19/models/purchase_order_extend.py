@@ -251,19 +251,26 @@ class PurchaseOrderBoqExtend(models.Model):
     # ── Override write: auto-stamp rating date + rated_by user ──────────
     def write(self, vals):
         """
-        When a real rating (1–5) is saved for the first time, auto-stamp:
-          • vendor_rating_date = today
-          • vendor_rated_by    = current user
+        When a real rating (1–5) is being saved:
+          • vendor_rating_date  → today        (only if not already set)
+          • vendor_rated_by     → current user (only if not already set)
 
-        If the rating is cleared or set back to '0', clear the stamp fields.
+        When the rating is cleared (False / '0'):
+          • vendor_rating_date  → False  (force-clear, regardless of setdefault)
+          • vendor_rated_by     → False  (force-clear)
+
+        We use direct assignment (not setdefault) for the clear case so that a
+        manager who first rated '3', then switches to '0' will have their stamp
+        fields actually removed rather than left stale.
         """
         new_rating = vals.get('vendor_rating')
         if new_rating is not None:
             if new_rating and new_rating != '0':
+                # Real 1–5 rating: stamp only when not already provided
                 vals.setdefault('vendor_rating_date', fields.Date.today())
-                vals.setdefault('vendor_rated_by', self.env.user.id)
-            elif new_rating == '0' or not new_rating:
-                # Rating cleared — clear the stamps too
-                vals.setdefault('vendor_rating_date', False)
-                vals.setdefault('vendor_rated_by', False)
+                vals.setdefault('vendor_rated_by',    self.env.user.id)
+            else:
+                # Rating cleared or set to '0': always wipe the stamp fields
+                vals['vendor_rating_date'] = False
+                vals['vendor_rated_by']    = False
         return super().write(vals)
