@@ -4,8 +4,8 @@ res.partner extension for BOQ Management
 =========================================
 • BOQ smart button (existing)
 • Vendor average rating computed from all rated POs (Task 2)
-  - vendor_avg_rating  : stored Float — auto-recalculates on any PO rating change
-  - vendor_rating_count: stored Integer — number of rated POs
+  - vendor_avg_rating  : non-stored Float — recomputes on each read (no DB column)
+  - vendor_rating_count: non-stored Integer — count of rated POs
 """
 from odoo import models, fields, api, _
 
@@ -47,17 +47,17 @@ class ResPartner(models.Model):
     vendor_avg_rating = fields.Float(
         string='Average Vendor Rating',
         compute='_compute_vendor_avg_rating',
-        store=True,
+        store=False,        # non-stored: no DB column needed, safe on all Odoo versions
         digits=(16, 2),
         help=(
             'Average of all PO vendor ratings given to this vendor. '
-            'Auto-recalculates whenever a PO rating is added or changed.'
+            'Recalculates on each read.'
         ),
     )
     vendor_rating_count = fields.Integer(
         string='Rated POs',
         compute='_compute_vendor_avg_rating',
-        store=True,
+        store=False,        # non-stored: no DB column needed
         help='Number of Purchase Orders that have been rated for this vendor.',
     )
     vendor_rating_display = fields.Char(
@@ -66,17 +66,19 @@ class ResPartner(models.Model):
         help='Visual star display of the average rating (e.g. ★★★☆☆).',
     )
 
-    @api.depends('purchase_order_ids.vendor_rating')
+    @api.depends()
     def _compute_vendor_avg_rating(self):
         """
-        Recalculate average rating whenever any PO for this vendor gets rated.
-        Uses purchase_order_ids (standard Odoo field on res.partner for POs
-        where partner_id = self).
+        Compute average rating by searching purchase.order directly.
+        Uses empty @api.depends() so it recomputes fresh on every read —
+        no DB column required (store=False) and no dependency on
+        purchase_order_ids which is not a declared field on res.partner in Odoo 19.
         """
         for partner in self:
-            rated_pos = partner.purchase_order_ids.filtered(
-                lambda po: po.vendor_rating
-            )
+            rated_pos = self.env['purchase.order'].search([
+                ('partner_id', '=', partner.id),
+                ('vendor_rating', '!=', False),
+            ])
             partner.vendor_rating_count = len(rated_pos)
             if rated_pos:
                 total = sum(int(po.vendor_rating) for po in rated_pos)
