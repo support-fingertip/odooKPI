@@ -21,6 +21,14 @@
               sequence="5"
               groups="boq_management_v19.group_boq_user"/>
 
+    <!-- ── Vendor Dashboard — Traditional views with rating/PO summary ── -->
+    <menuitem id="menu_vendor_dashboard"
+              name="Vendor Dashboard"
+              parent="menu_boq_root"
+              action="action_vendor_dashboard"
+              sequence="7"
+              groups="boq_management_v19.group_boq_user"/>
+
     <!-- ── Main section ── -->
     <menuitem id="menu_boq_main"
               name="BOQ"

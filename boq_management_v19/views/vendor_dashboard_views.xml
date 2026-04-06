@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         VENDOR DASHBOARD — Traditional Views (List / Kanban / Form / Search)
+         Standard Odoo format for vendor-wise rating summary
+    ═══════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── LIST VIEW — Vendor Dashboard ─────────────────────────────── -->
+    <record id="view_vendor_dashboard_list" model="ir.ui.view">
+        <field name="name">res.partner.vendor.dashboard.list</field>
+        <field name="model">res.partner</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <list string="Vendor Dashboard" create="0" edit="0" delete="0"
+                  default_order="vendor_rating_avg desc, name asc"
+                  decoration-success="vendor_rating_status == 'excellent'"
+                  decoration-info="vendor_rating_status == 'good'"
+                  decoration-warning="vendor_rating_status == 'average'"
+                  decoration-danger="vendor_rating_status == 'low'">
+                <field name="name" string="Vendor"/>
+                <field name="email"/>
+                <field name="phone" optional="show"/>
+                <field name="vendor_rating_avg" string="Avg Rating" widget="float" digits="[3,1]"/>
+                <field name="vendor_rating_count" string="Rated POs"/>
+                <field name="vendor_rating_status" string="Rating Status"
+                       decoration-success="vendor_rating_status == 'excellent'"
+                       decoration-info="vendor_rating_status == 'good'"
+                       decoration-warning="vendor_rating_status == 'average'"
+                       decoration-danger="vendor_rating_status == 'low'"/>
+                <field name="vendor_po_count" string="Total POs"/>
+                <field name="vendor_po_total" string="PO Value" widget="float" digits="[16,2]"/>
+                <field name="vendor_po_paid_count" string="Paid"/>
+                <field name="vendor_po_pending_count" string="Pending"/>
+                <field name="city" optional="show"/>
+                <field name="country_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── KANBAN VIEW — Vendor Dashboard Cards ─────────────────────── -->
+    <record id="view_vendor_dashboard_kanban" model="ir.ui.view">
+        <field name="name">res.partner.vendor.dashboard.kanban</field>
+        <field name="model">res.partner</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" create="0" edit="0" delete="0"
+                    default_order="vendor_rating_avg desc, name asc"
+                    sample="1">
+                <field name="name"/>
+                <field name="email"/>
+                <field name="phone"/>
+                <field name="vendor_rating_avg"/>
+                <field name="vendor_rating_count"/>
+                <field name="vendor_rating_status"/>
+                <field name="vendor_po_count"/>
+                <field name="vendor_po_total"/>
+                <field name="vendor_po_paid_count"/>
+                <field name="vendor_po_pending_count"/>
+                <field name="image_128"/>
+                <templates>
+                    <t t-name="card">
+                        <!-- Header: Avatar + Name + Rating Badge -->
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <field name="image_128" widget="image" class="rounded-circle"
+                                   options="{'size': [40, 40]}"/>
+                            <div class="flex-fill min-w-0">
+                                <strong class="d-block text-truncate">
+                                    <field name="name"/>
+                                </strong>
+                                <small class="text-muted text-truncate d-block">
+                                    <field name="email"/>
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Rating Stars -->
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="text-warning">
+                                <t t-set="avg" t-value="record.vendor_rating_avg.raw_value"/>
+                                <t t-foreach="[1,2,3,4,5]" t-as="star" t-key="star">
+                                    <i t-attf-class="fa {{ star &lt;= Math.round(avg || 0) ? 'fa-star' : 'fa-star-o' }}"/>
+                                </t>
+                            </span>
+                            <span class="fw-bold">
+                                <field name="vendor_rating_avg" widget="float" digits="[3,1]"/>
+                            </span>
+                            <small class="text-muted">
+                                (<field name="vendor_rating_count"/> ratings)
+                            </small>
+                        </div>
+
+                        <!-- Stats Row -->
+                        <div class="d-flex justify-content-between border-top pt-2 mt-1">
+                            <div class="text-center">
+                                <div class="fw-bold text-primary">
+                                    <field name="vendor_po_count"/>
+                                </div>
+                                <small class="text-muted">POs</small>
+                            </div>
+                            <div class="text-center">
+                                <div class="fw-bold text-success">
+                                    <field name="vendor_po_paid_count"/>
+                                </div>
+                                <small class="text-muted">Paid</small>
+                            </div>
+                            <div class="text-center">
+                                <div class="fw-bold text-warning">
+                                    <field name="vendor_po_pending_count"/>
+                                </div>
+                                <small class="text-muted">Pending</small>
+                            </div>
+                            <div class="text-center">
+                                <div class="fw-bold">
+                                    <field name="vendor_po_total" widget="float" digits="[16,0]"/>
+                                </div>
+                                <small class="text-muted">Value</small>
+                            </div>
+                        </div>
+
+                        <!-- Rating Status Badge -->
+                        <div class="mt-2">
+                            <field name="vendor_rating_status" widget="badge"
+                                   decoration-success="vendor_rating_status == 'excellent'"
+                                   decoration-info="vendor_rating_status == 'good'"
+                                   decoration-warning="vendor_rating_status == 'average'"
+                                   decoration-danger="vendor_rating_status == 'low'"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ── FORM VIEW — Vendor Dashboard Detail ──────────────────────── -->
+    <record id="view_vendor_dashboard_form" model="ir.ui.view">
+        <field name="name">res.partner.vendor.dashboard.form</field>
+        <field name="model">res.partner</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <form string="Vendor Dashboard" create="0" delete="0">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <!-- PO Count Button -->
+                        <button type="object" name="action_view_vendor_pos"
+                                class="oe_stat_button" icon="fa-shopping-cart">
+                            <field name="vendor_po_count" widget="statinfo"
+                                   string="Purchase Orders"/>
+                        </button>
+                        <!-- Rating Count Button -->
+                        <button type="object" name="action_view_vendor_ratings"
+                                class="oe_stat_button" icon="fa-star"
+                                invisible="vendor_rating_count == 0">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="vendor_rating_avg" widget="float" digits="[3,1]"/> / 5
+                                </span>
+                                <span class="o_stat_text">
+                                    Rating (<field name="vendor_rating_count"/> POs)
+                                </span>
+                            </div>
+                        </button>
+                        <!-- BOQ Count Button -->
+                        <button type="object" name="action_view_boqs"
+                                class="oe_stat_button" icon="fa-calculator"
+                                invisible="boq_count == 0">
+                            <field name="boq_count" widget="statinfo" string="BOQs"/>
+                        </button>
+                    </div>
+
+                    <widget name="web_ribbon" title="Excellent"
+                            invisible="vendor_rating_status != 'excellent'"
+                            bg_color="text-bg-success"/>
+                    <widget name="web_ribbon" title="Good"
+                            invisible="vendor_rating_status != 'good'"
+                            bg_color="text-bg-info"/>
+                    <widget name="web_ribbon" title="Average"
+                            invisible="vendor_rating_status != 'average'"
+                            bg_color="text-bg-warning"/>
+                    <widget name="web_ribbon" title="Low Rating"
+                            invisible="vendor_rating_status != 'low'"
+                            bg_color="text-bg-danger"/>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Vendor Information">
+                            <field name="email" readonly="1"/>
+                            <field name="phone" readonly="1"/>
+                            <field name="city" readonly="1"/>
+                            <field name="country_id" readonly="1"/>
+                        </group>
+                        <group string="Rating Overview">
+                            <field name="vendor_rating_avg" readonly="1" widget="float" digits="[3,1]"/>
+                            <field name="vendor_rating_count" readonly="1"/>
+                            <field name="vendor_rating_status" readonly="1" widget="badge"
+                                   decoration-success="vendor_rating_status == 'excellent'"
+                                   decoration-info="vendor_rating_status == 'good'"
+                                   decoration-warning="vendor_rating_status == 'average'"
+                                   decoration-danger="vendor_rating_status == 'low'"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Purchase Order Summary">
+                            <field name="vendor_po_count" readonly="1"/>
+                            <field name="vendor_po_total" readonly="1" widget="float" digits="[16,2]"/>
+                            <field name="vendor_po_paid_count" readonly="1"/>
+                            <field name="vendor_po_pending_count" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- Rating History Tab -->
+                        <page string="Rating History" name="rating_history">
+                            <field name="vendor_rating_ids" readonly="1" nolabel="1">
+                                <list create="0" delete="0" edit="0"
+                                      decoration-success="rating in ('4','5')"
+                                      decoration-warning="rating == '3'"
+                                      decoration-danger="rating in ('1','2')">
+                                    <field name="purchase_order_id"/>
+                                    <field name="rating"/>
+                                    <field name="rating_value" string="Score"/>
+                                    <field name="quality_rating"/>
+                                    <field name="delivery_rating"/>
+                                    <field name="pricing_rating"/>
+                                    <field name="communication_rating"/>
+                                    <field name="feedback"/>
+                                    <field name="rated_by_id"/>
+                                    <field name="rating_date"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── SEARCH VIEW — Vendor Dashboard Filters ───────────────────── -->
+    <record id="view_vendor_dashboard_search" model="ir.ui.view">
+        <field name="name">res.partner.vendor.dashboard.search</field>
+        <field name="model">res.partner</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="Vendor Dashboard">
+                <field name="name" string="Vendor Name"/>
+                <field name="email"/>
+                <field name="city"/>
+                <field name="country_id"/>
+                <separator/>
+                <filter name="filter_rated" string="Rated Vendors"
+                        domain="[('vendor_rating_count', '&gt;', 0)]"/>
+                <filter name="filter_unrated" string="Unrated Vendors"
+                        domain="[('vendor_rating_count', '=', 0)]"/>
+                <separator/>
+                <filter name="filter_excellent" string="Excellent (4.5+)"
+                        domain="[('vendor_rating_avg', '&gt;=', 4.5)]"/>
+                <filter name="filter_good" string="Good (3.5-4.5)"
+                        domain="[('vendor_rating_avg', '&gt;=', 3.5), ('vendor_rating_avg', '&lt;', 4.5)]"/>
+                <filter name="filter_average" string="Average (2.5-3.5)"
+                        domain="[('vendor_rating_avg', '&gt;=', 2.5), ('vendor_rating_avg', '&lt;', 3.5)]"/>
+                <filter name="filter_low" string="Low (&lt;2.5)"
+                        domain="[('vendor_rating_avg', '&gt;', 0), ('vendor_rating_avg', '&lt;', 2.5)]"/>
+                <separator/>
+                <filter name="filter_has_pos" string="Has Purchase Orders"
+                        domain="[('purchase_order_count', '&gt;', 0)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_rating_status" string="Rating Status"
+                            context="{'group_by': 'vendor_rating_status'}"/>
+                    <filter name="group_country" string="Country"
+                            context="{'group_by': 'country_id'}"/>
+                    <filter name="group_city" string="City"
+                            context="{'group_by': 'city'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── ACTION — Vendor Dashboard (Traditional Views) ────────────── -->
+    <record id="action_vendor_dashboard" model="ir.actions.act_window">
+        <field name="name">Vendor Dashboard</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('supplier_rank', '&gt;', 0)]</field>
+        <field name="context">{'search_default_filter_rated': 0}</field>
+        <field name="search_view_id" ref="view_vendor_dashboard_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No vendors found.</p>
+            <p>Vendors appear here once they have supplier rank &gt; 0.
+            Assign vendors on BOQ lines and create RFQs to see them here.
+            Rate vendors after PO completion and payment release.</p>
+        </field>
+    </record>
+
+    <!-- Bind specific views to the action -->
+    <record id="action_vendor_dashboard_view_list" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_vendor_dashboard_list"/>
+        <field name="act_window_id" ref="action_vendor_dashboard"/>
+    </record>
+    <record id="action_vendor_dashboard_view_kanban" model="ir.actions.act_window.view">
+        <field name="sequence">2</field>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="view_vendor_dashboard_kanban"/>
+        <field name="act_window_id" ref="action_vendor_dashboard"/>
+    </record>
+    <record id="action_vendor_dashboard_view_form" model="ir.actions.act_window.view">
+        <field name="sequence">3</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_vendor_dashboard_form"/>
+        <field name="act_window_id" ref="action_vendor_dashboard"/>
+    </record>
+
+</odoo>
