@@ -44,8 +44,8 @@
                 <attribute name="optional">show</attribute>
             </xpath>
 
-            <!-- Vendor Rating section — visible after payment released -->
-            <xpath expr="//field[@name='notes']" position="after">
+            <!-- Vendor Rating section — placed after the order lines notebook -->
+            <xpath expr="//field[@name='order_line']/.." position="after">
                 <group string="Vendor Rating" invisible="state not in ('purchase', 'done')">
                     <group>
                         <field name="vendor_payment_released" readonly="1" widget="boolean_toggle"/>
