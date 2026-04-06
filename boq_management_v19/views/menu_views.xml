@@ -60,6 +60,13 @@
               sequence="20"
               groups="boq_management_v19.group_boq_manager"/>
 
+    <menuitem id="menu_boq_vendor_ratings"
+              name="Vendor Ratings"
+              parent="menu_boq_report"
+              action="action_vendor_po_rating"
+              sequence="30"
+              groups="boq_management_v19.group_boq_manager"/>
+
     <!-- ── Configuration section ── -->
     <menuitem id="menu_boq_config"
               name="Configuration"
