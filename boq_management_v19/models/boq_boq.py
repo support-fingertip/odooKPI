@@ -581,6 +581,8 @@ class BoqBoq(models.Model):
                     'vendor_id': vid,
                     'vendor_name': rfq.partner_id.name,
                     'vendor_email': rfq.partner_id.email or '',
+                    'vendor_rating_avg': round(rfq.partner_id.vendor_rating_avg, 2),
+                    'vendor_rating_count': rfq.partner_id.vendor_rating_count,
                     'rfq_count': 0,
                     'total_value': 0.0,
                     'total_tax': 0.0,
@@ -642,6 +644,31 @@ class BoqBoq(models.Model):
 
         # Sort by total_value desc
         result.sort(key=lambda x: x['total_value'], reverse=True)
+        return result
+
+    @api.model
+    def get_vendor_ratings(self, vendor_id):
+        """
+        Return all PO ratings for the given vendor, used by the dashboard
+        Rating tab.
+        """
+        ratings = self.env['vendor.po.rating'].search([
+            ('vendor_id', '=', vendor_id),
+        ], order='rating_date desc')
+
+        result = []
+        for r in ratings:
+            result.append({
+                'po_name': r.purchase_order_id.name or '—',
+                'rating': r.rating_value,
+                'quality': int(r.quality_rating) if r.quality_rating else 0,
+                'delivery': int(r.delivery_rating) if r.delivery_rating else 0,
+                'pricing': int(r.pricing_rating) if r.pricing_rating else 0,
+                'communication': int(r.communication_rating) if r.communication_rating else 0,
+                'feedback': r.feedback or '',
+                'rated_by': r.rated_by_id.name or '—',
+                'rating_date': format_date(self.env, r.rating_date) if r.rating_date else '—',
+            })
         return result
 
     @api.model

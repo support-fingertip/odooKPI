@@ -634,6 +634,69 @@
     background: #f8f9ff;
 }
 
+/* ── Vendor Rating Stars ─────────────────────────────────────── */
+.boq_star_filled {
+    color: #ffc107;
+}
+
+.boq_star_empty {
+    color: #dee2e6;
+}
+
+.boq_rating_stars {
+    display: inline-flex;
+    gap: 1px;
+    font-size: 0.7rem;
+}
+
+.boq_rating_stars_sm {
+    display: inline-flex;
+    gap: 1px;
+    font-size: 0.75rem;
+}
+
+.boq_rating_stars_large {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.boq_rating_number {
+    font-size: 0.75rem;
+    color: #495057;
+    font-weight: 600;
+}
+
+/* ── Rating Tab ──────────────────────────────────────────────── */
+.boq_rating_tab {
+    color: #212529;
+}
+
+.boq_rating_overview {
+    background: #fefcf3 !important;
+    border-color: #ffc107 !important;
+}
+
+.boq_rating_big_score {
+    min-width: 80px;
+}
+
+.boq_rating_big_number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #ffc107;
+    line-height: 1;
+}
+
+.boq_rating_stars_large .fa-star,
+.boq_rating_stars_large .fa-star-o {
+    transition: transform 0.15s;
+}
+
+.boq_rating_stars_large .fa-star:hover,
+.boq_rating_stars_large .fa-star-o:hover {
+    transform: scale(1.15);
+}
+
 /* ── Responsive tweaks ───────────────────────────────────────── */
 @media (max-width: 768px) {
     .boq_dash_stat_row {

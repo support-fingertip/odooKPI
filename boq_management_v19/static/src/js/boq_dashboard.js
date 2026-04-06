@@ -67,6 +67,8 @@ export class BoqDashboard extends Component {
             activeTab: "summary",
             vendorLines: [],
             vendorLinesLoading: false,
+            vendorRatings: [],
+            vendorRatingsLoading: false,
         });
 
         onWillStart(() => this._loadAll());
@@ -139,16 +141,22 @@ export class BoqDashboard extends Component {
         this.state.activeTab = "summary";
         this.state.vendorLines = [];
         this.state.vendorLinesLoading = true;
+        this.state.vendorRatings = [];
+        this.state.vendorRatingsLoading = true;
         this._scrollPending = true;
         try {
-            const lines = await this.orm.call(
-                "boq.boq", "get_vendor_boq_lines", [vendor.vendor_id]
-            );
+            const [lines, ratings] = await Promise.all([
+                this.orm.call("boq.boq", "get_vendor_boq_lines", [vendor.vendor_id]),
+                this.orm.call("boq.boq", "get_vendor_ratings", [vendor.vendor_id]),
+            ]);
             this.state.vendorLines = lines;
+            this.state.vendorRatings = ratings;
         } catch (_) {
             this.state.vendorLines = [];
+            this.state.vendorRatings = [];
         } finally {
             this.state.vendorLinesLoading = false;
+            this.state.vendorRatingsLoading = false;
         }
     }
 
@@ -171,6 +179,17 @@ export class BoqDashboard extends Component {
             res_model: "purchase.order",
             views: [[false, "list"], [false, "form"]],
             domain: [["partner_id", "=", vendorId]],
+            target: "current",
+        });
+    }
+
+    openVendorRatings(vendorId) {
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Vendor Ratings",
+            res_model: "vendor.po.rating",
+            views: [[false, "list"], [false, "form"]],
+            domain: [["vendor_id", "=", vendorId]],
             target: "current",
         });
     }

@@ -285,6 +285,24 @@
                                         <t t-esc="vendor.margin_percent"/>%
                                     </div>
                                 </div>
+                                <div class="boq_vendor_stat">
+                                    <div class="boq_vendor_stat_label">Rating</div>
+                                    <div class="boq_vendor_stat_value fw-bold">
+                                        <t t-if="vendor.vendor_rating_count > 0">
+                                            <span class="boq_rating_stars">
+                                                <t t-foreach="[1,2,3,4,5]" t-as="star" t-key="star">
+                                                    <i t-attf-class="fa {{ star &lt;= Math.round(vendor.vendor_rating_avg) ? 'fa-star boq_star_filled' : 'fa-star-o boq_star_empty' }}"/>
+                                                </t>
+                                            </span>
+                                            <span class="boq_rating_number ms-1">
+                                                <t t-esc="vendor.vendor_rating_avg"/>
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <span class="text-muted small">N/A</span>
+                                        </t>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Card Footer: project &amp; status -->
@@ -344,6 +362,12 @@
                                     <a t-attf-class="nav-link {{ state.activeTab === 'status' ? 'active fw-semibold' : 'text-muted' }}"
                                        href="#" t-on-click.prevent="() => this.setActiveTab('status')">
                                         <i class="fa fa-flag-o me-1"/>Status
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a t-attf-class="nav-link {{ state.activeTab === 'rating' ? 'active fw-semibold' : 'text-muted' }}"
+                                       href="#" t-on-click.prevent="() => this.setActiveTab('rating')">
+                                        <i class="fa fa-star me-1"/>Rating
                                     </a>
                                 </li>
                             </ul>
@@ -582,6 +606,114 @@
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </t>
+
+                            <!-- ── Rating Tab ──────────────────────────── -->
+                            <t t-elif="state.activeTab === 'rating'">
+                                <div class="boq_rating_tab">
+
+                                    <!-- Overall Rating Display -->
+                                    <div class="boq_rating_overview d-flex align-items-center gap-4 mb-4 p-3 border rounded">
+                                        <div class="boq_rating_big_score text-center">
+                                            <div class="boq_rating_big_number">
+                                                <t t-if="state.selectedVendor.vendor_rating_count > 0">
+                                                    <t t-esc="state.selectedVendor.vendor_rating_avg"/>
+                                                </t>
+                                                <t t-else="">—</t>
+                                            </div>
+                                            <div class="text-muted small">out of 5</div>
+                                        </div>
+                                        <div class="flex-fill">
+                                            <div class="boq_rating_stars_large mb-2">
+                                                <t t-foreach="[1,2,3,4,5]" t-as="star" t-key="star">
+                                                    <i t-attf-class="fa fa-2x {{ state.selectedVendor.vendor_rating_count > 0 and star &lt;= Math.round(state.selectedVendor.vendor_rating_avg) ? 'fa-star boq_star_filled' : 'fa-star-o boq_star_empty' }}"/>
+                                                </t>
+                                            </div>
+                                            <div class="text-muted small">
+                                                Based on <strong><t t-esc="state.selectedVendor.vendor_rating_count || 0"/></strong> Purchase Order rating<t t-if="state.selectedVendor.vendor_rating_count !== 1">s</t>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    t-on-click="() => this.openVendorRatings(state.selectedVendor.vendor_id)">
+                                                <i class="fa fa-list me-1"/>View All Ratings
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Rating Details Table -->
+                                    <t t-if="state.vendorRatings and state.vendorRatings.length > 0">
+                                        <div class="boq_summary_section_title mb-2">
+                                            <i class="fa fa-star me-1 text-warning"/>
+                                            Individual PO Ratings
+                                        </div>
+                                        <div class="boq_summary_table_wrap">
+                                            <table class="boq_summary_table w-100">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Purchase Order</th>
+                                                        <th class="text-center">Overall</th>
+                                                        <th class="text-center">Quality</th>
+                                                        <th class="text-center">Delivery</th>
+                                                        <th class="text-center">Pricing</th>
+                                                        <th class="text-center">Communication</th>
+                                                        <th>Rated By</th>
+                                                        <th>Date</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-foreach="state.vendorRatings" t-as="r" t-key="r_index">
+                                                        <tr>
+                                                            <td>
+                                                                <i class="fa fa-file-text-o me-1 text-muted"/>
+                                                                <t t-esc="r.po_name"/>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <span class="boq_rating_stars_sm">
+                                                                    <t t-foreach="[1,2,3,4,5]" t-as="s" t-key="s">
+                                                                        <i t-attf-class="fa {{ s &lt;= r.rating ? 'fa-star boq_star_filled' : 'fa-star-o boq_star_empty' }}"/>
+                                                                    </t>
+                                                                </span>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <t t-if="r.quality"><t t-esc="r.quality"/>/5</t>
+                                                                <t t-else="">—</t>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <t t-if="r.delivery"><t t-esc="r.delivery"/>/5</t>
+                                                                <t t-else="">—</t>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <t t-if="r.pricing"><t t-esc="r.pricing"/>/5</t>
+                                                                <t t-else="">—</t>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <t t-if="r.communication"><t t-esc="r.communication"/>/5</t>
+                                                                <t t-else="">—</t>
+                                                            </td>
+                                                            <td><t t-esc="r.rated_by"/></td>
+                                                            <td class="text-muted small"><t t-esc="r.rating_date"/></td>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </t>
+                                    <t t-elif="state.vendorRatingsLoading">
+                                        <div class="text-center py-3">
+                                            <div class="spinner-border spinner-border-sm text-primary"/>
+                                            <span class="ms-2 text-muted small">Loading ratings...</span>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="text-center py-4 text-muted">
+                                            <i class="fa fa-star-o fa-2x mb-2 d-block"/>
+                                            <p>No ratings yet for this vendor.</p>
+                                            <small>Ratings are collected after PO completion and payment release by BOQ Managers.</small>
+                                        </div>
+                                    </t>
+
                                 </div>
                             </t>
 
