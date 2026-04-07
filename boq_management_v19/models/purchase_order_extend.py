@@ -96,7 +96,7 @@ class PurchaseOrderBoqExtend(models.Model):
     )
     vendor_rating_value = fields.Integer(
         string='Rating',
-        related='vendor_rating_id.rating_value',
+        compute='_compute_vendor_rating_value',
         store=False,
     )
     vendor_payment_released = fields.Boolean(
@@ -126,6 +126,13 @@ class PurchaseOrderBoqExtend(models.Model):
             for order in self:
                 if order.id in rating_map:
                     order.vendor_rating_id = rating_map[order.id]
+
+    def _compute_vendor_rating_value(self):
+        for order in self:
+            order.vendor_rating_value = (
+                order.vendor_rating_id.rating_value
+                if order.vendor_rating_id else 0
+            )
 
     def _compute_vendor_payment_released(self):
         """
