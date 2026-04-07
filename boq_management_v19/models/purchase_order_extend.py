@@ -35,17 +35,19 @@ class PurchaseOrderBoqExtend(models.Model):
         which is owned by boq.boq.rfq_ids (Many2many, already exists).
         Single batch query — no N+1 problem.
         """
-        if not self.ids:
-            return
-        self.env.cr.execute(
-            """
-            SELECT purchase_id, boq_id
-              FROM boq_boq_purchase_order_rel
-             WHERE purchase_id IN %s
-            """,
-            (tuple(self.ids),)
-        )
-        mapping = {row[0]: row[1] for row in self.env.cr.fetchall()}
+        # Filter to real (saved) record IDs only — NewId records have no DB row
+        real_ids = [rid for rid in self.ids if isinstance(rid, int)]
+        mapping = {}
+        if real_ids:
+            self.env.cr.execute(
+                """
+                SELECT purchase_id, boq_id
+                  FROM boq_boq_purchase_order_rel
+                 WHERE purchase_id IN %s
+                """,
+                (tuple(real_ids),)
+            )
+            mapping = {row[0]: row[1] for row in self.env.cr.fetchall()}
         for order in self:
             order.boq_id = mapping.get(order.id, False)
 
@@ -103,10 +105,13 @@ class PurchaseOrderBoqExtend(models.Model):
     )
 
     def _compute_vendor_rating_id(self):
-        ratings = self.env['vendor.po.rating'].search([
-            ('purchase_order_id', 'in', self.ids)
-        ])
-        rating_map = {r.purchase_order_id.id: r for r in ratings}
+        real_ids = [rid for rid in self.ids if isinstance(rid, int)]
+        rating_map = {}
+        if real_ids:
+            ratings = self.env['vendor.po.rating'].search([
+                ('purchase_order_id', 'in', real_ids)
+            ])
+            rating_map = {r.purchase_order_id.id: r for r in ratings}
         for order in self:
             order.vendor_rating_id = rating_map.get(order.id, False)
 
