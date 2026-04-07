@@ -149,16 +149,10 @@ class VendorPoRating(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             po = self.env['purchase.order'].browse(vals.get('purchase_order_id'))
-            if po.exists():
-                if po.state not in ('purchase', 'done'):
-                    raise UserError(_(
-                        'Cannot rate vendor: Purchase Order "%s" is not yet confirmed.'
-                    ) % po.name)
-                if not po.vendor_payment_released:
-                    raise UserError(_(
-                        'Cannot rate vendor: Payment has not been released '
-                        'for PO "%s". All invoices must be paid before rating.'
-                    ) % po.name)
+            if po.exists() and po.state not in ('purchase', 'done'):
+                raise UserError(_(
+                    'Cannot rate vendor: Purchase Order "%s" is not yet confirmed.'
+                ) % po.name)
         records = super().create(vals_list)
         # Trigger recompute of vendor average rating
         records.mapped('vendor_id')._compute_vendor_rating()

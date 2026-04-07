@@ -157,17 +157,16 @@ class PurchaseOrderBoqExtend(models.Model):
 
     def _compute_can_rate_vendor(self):
         """
-        Rating is allowed only when:
+        Rating is allowed when:
         1. PO is confirmed (purchase/done)
-        2. Payment is released (all invoices paid)
-        3. No rating exists yet for this PO
-        4. Current user is a BOQ Manager
+        2. No rating exists yet for this PO
+        3. Current user is a BOQ Manager
         """
         is_manager = self.env.user.has_group('boq_management_v19.group_boq_manager')
         for order in self:
             order.can_rate_vendor = (
                 is_manager
-                and order.vendor_payment_released
+                and order.state in ('purchase', 'done')
                 and not order.vendor_rating_id
             )
 
@@ -179,9 +178,8 @@ class PurchaseOrderBoqExtend(models.Model):
             raise UserError(_(
                 'Cannot rate vendor. Ensure:\n'
                 '1. Purchase Order is confirmed\n'
-                '2. All vendor bills are paid\n'
-                '3. No rating exists yet\n'
-                '4. You are a BOQ Manager'
+                '2. No rating exists yet\n'
+                '3. You are a BOQ Manager'
             ))
         return {
             'type': 'ir.actions.act_window',
