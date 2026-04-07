@@ -33,9 +33,16 @@ class PurchaseOrderBoqExtend(models.Model):
         """
         Derive boq_id by querying the boq_boq_purchase_order_rel table
         which is owned by boq.boq.rfq_ids (Many2many, already exists).
-        Single batch query — no N+1 problem.
+        Must handle NewId (unsaved) records gracefully.
         """
-        if not self.ids:
+        # Always assign default first — guarantees every record gets a value
+        for order in self:
+            order.boq_id = False
+
+        # Only query DB for saved records with real integer IDs
+        real_ids = self.ids  # may contain NewId objects
+        int_ids = [i for i in real_ids if type(i) is int]
+        if not int_ids:
             return
         self.env.cr.execute(
             """
@@ -43,11 +50,13 @@ class PurchaseOrderBoqExtend(models.Model):
               FROM boq_boq_purchase_order_rel
              WHERE purchase_id IN %s
             """,
-            (tuple(self.ids),)
+            (tuple(int_ids),)
         )
         mapping = {row[0]: row[1] for row in self.env.cr.fetchall()}
-        for order in self:
-            order.boq_id = mapping.get(order.id, False)
+        if mapping:
+            for order in self:
+                if order.id in mapping:
+                    order.boq_id = mapping[order.id]
 
     # ── Total Tax (non-stored related — reads live from amount_tax) ───────
     total_tax = fields.Monetary(
@@ -103,12 +112,20 @@ class PurchaseOrderBoqExtend(models.Model):
     )
 
     def _compute_vendor_rating_id(self):
-        ratings = self.env['vendor.po.rating'].search([
-            ('purchase_order_id', 'in', self.ids)
-        ])
-        rating_map = {r.purchase_order_id.id: r for r in ratings}
         for order in self:
-            order.vendor_rating_id = rating_map.get(order.id, False)
+            order.vendor_rating_id = False
+
+        int_ids = [i for i in self.ids if type(i) is int]
+        if not int_ids:
+            return
+        ratings = self.env['vendor.po.rating'].search([
+            ('purchase_order_id', 'in', int_ids)
+        ])
+        if ratings:
+            rating_map = {r.purchase_order_id.id: r for r in ratings}
+            for order in self:
+                if order.id in rating_map:
+                    order.vendor_rating_id = rating_map[order.id]
 
     def _compute_vendor_payment_released(self):
         """

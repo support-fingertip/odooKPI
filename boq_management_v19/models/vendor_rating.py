@@ -35,7 +35,7 @@ class VendorPoRating(models.Model):
         readonly=True,
     )
 
-    # Rating fields
+    # Overall rating
     rating = fields.Selection(
         selection=[
             ('1', '1 - Poor'),
@@ -102,6 +102,23 @@ class VendorPoRating(models.Model):
         readonly=True,
     )
 
+    # PO related info (non-stored for display)
+    po_amount_total = fields.Monetary(
+        string='PO Amount',
+        related='purchase_order_id.amount_total',
+        store=False,
+        currency_field='currency_id',
+    )
+    currency_id = fields.Many2one(
+        related='purchase_order_id.currency_id',
+        store=False,
+    )
+    po_state = fields.Selection(
+        string='PO Status',
+        related='purchase_order_id.state',
+        store=False,
+    )
+
     display_name = fields.Char(
         compute='_compute_display_name',
         store=False,
@@ -111,7 +128,8 @@ class VendorPoRating(models.Model):
         (
             'unique_po_rating',
             'UNIQUE(purchase_order_id)',
-            'A rating already exists for this Purchase Order. Only one rating per PO is allowed.'
+            'A rating already exists for this Purchase Order. '
+            'Only one rating per PO is allowed.'
         ),
     ]
 
@@ -130,7 +148,6 @@ class VendorPoRating(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            # Validate that the PO is done and payment is released
             po = self.env['purchase.order'].browse(vals.get('purchase_order_id'))
             if po.exists():
                 if po.state not in ('purchase', 'done'):
@@ -139,8 +156,8 @@ class VendorPoRating(models.Model):
                     ) % po.name)
                 if not po.vendor_payment_released:
                     raise UserError(_(
-                        'Cannot rate vendor: Payment has not been released for PO "%s". '
-                        'All invoices must be paid before rating.'
+                        'Cannot rate vendor: Payment has not been released '
+                        'for PO "%s". All invoices must be paid before rating.'
                     ) % po.name)
         records = super().create(vals_list)
         # Trigger recompute of vendor average rating
@@ -149,7 +166,10 @@ class VendorPoRating(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
-        if 'rating' in vals or 'quality_rating' in vals or 'delivery_rating' in vals:
+        if any(f in vals for f in (
+            'rating', 'quality_rating', 'delivery_rating',
+            'pricing_rating', 'communication_rating',
+        )):
             self.mapped('vendor_id')._compute_vendor_rating()
         return res
 

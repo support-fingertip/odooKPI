@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'BOQ Management — Bill of Quantities (Odoo 19)',
-    'version': '19.0.1.0.5',
+    'version': '19.0.1.0.7',
     'summary': 'Bill of Quantities with dynamic category tabs linked to Customers',
     'description': """
         BOQ Management
@@ -41,6 +41,7 @@
         'views/boq_order_line_views.xml',
         'views/res_partner_views.xml',
         'views/vendor_rating_views.xml',
+        'views/vendor_dashboard_views.xml',
         'views/purchase_order_views.xml',
         'views/menu_views.xml',
     ],
