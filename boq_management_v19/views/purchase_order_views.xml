@@ -44,12 +44,9 @@
                 <attribute name="optional">show</attribute>
             </xpath>
 
-            <!-- Vendor Rating section — placed after the order lines notebook -->
+            <!-- Vendor Rating section — visible when PO is confirmed -->
             <xpath expr="//field[@name='order_line']/.." position="after">
                 <group string="Vendor Rating" invisible="state not in ('purchase', 'done')">
-                    <group>
-                        <field name="vendor_payment_released" readonly="1" widget="boolean_toggle"/>
-                    </group>
                     <group>
                         <div invisible="not vendor_rating_id" class="d-flex align-items-center gap-2">
                             <span class="fw-bold">Rating:</span>
@@ -57,6 +54,8 @@
                                 <field name="vendor_rating_value" readonly="1"/> / 5
                             </span>
                         </div>
+                    </group>
+                    <group>
                         <button name="action_rate_vendor" type="object"
                                 string="Rate This Vendor"
                                 class="btn btn-primary"
