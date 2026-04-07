@@ -120,6 +120,19 @@ class ResPartner(models.Model):
         digits=(3, 2),
     )
 
+    # ── Dashboard display helpers ─────────────────────────────────────
+    vendor_rating_percent = fields.Float(
+        string='Rating %',
+        compute='_compute_vendor_rating_percent',
+        store=False,
+        help='Rating as percentage (0-100) for progress bar display.',
+    )
+    vendor_payment_ratio = fields.Char(
+        string='Payment Status',
+        compute='_compute_vendor_payment_ratio',
+        store=False,
+    )
+
     # ═══════════════════════════════════════════════════════════════════
     # COMPUTE METHODS
     # ═══════════════════════════════════════════════════════════════════
@@ -241,6 +254,22 @@ class ResPartner(models.Model):
                 )
             else:
                 partner.vendor_margin_percent = 0.0
+
+    def _compute_vendor_rating_percent(self):
+        for partner in self:
+            partner.vendor_rating_percent = (
+                (partner.vendor_rating_avg / 5.0) * 100.0
+                if partner.vendor_rating_avg else 0.0
+            )
+
+    def _compute_vendor_payment_ratio(self):
+        for partner in self:
+            paid = partner.vendor_po_paid_count
+            total = partner.vendor_po_count
+            if total:
+                partner.vendor_payment_ratio = '%d / %d Paid' % (paid, total)
+            else:
+                partner.vendor_payment_ratio = 'No POs'
 
     # ═══════════════════════════════════════════════════════════════════
     # ACTIONS
