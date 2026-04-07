@@ -2,9 +2,9 @@
 <odoo>
 
     <!-- ═══════════════════════════════════════════════════════════════════
-         BOQ VENDOR DASHBOARD — Full Traditional Odoo Views
+         BOQ VENDOR DASHBOARD — Enhanced Traditional Odoo 19 Views
          Vendor-wise summary: Rating, POs, Trades, Margin, Payment Status
-         Standard Odoo 19 format: List / Kanban / Form / Graph / Pivot / Search
+         Views: Kanban / List / Form / Graph (Bar + Pie + Line) / Search
     ═══════════════════════════════════════════════════════════════════ -->
 
     <!-- ╔═══════════════════════════════════════════════════════════════╗
@@ -22,13 +22,14 @@
                   decoration-warning="vendor_rating_status == 'average'"
                   decoration-danger="vendor_rating_status == 'low'">
 
-                <!-- Vendor Identity -->
-                <field name="name" string="Vendor Name"/>
+                <field name="name" string="Vendor"/>
                 <field name="email" optional="show"/>
                 <field name="phone" optional="hide"/>
 
-                <!-- Rating -->
+                <!-- Rating with progress bar -->
                 <field name="vendor_rating_avg" string="Rating" widget="float" digits="[3,1]"/>
+                <field name="vendor_rating_percent" string="Rating %" widget="progressbar"
+                       options="{'editable': false}" optional="show"/>
                 <field name="vendor_rating_count" string="Rated POs"/>
                 <field name="vendor_rating_status" string="Status" widget="badge"
                        decoration-success="vendor_rating_status == 'excellent'"
@@ -44,20 +45,20 @@
 
                 <!-- Trade / Category -->
                 <field name="vendor_trade_names" string="Trades"/>
-                <field name="vendor_boq_line_count" string="BOQ Lines" optional="show"/>
-                <field name="vendor_margin_percent" string="Margin %" optional="show"
-                       decoration-success="vendor_margin_percent >= 30"
-                       decoration-info="vendor_margin_percent >= 15"
-                       decoration-warning="vendor_margin_percent >= 0 and vendor_margin_percent &lt; 15"
-                       decoration-danger="vendor_margin_percent &lt; 0"/>
+                <field name="vendor_margin_percent" string="Margin %"
+                       decoration-success="vendor_margin_percent &gt;= 30"
+                       decoration-info="vendor_margin_percent &gt;= 15 and vendor_margin_percent &lt; 30"
+                       decoration-warning="vendor_margin_percent &gt;= 0 and vendor_margin_percent &lt; 15"
+                       decoration-danger="vendor_margin_percent &lt; 0"
+                       optional="show"/>
 
                 <!-- PO Stats -->
                 <field name="vendor_po_count" string="POs"/>
                 <field name="vendor_po_total" string="PO Value" widget="monetary"/>
-                <field name="vendor_po_paid_count" string="Paid" optional="show"/>
-                <field name="vendor_po_pending_count" string="Pending" optional="show"/>
+                <field name="vendor_payment_ratio" string="Payment"/>
+                <field name="vendor_po_paid_count" string="Paid" optional="hide"/>
+                <field name="vendor_po_pending_count" string="Pending" optional="hide"/>
 
-                <!-- Location -->
                 <field name="city" optional="hide"/>
                 <field name="country_id" optional="hide"/>
             </list>
@@ -65,7 +66,7 @@
     </record>
 
     <!-- ╔═══════════════════════════════════════════════════════════════╗
-         ║  2. KANBAN VIEW — Vendor Cards with Rating + Trade + Stats    ║
+         ║  2. KANBAN VIEW — Vendor Cards (Odoo Standard Style)          ║
          ╚═══════════════════════════════════════════════════════════════╝ -->
     <record id="view_vendor_dashboard_kanban" model="ir.ui.view">
         <field name="name">res.partner.vendor.dashboard.kanban</field>
@@ -81,6 +82,7 @@
                 <field name="vendor_rating_avg"/>
                 <field name="vendor_rating_count"/>
                 <field name="vendor_rating_status"/>
+                <field name="vendor_rating_percent"/>
                 <field name="vendor_po_count"/>
                 <field name="vendor_po_total"/>
                 <field name="vendor_po_paid_count"/>
@@ -88,6 +90,7 @@
                 <field name="vendor_trade_names"/>
                 <field name="vendor_boq_line_count"/>
                 <field name="vendor_margin_percent"/>
+                <field name="vendor_payment_ratio"/>
                 <field name="vendor_quality_avg"/>
                 <field name="vendor_delivery_avg"/>
                 <field name="vendor_pricing_avg"/>
@@ -95,92 +98,127 @@
                 <field name="image_128"/>
                 <field name="color"/>
                 <templates>
-                    <t t-name="card">
-                        <!-- ── Header: Avatar + Name ── -->
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <field name="image_128" widget="image" class="rounded-circle"
-                                   options="{'size': [44, 44]}"/>
-                            <div class="flex-fill min-w-0">
-                                <strong class="d-block text-truncate fs-6">
-                                    <field name="name"/>
-                                </strong>
-                                <small class="text-muted text-truncate d-block">
-                                    <field name="email"/>
+                    <t t-name="card" class="flex-row p-0">
+                        <!-- Left color strip based on rating -->
+                        <div t-attf-style="width: 6px; border-radius: 4px 0 0 4px; background: {{ record.vendor_rating_status.raw_value === 'excellent' ? '#28a745' : record.vendor_rating_status.raw_value === 'good' ? '#17a2b8' : record.vendor_rating_status.raw_value === 'average' ? '#ffc107' : record.vendor_rating_status.raw_value === 'low' ? '#dc3545' : '#dee2e6' }};"/>
+
+                        <div class="flex-fill p-3">
+                            <!-- Header: Avatar + Name + Badge -->
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <field name="image_128" widget="image" class="rounded-circle"
+                                       options="{'size': [48, 48]}"/>
+                                <div class="flex-fill min-w-0">
+                                    <strong class="d-block text-truncate">
+                                        <field name="name"/>
+                                    </strong>
+                                    <small class="text-muted text-truncate d-block">
+                                        <field name="email"/>
+                                    </small>
+                                </div>
+                                <field name="vendor_rating_status" widget="badge"
+                                       decoration-success="vendor_rating_status == 'excellent'"
+                                       decoration-info="vendor_rating_status == 'good'"
+                                       decoration-warning="vendor_rating_status == 'average'"
+                                       decoration-danger="vendor_rating_status == 'low'"/>
+                            </div>
+
+                            <!-- Rating Stars Row -->
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="text-warning" style="letter-spacing: 2px;">
+                                    <t t-set="avg" t-value="record.vendor_rating_avg.raw_value"/>
+                                    <t t-foreach="[1,2,3,4,5]" t-as="star" t-key="star">
+                                        <i t-attf-class="fa {{ star &lt;= Math.round(avg || 0) ? 'fa-star' : star - 0.5 &lt;= (avg || 0) ? 'fa-star-half-o' : 'fa-star-o' }}"
+                                           style="font-size: 1.1rem;"/>
+                                    </t>
+                                </span>
+                                <span class="fw-bold fs-6">
+                                    <field name="vendor_rating_avg" widget="float" digits="[3,1]"/>
+                                </span>
+                                <small class="text-muted ms-auto">
+                                    <field name="vendor_rating_count"/> rating<t t-if="record.vendor_rating_count.raw_value != 1">s</t>
                                 </small>
                             </div>
-                            <field name="vendor_rating_status" widget="badge"
-                                   decoration-success="vendor_rating_status == 'excellent'"
-                                   decoration-info="vendor_rating_status == 'good'"
-                                   decoration-warning="vendor_rating_status == 'average'"
-                                   decoration-danger="vendor_rating_status == 'low'"/>
-                        </div>
 
-                        <!-- ── Rating Stars ── -->
-                        <div class="d-flex align-items-center gap-2 mb-2 px-1">
-                            <span class="text-warning">
-                                <t t-set="avg" t-value="record.vendor_rating_avg.raw_value"/>
-                                <t t-foreach="[1,2,3,4,5]" t-as="star" t-key="star">
-                                    <i t-attf-class="fa {{ star &lt;= Math.round(avg || 0) ? 'fa-star' : 'fa-star-o' }}"
-                                       style="font-size: 1rem;"/>
-                                </t>
-                            </span>
-                            <span class="fw-bold">
-                                <field name="vendor_rating_avg" widget="float" digits="[3,1]"/>
-                            </span>
-                            <small class="text-muted">
-                                (<field name="vendor_rating_count"/> PO<t t-if="record.vendor_rating_count.raw_value != 1">s</t>)
-                            </small>
-                        </div>
+                            <!-- Rating Progress Bar -->
+                            <div class="mb-2" style="height: 6px; background: #e9ecef; border-radius: 3px; overflow: hidden;">
+                                <div t-attf-style="height: 100%; width: {{ Math.min(record.vendor_rating_percent.raw_value || 0, 100) }}%; border-radius: 3px; background: {{ record.vendor_rating_status.raw_value === 'excellent' ? '#28a745' : record.vendor_rating_status.raw_value === 'good' ? '#17a2b8' : record.vendor_rating_status.raw_value === 'average' ? '#ffc107' : record.vendor_rating_status.raw_value === 'low' ? '#dc3545' : '#dee2e6' }};"/>
+                            </div>
 
-                        <!-- ── Trades ── -->
-                        <div class="mb-2 px-1">
-                            <small class="text-muted">
-                                <i class="fa fa-wrench me-1"/>
-                                <field name="vendor_trade_names"/>
-                            </small>
-                        </div>
+                            <!-- Trades -->
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="fa fa-wrench me-1 text-primary"/>
+                                    <field name="vendor_trade_names"/>
+                                </small>
+                            </div>
 
-                        <!-- ── Stats Grid ── -->
-                        <div class="d-flex justify-content-between border-top border-bottom py-2 px-1 mb-2"
-                             style="background: #f8f9fa; border-radius: 6px;">
-                            <div class="text-center px-1">
-                                <div class="fw-bold text-primary">
-                                    <field name="vendor_po_count"/>
+                            <!-- Stats Grid (4 columns) -->
+                            <div class="row g-0 text-center border rounded overflow-hidden mb-2" style="font-size: 0.8rem;">
+                                <div class="col-3 py-2 border-end" style="background: rgba(13,110,253,0.05);">
+                                    <div class="fw-bold text-primary fs-6"><field name="vendor_po_count"/></div>
+                                    <div class="text-muted" style="font-size: 0.65rem;">POs</div>
                                 </div>
-                                <small class="text-muted" style="font-size: 0.7rem;">POs</small>
-                            </div>
-                            <div class="text-center px-1">
-                                <div class="fw-bold text-success">
-                                    <field name="vendor_po_paid_count"/>
+                                <div class="col-3 py-2 border-end" style="background: rgba(40,167,69,0.05);">
+                                    <div class="fw-bold text-success fs-6"><field name="vendor_po_paid_count"/></div>
+                                    <div class="text-muted" style="font-size: 0.65rem;">Paid</div>
                                 </div>
-                                <small class="text-muted" style="font-size: 0.7rem;">Paid</small>
-                            </div>
-                            <div class="text-center px-1">
-                                <div class="fw-bold text-warning">
-                                    <field name="vendor_po_pending_count"/>
+                                <div class="col-3 py-2 border-end" style="background: rgba(255,193,7,0.05);">
+                                    <div class="fw-bold text-warning fs-6"><field name="vendor_po_pending_count"/></div>
+                                    <div class="text-muted" style="font-size: 0.65rem;">Pending</div>
                                 </div>
-                                <small class="text-muted" style="font-size: 0.7rem;">Pending</small>
-                            </div>
-                            <div class="text-center px-1">
-                                <div class="fw-bold" style="font-size: 0.85rem;">
-                                    <field name="vendor_boq_line_count"/>
+                                <div class="col-3 py-2" style="background: rgba(108,117,125,0.05);">
+                                    <div class="fw-bold fs-6"><field name="vendor_boq_line_count"/></div>
+                                    <div class="text-muted" style="font-size: 0.65rem;">Lines</div>
                                 </div>
-                                <small class="text-muted" style="font-size: 0.7rem;">Lines</small>
                             </div>
-                        </div>
 
-                        <!-- ── Value + Margin ── -->
-                        <div class="d-flex justify-content-between align-items-center px-1">
-                            <div>
-                                <small class="text-muted">PO Value:</small>
-                                <div class="fw-bold">
-                                    <field name="vendor_po_total" widget="monetary"/>
+                            <!-- Sub-Rating Mini Bars -->
+                            <t t-if="record.vendor_rating_count.raw_value > 0">
+                                <div class="mb-2" style="font-size: 0.75rem;">
+                                    <div class="d-flex align-items-center gap-1 mb-1">
+                                        <span class="text-muted" style="width: 55px;">Quality</span>
+                                        <div class="flex-fill" style="height: 5px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
+                                            <div t-attf-style="height: 100%; width: {{ (record.vendor_quality_avg.raw_value / 5) * 100 }}%; background: #28a745; border-radius: 2px;"/>
+                                        </div>
+                                        <span class="fw-bold" style="width: 22px; text-align: right;"><t t-esc="record.vendor_quality_avg.value"/></span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1 mb-1">
+                                        <span class="text-muted" style="width: 55px;">Delivery</span>
+                                        <div class="flex-fill" style="height: 5px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
+                                            <div t-attf-style="height: 100%; width: {{ (record.vendor_delivery_avg.raw_value / 5) * 100 }}%; background: #17a2b8; border-radius: 2px;"/>
+                                        </div>
+                                        <span class="fw-bold" style="width: 22px; text-align: right;"><t t-esc="record.vendor_delivery_avg.value"/></span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1 mb-1">
+                                        <span class="text-muted" style="width: 55px;">Pricing</span>
+                                        <div class="flex-fill" style="height: 5px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
+                                            <div t-attf-style="height: 100%; width: {{ (record.vendor_pricing_avg.raw_value / 5) * 100 }}%; background: #6f42c1; border-radius: 2px;"/>
+                                        </div>
+                                        <span class="fw-bold" style="width: 22px; text-align: right;"><t t-esc="record.vendor_pricing_avg.value"/></span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <span class="text-muted" style="width: 55px;">Comms</span>
+                                        <div class="flex-fill" style="height: 5px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
+                                            <div t-attf-style="height: 100%; width: {{ (record.vendor_communication_avg.raw_value / 5) * 100 }}%; background: #fd7e14; border-radius: 2px;"/>
+                                        </div>
+                                        <span class="fw-bold" style="width: 22px; text-align: right;"><t t-esc="record.vendor_communication_avg.value"/></span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="text-end">
-                                <small class="text-muted">Margin:</small>
-                                <div class="fw-bold">
-                                    <field name="vendor_margin_percent" widget="float" digits="[6,1]"/>%
+                            </t>
+
+                            <!-- Footer: Value + Margin -->
+                            <div class="d-flex justify-content-between align-items-end border-top pt-2 mt-1">
+                                <div>
+                                    <small class="text-muted d-block">PO Value</small>
+                                    <span class="fw-bold text-primary">
+                                        <field name="vendor_po_total" widget="monetary"/>
+                                    </span>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted d-block">Margin</small>
+                                    <span t-attf-class="fw-bold {{ record.vendor_margin_percent.raw_value >= 30 ? 'text-success' : record.vendor_margin_percent.raw_value >= 15 ? 'text-info' : record.vendor_margin_percent.raw_value >= 0 ? 'text-warning' : 'text-danger' }}">
+                                        <field name="vendor_margin_percent" widget="float" digits="[6,1]"/>%
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -191,7 +229,7 @@
     </record>
 
     <!-- ╔═══════════════════════════════════════════════════════════════╗
-         ║  3. FORM VIEW — Vendor Dashboard Detail (drill-down)          ║
+         ║  3. FORM VIEW — Vendor Dashboard Detail                       ║
          ╚═══════════════════════════════════════════════════════════════╝ -->
     <record id="view_vendor_dashboard_form" model="ir.ui.view">
         <field name="name">res.partner.vendor.dashboard.form</field>
@@ -200,7 +238,6 @@
         <field name="arch" type="xml">
             <form string="Vendor Dashboard" create="0" delete="0">
                 <sheet>
-                    <!-- ── Stat Buttons ── -->
                     <div class="oe_button_box" name="button_box">
                         <button type="object" name="action_view_vendor_pos"
                                 class="oe_stat_button" icon="fa-shopping-cart">
@@ -232,7 +269,6 @@
                         </button>
                     </div>
 
-                    <!-- ── Ribbon ── -->
                     <widget name="web_ribbon" title="Excellent"
                             invisible="vendor_rating_status != 'excellent'"
                             bg_color="text-bg-success"/>
@@ -246,12 +282,10 @@
                             invisible="vendor_rating_status != 'low'"
                             bg_color="text-bg-danger"/>
 
-                    <!-- ── Title ── -->
                     <div class="oe_title">
                         <h1><field name="name" readonly="1"/></h1>
                     </div>
 
-                    <!-- ── Top Groups ── -->
                     <group>
                         <group string="Vendor Information">
                             <field name="email" readonly="1"/>
@@ -291,10 +325,10 @@
                             <field name="vendor_po_total" readonly="1" widget="monetary"/>
                             <field name="vendor_po_paid_count" readonly="1"/>
                             <field name="vendor_po_pending_count" readonly="1"/>
+                            <field name="vendor_payment_ratio" readonly="1"/>
                         </group>
                     </group>
 
-                    <!-- ── Notebook ── -->
                     <notebook>
                         <page string="Rating History" name="rating_history">
                             <field name="vendor_rating_ids" readonly="1" nolabel="1">
@@ -322,22 +356,23 @@
     </record>
 
     <!-- ╔═══════════════════════════════════════════════════════════════╗
-         ║  4. GRAPH VIEW — Vendor Rating Comparison (Bar Chart)         ║
+         ║  4a. GRAPH VIEW — Bar Chart (Rating Comparison)               ║
          ╚═══════════════════════════════════════════════════════════════╝ -->
-    <record id="view_vendor_dashboard_graph" model="ir.ui.view">
-        <field name="name">res.partner.vendor.dashboard.graph</field>
+    <record id="view_vendor_dashboard_graph_bar" model="ir.ui.view">
+        <field name="name">res.partner.vendor.dashboard.graph.bar</field>
         <field name="model">res.partner</field>
         <field name="priority">99</field>
         <field name="arch" type="xml">
-            <graph string="Vendor Rating Comparison" type="bar" sample="1">
+            <graph string="Vendor Rating — Bar Chart" type="bar" sample="1">
                 <field name="name"/>
                 <field name="vendor_rating_avg" type="measure"/>
+                <field name="vendor_rating_count" type="measure"/>
             </graph>
         </field>
     </record>
 
     <!-- ╔═══════════════════════════════════════════════════════════════╗
-         ║  5. SEARCH VIEW — Vendor Dashboard Filters &amp; Group By        ║
+         ║  5. SEARCH VIEW — Filters &amp; Group By                         ║
          ╚═══════════════════════════════════════════════════════════════╝ -->
     <record id="view_vendor_dashboard_search" model="ir.ui.view">
         <field name="name">res.partner.vendor.dashboard.search</field>
@@ -345,8 +380,7 @@
         <field name="priority">99</field>
         <field name="arch" type="xml">
             <search string="Vendor Dashboard">
-                <!-- Search Fields -->
-                <field name="name" string="Vendor Name"
+                <field name="name" string="Vendor"
                        filter_domain="['|', ('name', 'ilike', self), ('email', 'ilike', self)]"/>
                 <field name="email"/>
                 <field name="city"/>
@@ -354,7 +388,6 @@
 
                 <separator/>
 
-                <!-- Rating Filters (vendor_rating_avg/count are stored) -->
                 <filter name="filter_rated" string="Rated Vendors"
                         domain="[('vendor_rating_count', '&gt;', 0)]"/>
                 <filter name="filter_unrated" string="Unrated Vendors"
@@ -373,7 +406,6 @@
 
                 <separator/>
 
-                <!-- Group By -->
                 <group expand="0" string="Group By">
                     <filter name="group_country" string="Country"
                             context="{'group_by': 'country_id'}"/>
@@ -385,12 +417,12 @@
     </record>
 
     <!-- ╔═══════════════════════════════════════════════════════════════╗
-         ║  7. ACTION — Vendor Dashboard (all view modes)                ║
+         ║  6. ACTION — Vendor Dashboard                                 ║
          ╚═══════════════════════════════════════════════════════════════╝ -->
     <record id="action_vendor_dashboard" model="ir.actions.act_window">
         <field name="name">Vendor Dashboard</field>
         <field name="res_model">res.partner</field>
-        <field name="view_mode">kanban,list,form,graph</field>
+        <field name="view_mode">kanban,list,graph,form</field>
         <field name="domain">[('supplier_rank', '&gt;', 0)]</field>
         <field name="context">{}</field>
         <field name="search_view_id" ref="view_vendor_dashboard_search"/>
@@ -402,7 +434,6 @@
         </field>
     </record>
 
-    <!-- Bind specific views to the action -->
     <record id="action_vendor_dashboard_view_kanban" model="ir.actions.act_window.view">
         <field name="sequence">1</field>
         <field name="view_mode">kanban</field>
@@ -415,16 +446,16 @@
         <field name="view_id" ref="view_vendor_dashboard_list"/>
         <field name="act_window_id" ref="action_vendor_dashboard"/>
     </record>
-    <record id="action_vendor_dashboard_view_form" model="ir.actions.act_window.view">
+    <record id="action_vendor_dashboard_view_graph" model="ir.actions.act_window.view">
         <field name="sequence">3</field>
-        <field name="view_mode">form</field>
-        <field name="view_id" ref="view_vendor_dashboard_form"/>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="view_vendor_dashboard_graph_bar"/>
         <field name="act_window_id" ref="action_vendor_dashboard"/>
     </record>
-    <record id="action_vendor_dashboard_view_graph" model="ir.actions.act_window.view">
-        <field name="sequence">4</field>
-        <field name="view_mode">graph</field>
-        <field name="view_id" ref="view_vendor_dashboard_graph"/>
+    <record id="action_vendor_dashboard_view_form" model="ir.actions.act_window.view">
+        <field name="sequence">10</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_vendor_dashboard_form"/>
         <field name="act_window_id" ref="action_vendor_dashboard"/>
     </record>
 

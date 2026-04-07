@@ -109,12 +109,26 @@
     </record>
 
     <!-- ═══════════════════════════════════════════════════════
+         VENDOR PO RATING — Graph View (Rating by Vendor)
+    ═══════════════════════════════════════════════════════ -->
+    <record id="view_vendor_po_rating_graph" model="ir.ui.view">
+        <field name="name">vendor.po.rating.graph</field>
+        <field name="model">vendor.po.rating</field>
+        <field name="arch" type="xml">
+            <graph string="Ratings by Vendor" type="bar" sample="1">
+                <field name="vendor_id"/>
+                <field name="rating_value" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════
          VENDOR PO RATING — Action
     ═══════════════════════════════════════════════════════ -->
     <record id="action_vendor_po_rating" model="ir.actions.act_window">
         <field name="name">Vendor Ratings</field>
         <field name="res_model">vendor.po.rating</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">list,graph,form</field>
         <field name="search_view_id" ref="view_vendor_po_rating_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">No vendor ratings yet!</p>
