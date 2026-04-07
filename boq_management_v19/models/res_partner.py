@@ -43,7 +43,7 @@ class ResPartner(models.Model):
         ],
         string='Rating Status',
         compute='_compute_vendor_rating_status',
-        store=True,
+        store=False,
     )
 
     # ── Vendor Dashboard Fields (PO aggregates) ───────────────────────
@@ -98,25 +98,25 @@ class ResPartner(models.Model):
     vendor_quality_avg = fields.Float(
         string='Avg Quality',
         compute='_compute_vendor_sub_ratings',
-        store=True,
+        store=False,
         digits=(3, 2),
     )
     vendor_delivery_avg = fields.Float(
         string='Avg Delivery',
         compute='_compute_vendor_sub_ratings',
-        store=True,
+        store=False,
         digits=(3, 2),
     )
     vendor_pricing_avg = fields.Float(
         string='Avg Pricing',
         compute='_compute_vendor_sub_ratings',
-        store=True,
+        store=False,
         digits=(3, 2),
     )
     vendor_communication_avg = fields.Float(
         string='Avg Communication',
         compute='_compute_vendor_sub_ratings',
-        store=True,
+        store=False,
         digits=(3, 2),
     )
 

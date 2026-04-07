@@ -337,23 +337,7 @@
     </record>
 
     <!-- ╔═══════════════════════════════════════════════════════════════╗
-         ║  5. PIVOT VIEW — Vendor Rating Analysis                       ║
-         ╚═══════════════════════════════════════════════════════════════╝ -->
-    <record id="view_vendor_dashboard_pivot" model="ir.ui.view">
-        <field name="name">res.partner.vendor.dashboard.pivot</field>
-        <field name="model">res.partner</field>
-        <field name="priority">99</field>
-        <field name="arch" type="xml">
-            <pivot string="Vendor Rating Analysis" sample="1">
-                <field name="vendor_rating_status" type="row"/>
-                <field name="vendor_rating_avg" type="measure"/>
-                <field name="vendor_rating_count" type="measure"/>
-            </pivot>
-        </field>
-    </record>
-
-    <!-- ╔═══════════════════════════════════════════════════════════════╗
-         ║  6. SEARCH VIEW — Vendor Dashboard Filters &amp; Group By        ║
+         ║  5. SEARCH VIEW — Vendor Dashboard Filters &amp; Group By        ║
          ╚═══════════════════════════════════════════════════════════════╝ -->
     <record id="view_vendor_dashboard_search" model="ir.ui.view">
         <field name="name">res.partner.vendor.dashboard.search</field>
@@ -365,13 +349,12 @@
                 <field name="name" string="Vendor Name"
                        filter_domain="['|', ('name', 'ilike', self), ('email', 'ilike', self)]"/>
                 <field name="email"/>
-                <field name="vendor_trade_names" string="Trade"/>
                 <field name="city"/>
                 <field name="country_id"/>
 
                 <separator/>
 
-                <!-- Rating Filters -->
+                <!-- Rating Filters (vendor_rating_avg/count are stored) -->
                 <filter name="filter_rated" string="Rated Vendors"
                         domain="[('vendor_rating_count', '&gt;', 0)]"/>
                 <filter name="filter_unrated" string="Unrated Vendors"
@@ -390,16 +373,8 @@
 
                 <separator/>
 
-                <!-- PO Filters -->
-                <filter name="filter_has_pos" string="Has POs"
-                        domain="[('purchase_order_count', '&gt;', 0)]"/>
-
-                <separator/>
-
                 <!-- Group By -->
                 <group expand="0" string="Group By">
-                    <filter name="group_rating_status" string="Rating Status"
-                            context="{'group_by': 'vendor_rating_status'}"/>
                     <filter name="group_country" string="Country"
                             context="{'group_by': 'country_id'}"/>
                     <filter name="group_city" string="City"
@@ -415,7 +390,7 @@
     <record id="action_vendor_dashboard" model="ir.actions.act_window">
         <field name="name">Vendor Dashboard</field>
         <field name="res_model">res.partner</field>
-        <field name="view_mode">kanban,list,form,graph,pivot</field>
+        <field name="view_mode">kanban,list,form,graph</field>
         <field name="domain">[('supplier_rank', '&gt;', 0)]</field>
         <field name="context">{}</field>
         <field name="search_view_id" ref="view_vendor_dashboard_search"/>
@@ -450,12 +425,6 @@
         <field name="sequence">4</field>
         <field name="view_mode">graph</field>
         <field name="view_id" ref="view_vendor_dashboard_graph"/>
-        <field name="act_window_id" ref="action_vendor_dashboard"/>
-    </record>
-    <record id="action_vendor_dashboard_view_pivot" model="ir.actions.act_window.view">
-        <field name="sequence">5</field>
-        <field name="view_mode">pivot</field>
-        <field name="view_id" ref="view_vendor_dashboard_pivot"/>
         <field name="act_window_id" ref="action_vendor_dashboard"/>
     </record>
 
