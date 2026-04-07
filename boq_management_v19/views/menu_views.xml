@@ -12,8 +12,7 @@
               web_icon="boq_management_v19,static/src/img/boq_icon.png"
               groups="boq_management_v19.group_boq_user"/>
 
-    <!-- ── Dashboard — placed BEFORE the BOQ list section (sequence 5 < 10) ── -->
-    <!-- Task 4: Dashboard sits next to / before BOQ, NOT inside Purchase > RFQ -->
+    <!-- ── BOQ Dashboard (OWL overview) ── -->
     <menuitem id="menu_boq_dashboard"
               name="Dashboard"
               parent="menu_boq_root"
@@ -21,7 +20,7 @@
               sequence="5"
               groups="boq_management_v19.group_boq_user"/>
 
-    <!-- ── Vendor Dashboard — Traditional views with rating/PO summary ── -->
+    <!-- ── Vendor Dashboard (Traditional views: kanban/list/form/graph/pivot) ── -->
     <menuitem id="menu_vendor_dashboard"
               name="Vendor Dashboard"
               parent="menu_boq_root"

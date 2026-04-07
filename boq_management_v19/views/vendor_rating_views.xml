@@ -19,6 +19,7 @@
                         <group string="Purchase Order Details">
                             <field name="purchase_order_id" readonly="1"/>
                             <field name="vendor_id" readonly="1"/>
+                            <field name="po_amount_total" readonly="1"/>
                             <field name="rated_by_id" readonly="1"/>
                             <field name="rating_date" readonly="1"/>
                         </group>
@@ -38,7 +39,9 @@
                         </group>
                     </group>
                     <group string="Feedback">
-                        <field name="feedback" placeholder="Enter your feedback about the vendor's performance..." nolabel="1" colspan="2"/>
+                        <field name="feedback"
+                               placeholder="Enter your feedback about the vendor's performance..."
+                               nolabel="1" colspan="2"/>
                     </group>
                 </sheet>
             </form>
@@ -52,18 +55,56 @@
         <field name="name">vendor.po.rating.list</field>
         <field name="model">vendor.po.rating</field>
         <field name="arch" type="xml">
-            <list string="Vendor Ratings" create="0">
-                <field name="purchase_order_id"/>
+            <list string="Vendor Ratings" create="0"
+                  decoration-success="rating in ('4','5')"
+                  decoration-warning="rating == '3'"
+                  decoration-danger="rating in ('1','2')">
                 <field name="vendor_id"/>
-                <field name="rating" decoration-success="rating in ('4','5')" decoration-warning="rating == '3'" decoration-danger="rating in ('1','2')"/>
+                <field name="purchase_order_id"/>
+                <field name="rating"/>
+                <field name="rating_value" string="Score"/>
                 <field name="quality_rating" optional="show"/>
                 <field name="delivery_rating" optional="show"/>
                 <field name="pricing_rating" optional="show"/>
                 <field name="communication_rating" optional="show"/>
+                <field name="po_amount_total" string="PO Amount" optional="show"/>
                 <field name="rated_by_id"/>
                 <field name="rating_date"/>
                 <field name="feedback" optional="hide"/>
             </list>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════
+         VENDOR PO RATING — Search View
+    ═══════════════════════════════════════════════════════ -->
+    <record id="view_vendor_po_rating_search" model="ir.ui.view">
+        <field name="name">vendor.po.rating.search</field>
+        <field name="model">vendor.po.rating</field>
+        <field name="arch" type="xml">
+            <search string="Vendor Ratings">
+                <field name="vendor_id"/>
+                <field name="purchase_order_id"/>
+                <field name="rated_by_id"/>
+                <separator/>
+                <filter name="filter_excellent" string="Excellent (5)"
+                        domain="[('rating', '=', '5')]"/>
+                <filter name="filter_good" string="Good (4)"
+                        domain="[('rating', '=', '4')]"/>
+                <filter name="filter_average" string="Average (3)"
+                        domain="[('rating', '=', '3')]"/>
+                <filter name="filter_below" string="Below Average (1-2)"
+                        domain="[('rating', 'in', ('1', '2'))]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_vendor" string="Vendor"
+                            context="{'group_by': 'vendor_id'}"/>
+                    <filter name="group_rating" string="Rating"
+                            context="{'group_by': 'rating'}"/>
+                    <filter name="group_rated_by" string="Rated By"
+                            context="{'group_by': 'rated_by_id'}"/>
+                </group>
+            </search>
         </field>
     </record>
 
@@ -74,6 +115,7 @@
         <field name="name">Vendor Ratings</field>
         <field name="res_model">vendor.po.rating</field>
         <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_vendor_po_rating_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">No vendor ratings yet!</p>
             <p>Vendor ratings are collected after Purchase Orders are completed
