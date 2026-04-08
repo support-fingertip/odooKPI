@@ -228,6 +228,10 @@ export class BoqDashboard extends Component {
         });
     }
 
+    openVendorDashboard() {
+        this.action.doAction("boq_management_v19.action_vendor_dashboard");
+    }
+
     // ── Computed getters ────────────────────────────────────────────────────
     get filteredVendors() {
         let list = this.state.vendors;

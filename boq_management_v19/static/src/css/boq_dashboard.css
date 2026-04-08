@@ -484,11 +484,61 @@
 .boq_stat_value { color: #212529 !important; }
 
 /* ══ ALERTS / REPORTS TABLE ════════════════════════════════════ */
-.boq_alert_table { font-size: 0.82rem; color: #212529; }
+.boq_alert_table { font-size: 0.82rem; color: #212529; background: #fff !important; }
 .boq_alert_table th {
     font-size: 0.72rem !important; color: #6c757d !important;
     font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em;
-    background: #f8f9fa; border-bottom: 1px solid #dee2e6;
+    background: #f8f9fa !important; border-bottom: 1px solid #dee2e6;
 }
-.boq_alert_table td { color: #212529 !important; border-bottom: 1px solid #f4f6fb; vertical-align: middle; }
-.boq_alert_row:hover td { background: #f8fbff !important; }
+.boq_alert_table tbody tr { background: #fff !important; color: #212529 !important; }
+.boq_alert_table td { color: #212529 !important; border-bottom: 1px solid #f4f6fb; vertical-align: middle; background: #fff !important; }
+.boq_alert_row:hover td { background: #f0f6ff !important; }
+
+/* ── Alert card wrappers ────────────────────────────────────────── */
+.boq_alert_card {
+    background: #fff !important;
+    border: 1.5px solid #e4e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.boq_alert_card_warning { border-left: 4px solid #ffc107 !important; }
+.boq_alert_card_danger  { border-left: 4px solid #dc3545 !important; }
+
+.boq_alert_card .card-header {
+    padding: 12px 16px !important;
+    border-bottom: 1px solid #e9ecef !important;
+}
+
+.boq_alert_card_warning .card-header { background: #fffbf0 !important; }
+.boq_alert_card_danger  .card-header { background: #fff5f5 !important; }
+
+/* ── Vendor Dashboard quick-access banner ──────────────────────── */
+.boq_vendor_dash_banner {
+    background: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
+    border-radius: 14px;
+    color: #fff;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: 0 4px 16px rgba(13,110,253,.25);
+    cursor: pointer;
+    transition: box-shadow 0.18s, transform 0.18s;
+}
+
+.boq_vendor_dash_banner:hover {
+    box-shadow: 0 8px 28px rgba(13,110,253,.35);
+    transform: translateY(-2px);
+}
+
+.boq_vendor_dash_banner h6 { color: #fff !important; font-size: 1rem; margin: 0; }
+.boq_vendor_dash_banner p  { color: rgba(255,255,255,.80) !important; font-size: 0.82rem; margin: 4px 0 0; }
+.boq_vendor_dash_banner .boq_vdb_icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: rgba(255,255,255,.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; flex-shrink: 0;
+}

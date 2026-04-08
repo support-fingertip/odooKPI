@@ -45,6 +45,13 @@
               sequence="50"
               groups="boq_management_v19.group_boq_manager"/>
 
+    <menuitem id="menu_boq_vendor_dashboard"
+              name="Vendor Dashboard"
+              parent="menu_boq_report"
+              action="action_vendor_dashboard"
+              sequence="5"
+              groups="boq_management_v19.group_boq_manager"/>
+
     <menuitem id="menu_boq_rfq_list"
               name="RFQs from BOQ"
               parent="menu_boq_report"
