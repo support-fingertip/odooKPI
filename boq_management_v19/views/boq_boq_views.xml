@@ -14,33 +14,36 @@
 
             <!-- ── HEADER ──────────────────────────────────────────────── -->
             <header>
+                <!-- DRAFT → Submit -->
                 <button name="action_submit"
                         string="Submit"
                         type="object"
                         class="btn-primary"
                         invisible="state != 'draft'"/>
-                <button name="action_done"
-                        string="Mark Done"
-                        type="object"
-                        class="btn-primary"
-                        invisible="state != 'submitted'"/>
-                <button name="action_reset_draft"
-                        string="Reset to Draft"
-                        type="object"
-                        class="btn-secondary"
-                        invisible="state not in ('submitted',)"/>
-                <!--
-                    CREATE RFQ — visible whenever at least 1 line exists.
-                    Uses trade-level vendors (electrical_vendor_ids etc.)
-                    with fallback to line-level vendor_ids.
-                -->
+
+                <!-- SUBMITTED + no RFQ yet → Create RFQ -->
                 <button name="action_create_rfq"
                         string="Create RFQ"
                         type="object"
                         class="btn-primary"
                         icon="fa-shopping-cart"
-                        invisible="line_count == 0"
+                        invisible="state != 'submitted' or line_count == 0 or rfq_count &gt; 0"
                         confirm="This will generate one RFQ per vendor (per trade). Proceed?"/>
+
+                <!-- SUBMITTED + RFQ created → Mark Done -->
+                <button name="action_done"
+                        string="Mark as Done"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state != 'submitted' or rfq_count == 0"/>
+
+                <!-- Always available on submitted to go back -->
+                <button name="action_reset_draft"
+                        string="Reset to Draft"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="state != 'submitted'"/>
+
                 <field name="state"
                        widget="statusbar"
                        statusbar_visible="draft,submitted,done"/>
