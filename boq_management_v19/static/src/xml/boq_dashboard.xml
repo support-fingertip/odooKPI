@@ -95,64 +95,66 @@
                 <!-- ══ REPORTS / ALERTS ═════════════════════════════════ -->
                 <t t-if="(state.alerts.done_no_rfq and state.alerts.done_no_rfq.length) or (state.alerts.pending_pos and state.alerts.pending_pos.length)">
                     <div class="px-4 pb-4">
-                        <h5 class="mb-3 fw-bold boq_section_title d-flex align-items-center gap-2">
-                            <i class="fa fa-exclamation-triangle" style="color:#dc3545;"/>
-                            Reports &amp; Alerts
-                            <span class="badge rounded-pill ms-1" style="background:#fce8e2;color:#dc3545;font-size:0.72rem;">
-                                <t t-esc="(state.alerts.done_no_rfq.length || 0) + (state.alerts.pending_pos.length || 0)"/> issues
-                            </span>
-                        </h5>
+
+                        <!-- Section title -->
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div style="width:36px;height:36px;border-radius:10px;background:#fce8e2;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa fa-exclamation-triangle" style="color:#dc3545;font-size:1rem;"/>
+                            </div>
+                            <div>
+                                <div class="fw-bold" style="font-size:1rem;color:#212529;">Reports &amp; Alerts</div>
+                                <div style="font-size:0.75rem;color:#6c757d;">
+                                    <t t-esc="(state.alerts.done_no_rfq.length || 0) + (state.alerts.pending_pos.length || 0)"/> issue(s) need attention
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="row g-3">
 
                             <!-- ── Done BOQs with NO RFQ ── -->
                             <t t-if="state.alerts.done_no_rfq and state.alerts.done_no_rfq.length">
                                 <div class="col-12 col-xl-6">
-                                    <div class="card border-0 shadow-sm h-100" style="border-radius:12px;overflow:hidden;">
-                                        <div class="card-header d-flex align-items-center gap-2 py-2 px-3"
-                                             style="background:#fff3cd;border-bottom:1px solid #ffe69c;">
-                                            <i class="fa fa-warning" style="color:#856404;"/>
-                                            <span class="fw-semibold" style="color:#856404;font-size:0.88rem;">
-                                                Done BOQs — RFQ Not Created
-                                            </span>
-                                            <span class="badge ms-auto" style="background:#ffc107;color:#212529;">
-                                                <t t-esc="state.alerts.done_no_rfq.length"/>
-                                            </span>
-                                        </div>
-                                        <div class="card-body p-0">
-                                            <div style="max-height:260px;overflow-y:auto;">
-                                                <table class="table table-sm table-hover mb-0 boq_alert_table">
-                                                    <thead style="position:sticky;top:0;background:#f8f9fa;">
-                                                        <tr>
-                                                            <th style="font-size:0.72rem;color:#6c757d;padding:8px 12px;">BOQ Ref</th>
-                                                            <th style="font-size:0.72rem;color:#6c757d;padding:8px 12px;">Project</th>
-                                                            <th style="font-size:0.72rem;color:#6c757d;padding:8px 12px;">Customer</th>
-                                                            <th style="font-size:0.72rem;color:#6c757d;padding:8px 12px;text-align:right;">Total</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <t t-foreach="state.alerts.done_no_rfq" t-as="row" t-key="row.id">
-                                                            <tr class="boq_alert_row" t-on-click="() => this.openBoqForm(row.id)"
-                                                                style="cursor:pointer;">
-                                                                <td style="padding:8px 12px;font-size:0.82rem;">
-                                                                    <span class="fw-semibold" style="color:#0d6efd;">
-                                                                        <t t-esc="row.name"/>
-                                                                    </span>
-                                                                </td>
-                                                                <td style="padding:8px 12px;font-size:0.82rem;color:#212529;">
-                                                                    <t t-esc="row.project"/>
-                                                                </td>
-                                                                <td style="padding:8px 12px;font-size:0.82rem;color:#495057;">
-                                                                    <t t-esc="row.partner"/>
-                                                                </td>
-                                                                <td style="padding:8px 12px;font-size:0.82rem;text-align:right;color:#212529;font-weight:600;">
-                                                                    <t t-esc="fmtCurrency(row.total)"/>
-                                                                </td>
-                                                            </tr>
-                                                        </t>
-                                                    </tbody>
-                                                </table>
+                                    <div class="boq_alert_panel boq_alert_panel_amber">
+                                        <!-- Panel header -->
+                                        <div class="boq_alert_panel_head" style="background:#fffbf0;border-bottom:2px solid #ffc107;">
+                                            <div style="width:30px;height:30px;border-radius:8px;background:#fff3cd;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                                <i class="fa fa-file-text-o" style="color:#856404;font-size:0.9rem;"/>
                                             </div>
+                                            <div style="flex:1;">
+                                                <div class="fw-semibold" style="color:#856404;font-size:0.86rem;">Done BOQs — RFQ Not Created</div>
+                                                <div style="font-size:0.7rem;color:#a07800;">BOQ closed before generating purchase requests</div>
+                                            </div>
+                                            <div style="background:#ffc107;color:#212529;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;">
+                                                <t t-esc="state.alerts.done_no_rfq.length"/> BOQ<t t-if="state.alerts.done_no_rfq.length !== 1">s</t>
+                                            </div>
+                                        </div>
+                                        <!-- Scrollable rows -->
+                                        <div style="max-height:260px;overflow-y:auto;background:#fff;">
+                                            <!-- Column headers -->
+                                            <div class="boq_alert_col_head">
+                                                <div style="flex:2;">BOQ Ref</div>
+                                                <div style="flex:2;">Project</div>
+                                                <div style="flex:2;">Customer</div>
+                                                <div style="flex:1;text-align:right;">Total</div>
+                                            </div>
+                                            <t t-foreach="state.alerts.done_no_rfq" t-as="row" t-key="row.id">
+                                                <div class="boq_alert_data_row" t-on-click="() => this.openBoqForm(row.id)">
+                                                    <div style="flex:2;">
+                                                        <span style="font-weight:600;color:#0d6efd;font-size:0.83rem;">
+                                                            <t t-esc="row.name"/>
+                                                        </span>
+                                                    </div>
+                                                    <div style="flex:2;color:#495057;font-size:0.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                                        <t t-esc="row.project"/>
+                                                    </div>
+                                                    <div style="flex:2;color:#495057;font-size:0.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                                        <t t-esc="row.partner"/>
+                                                    </div>
+                                                    <div style="flex:1;text-align:right;font-weight:600;color:#212529;font-size:0.82rem;">
+                                                        <t t-esc="fmtCurrency(row.total)"/>
+                                                    </div>
+                                                </div>
+                                            </t>
                                         </div>
                                     </div>
                                 </div>
@@ -161,61 +163,55 @@
                             <!-- ── Pending POs (RFQ not confirmed) ── -->
                             <t t-if="state.alerts.pending_pos and state.alerts.pending_pos.length">
                                 <div class="col-12 col-xl-6">
-                                    <div class="card border-0 shadow-sm h-100" style="border-radius:12px;overflow:hidden;">
-                                        <div class="card-header d-flex align-items-center gap-2 py-2 px-3"
-                                             style="background:#fce8e2;border-bottom:1px solid #f5c6b8;">
-                                            <i class="fa fa-clock-o" style="color:#842029;"/>
-                                            <span class="fw-semibold" style="color:#842029;font-size:0.88rem;">
-                                                Pending POs — Not Confirmed
-                                            </span>
-                                            <span class="badge ms-auto" style="background:#dc3545;color:#fff;">
-                                                <t t-esc="state.alerts.pending_pos.length"/>
-                                            </span>
-                                        </div>
-                                        <div class="card-body p-0">
-                                            <div style="max-height:260px;overflow-y:auto;">
-                                                <table class="table table-sm table-hover mb-0 boq_alert_table">
-                                                    <thead style="position:sticky;top:0;background:#f8f9fa;">
-                                                        <tr>
-                                                            <th style="font-size:0.72rem;color:#6c757d;padding:8px 12px;">BOQ</th>
-                                                            <th style="font-size:0.72rem;color:#6c757d;padding:8px 12px;">PO Ref</th>
-                                                            <th style="font-size:0.72rem;color:#6c757d;padding:8px 12px;">Vendor</th>
-                                                            <th style="font-size:0.72rem;color:#6c757d;padding:8px 12px;text-align:right;">Amount</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <t t-foreach="state.alerts.pending_pos" t-as="row" t-key="row.po_id">
-                                                            <tr class="boq_alert_row" t-on-click="() => this.openPoForm(row.po_id)"
-                                                                style="cursor:pointer;">
-                                                                <td style="padding:8px 12px;font-size:0.82rem;">
-                                                                    <span class="fw-semibold" style="color:#0d6efd;">
-                                                                        <t t-esc="row.boq_name"/>
-                                                                    </span>
-                                                                    <div style="font-size:0.7rem;color:#6c757d;">
-                                                                        <t t-esc="row.project"/>
-                                                                    </div>
-                                                                </td>
-                                                                <td style="padding:8px 12px;font-size:0.82rem;">
-                                                                    <span class="fw-semibold" style="color:#212529;">
-                                                                        <t t-esc="row.po_name"/>
-                                                                    </span>
-                                                                    <div>
-                                                                        <span class="badge" style="font-size:0.65rem;background:#fff3cd;color:#856404;">
-                                                                            <t t-esc="row.po_state"/>
-                                                                        </span>
-                                                                    </div>
-                                                                </td>
-                                                                <td style="padding:8px 12px;font-size:0.82rem;color:#495057;">
-                                                                    <t t-esc="row.vendor"/>
-                                                                </td>
-                                                                <td style="padding:8px 12px;font-size:0.82rem;text-align:right;color:#212529;font-weight:600;">
-                                                                    <t t-esc="fmtCurrency(row.amount)"/>
-                                                                </td>
-                                                            </tr>
-                                                        </t>
-                                                    </tbody>
-                                                </table>
+                                    <div class="boq_alert_panel boq_alert_panel_red">
+                                        <!-- Panel header -->
+                                        <div class="boq_alert_panel_head" style="background:#fff5f5;border-bottom:2px solid #dc3545;">
+                                            <div style="width:30px;height:30px;border-radius:8px;background:#fce8e2;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                                <i class="fa fa-clock-o" style="color:#842029;font-size:0.9rem;"/>
                                             </div>
+                                            <div style="flex:1;">
+                                                <div class="fw-semibold" style="color:#842029;font-size:0.86rem;">Pending POs — Not Confirmed</div>
+                                                <div style="font-size:0.7rem;color:#c0392b;">Purchase orders awaiting confirmation</div>
+                                            </div>
+                                            <div style="background:#dc3545;color:#fff;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;">
+                                                <t t-esc="state.alerts.pending_pos.length"/> PO<t t-if="state.alerts.pending_pos.length !== 1">s</t>
+                                            </div>
+                                        </div>
+                                        <!-- Scrollable rows -->
+                                        <div style="max-height:260px;overflow-y:auto;background:#fff;">
+                                            <!-- Column headers -->
+                                            <div class="boq_alert_col_head">
+                                                <div style="flex:2;">BOQ / Project</div>
+                                                <div style="flex:2;">PO Reference</div>
+                                                <div style="flex:2;">Vendor</div>
+                                                <div style="flex:1;text-align:right;">Amount</div>
+                                            </div>
+                                            <t t-foreach="state.alerts.pending_pos" t-as="row" t-key="row.po_id">
+                                                <div class="boq_alert_data_row" t-on-click="() => this.openPoForm(row.po_id)">
+                                                    <div style="flex:2;min-width:0;">
+                                                        <div style="font-weight:600;color:#0d6efd;font-size:0.83rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                                            <t t-esc="row.boq_name"/>
+                                                        </div>
+                                                        <div style="font-size:0.7rem;color:#6c757d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                                            <t t-esc="row.project"/>
+                                                        </div>
+                                                    </div>
+                                                    <div style="flex:2;min-width:0;">
+                                                        <div style="font-weight:600;color:#212529;font-size:0.83rem;">
+                                                            <t t-esc="row.po_name"/>
+                                                        </div>
+                                                        <div style="display:inline-block;margin-top:2px;padding:1px 7px;border-radius:10px;font-size:0.65rem;font-weight:600;background:#fff3cd;color:#856404;border:1px solid #ffe69c;">
+                                                            <t t-esc="row.po_state"/>
+                                                        </div>
+                                                    </div>
+                                                    <div style="flex:2;color:#495057;font-size:0.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                                        <t t-esc="row.vendor"/>
+                                                    </div>
+                                                    <div style="flex:1;text-align:right;font-weight:600;color:#212529;font-size:0.82rem;">
+                                                        <t t-esc="fmtCurrency(row.amount)"/>
+                                                    </div>
+                                                </div>
+                                            </t>
                                         </div>
                                     </div>
                                 </div>

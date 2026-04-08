@@ -290,9 +290,9 @@ export class BoqDashboard extends Component {
     get stateSummary() {
         const sc = this.state.stats.state_counts || {};
         return [
-            { key: "draft",     label: "Draft",     cls: "bg-secondary",        val: sc.draft     || 0 },
-            { key: "submitted", label: "Submitted",  cls: "bg-warning text-dark", val: sc.submitted || 0 },
-            { key: "done",      label: "Done",       cls: "bg-success",          val: sc.done      || 0 },
+            { key: "draft",     label: "Draft",     cls: "boq_badge_draft",      val: sc.draft     || 0 },
+            { key: "submitted", label: "Submitted", cls: "boq_badge_submitted",  val: sc.submitted || 0 },
+            { key: "done",      label: "Done",       cls: "boq_badge_done",       val: sc.done      || 0 },
         ].filter(s => s.val > 0);
     }
 
