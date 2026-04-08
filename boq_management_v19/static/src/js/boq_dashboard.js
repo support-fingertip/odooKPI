@@ -61,6 +61,8 @@ export class BoqDashboard extends Component {
         actionId:          { optional: true },
         updateActionState: { type: Function, optional: true },
         className:         { type: String,   optional: true },
+        globalState:       { optional: true }, // passed by Odoo 19 action client
+        "*":               true,               // forward-compat: accept any extra props
     };
 
     setup() {
