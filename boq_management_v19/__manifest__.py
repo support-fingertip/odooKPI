@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'BOQ Management — Bill of Quantities (Odoo 19)',
-    'version': '19.0.1.1.1',
+    'version': '19.0.1.2.0',
     'summary': 'Bill of Quantities with dynamic category tabs linked to Customers',
     'description': """
         BOQ Management

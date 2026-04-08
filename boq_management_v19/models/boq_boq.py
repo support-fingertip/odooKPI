@@ -621,6 +621,73 @@ class BoqBoq(models.Model):
         }
 
     @api.model
+    def get_dashboard_alerts(self):
+        """
+        Return two alert lists for the dashboard Reports section:
+          done_no_rfq — BOQs in 'done' state with zero RFQs created
+          pending_pos — BOQs that have at least one RFQ still in draft/sent
+                        (purchase order not yet confirmed)
+        """
+        company_domain = [('company_id', '=', self.env.company.id)]
+
+        # ── 1. Done BOQs with no RFQ ─────────────────────────────────────
+        done_boqs = self.search(company_domain + [('state', '=', 'done')])
+        done_no_rfq = []
+        for boq in done_boqs.filtered(lambda b: not b.rfq_ids):
+            done_no_rfq.append({
+                'id':      boq.id,
+                'name':    boq.name,
+                'partner': boq.partner_id.name if boq.partner_id else '—',
+                'project': boq.project_name or '—',
+                'date':    boq.date.strftime('%d/%m/%Y') if boq.date else '—',
+                'total':   boq.grand_total,
+            })
+
+        # ── 2. BOQs with unconfirmed POs (draft / sent) ──────────────────
+        pending_pos = []
+        all_boqs = self.search(company_domain)
+        if all_boqs.ids:
+            self.env.cr.execute(
+                "SELECT boq_id, purchase_id "
+                "FROM boq_boq_purchase_order_rel "
+                "WHERE boq_id IN %s",
+                (tuple(all_boqs.ids),)
+            )
+            rows = self.env.cr.fetchall()
+            all_po_ids = list({r[1] for r in rows})
+            if all_po_ids:
+                pending = self.env['purchase.order'].browse(all_po_ids).filtered(
+                    lambda p: p.state in ('draft', 'sent')
+                )
+                pending_set = {p.id for p in pending}
+                boq_idx = {b.id: b for b in all_boqs}
+                po_idx  = {p.id: p for p in pending}
+
+                for boq_id, po_id in rows:
+                    if po_id not in pending_set:
+                        continue
+                    boq = boq_idx.get(boq_id)
+                    po  = po_idx.get(po_id)
+                    if not boq or not po:
+                        continue
+                    pending_pos.append({
+                        'boq_id':   boq.id,
+                        'boq_name': boq.name,
+                        'project':  boq.project_name or '—',
+                        'po_id':    po.id,
+                        'po_name':  po.name,
+                        'vendor':   po.partner_id.name if po.partner_id else '—',
+                        'amount':   po.amount_total,
+                        'po_state': dict(po._fields['state'].selection).get(po.state, po.state),
+                        'date':     po.date_order.strftime('%d/%m/%Y') if po.date_order else '—',
+                    })
+
+        return {
+            'done_no_rfq': done_no_rfq,
+            'pending_pos': pending_pos,
+        }
+
+    @api.model
     def get_vendor_summary(self):
         """
         Return vendor-wise RFQ summary for dashboard kanban cards.
