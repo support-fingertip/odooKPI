@@ -220,25 +220,56 @@ class ResPartner(models.Model):
             partner.vendor_po_pending_count = pending
 
     def _compute_vendor_trades(self):
-        """Compute trade/category-wise data from BOQ order lines."""
+        """
+        Compute trade/category-wise data merging:
+        1. Trade-level vendor assignments on boq.boq (new: per-tab selection)
+        2. Line-level vendor_ids on boq.order.line (legacy fallback)
+        """
+        _TRADE_VENDOR_FLD = {
+            'electrical': 'electrical_vendor_ids',
+            'civil':      'civil_vendor_ids',
+            'lighting':   'lighting_vendor_ids',
+            'plumbing':   'plumbing_vendor_ids',
+            'hvac':       'hvac_vendor_ids',
+            'finishing':  'finishing_vendor_ids',
+        }
+        # Build vendor_id → set of category codes from trade-level fields (once)
+        all_boqs = self.env['boq.boq'].search([])
+        cat_obj  = self.env['boq.category'].search([])
+        cat_names = {c.code: c.name for c in cat_obj}
+        vendor_trade_codes = {}   # {partner_id: set of trade codes}
+        for boq in all_boqs:
+            for code, fld in _TRADE_VENDOR_FLD.items():
+                for v in getattr(boq, fld):
+                    vendor_trade_codes.setdefault(v.id, set()).add(code)
+
         for partner in self:
-            # Find all BOQ lines where this vendor is assigned
+            # Trade-level trade names
+            trade_codes = vendor_trade_codes.get(partner.id, set())
+            trade_names_set = {cat_names.get(c, c.title()) for c in trade_codes}
+
+            # Line-level (legacy): BOQ lines where this vendor is in vendor_ids
             lines = self.env['boq.order.line'].search([
                 ('vendor_ids', 'in', partner.id),
             ])
-            if not lines:
+            line_trade_names = set(
+                c.name for c in lines.mapped('category_id') if c.name
+            )
+
+            all_trade_names = sorted(trade_names_set | line_trade_names)
+
+            if not lines and not trade_codes:
                 partner.vendor_trade_names = ''
                 partner.vendor_boq_line_count = 0
                 partner.vendor_boq_line_total = 0.0
                 partner.vendor_margin_percent = 0.0
                 continue
 
-            # Trade names (unique categories)
-            categories = lines.mapped('category_id')
-            trade_names = sorted(set(c.name for c in categories if c.name))
-            partner.vendor_trade_names = ', '.join(trade_names) if trade_names else 'General'
+            partner.vendor_trade_names = (
+                ', '.join(all_trade_names) if all_trade_names else 'General'
+            )
 
-            # Line counts and totals
+            # Line-level counts and financial totals
             partner.vendor_boq_line_count = len(lines)
             total_sell = sum(
                 l.unit_price * l.qty * (1.0 - (l.discount or 0.0) / 100.0)
@@ -247,13 +278,10 @@ class ResPartner(models.Model):
             total_cost = sum((l.cost_price or 0.0) * l.qty for l in lines)
             partner.vendor_boq_line_total = total_sell
 
-            # Margin
-            if total_sell > 0:
-                partner.vendor_margin_percent = round(
-                    ((total_sell - total_cost) / total_sell) * 100, 2
-                )
-            else:
-                partner.vendor_margin_percent = 0.0
+            partner.vendor_margin_percent = (
+                round(((total_sell - total_cost) / total_sell) * 100, 2)
+                if total_sell > 0 else 0.0
+            )
 
     def _compute_vendor_rating_percent(self):
         for partner in self:
