@@ -482,3 +482,13 @@
 /* Stat cards */
 .boq_stat_label { color: #6c757d !important; }
 .boq_stat_value { color: #212529 !important; }
+
+/* ══ ALERTS / REPORTS TABLE ════════════════════════════════════ */
+.boq_alert_table { font-size: 0.82rem; color: #212529; }
+.boq_alert_table th {
+    font-size: 0.72rem !important; color: #6c757d !important;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em;
+    background: #f8f9fa; border-bottom: 1px solid #dee2e6;
+}
+.boq_alert_table td { color: #212529 !important; border-bottom: 1px solid #f4f6fb; vertical-align: middle; }
+.boq_alert_row:hover td { background: #f8fbff !important; }

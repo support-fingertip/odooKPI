@@ -78,6 +78,7 @@ export class BoqDashboard extends Component {
             stats:                {},
             vendors:              [],
             tradeSummary:         [],
+            alerts:               { done_no_rfq: [], pending_pos: [] },
             error:                null,
             filterVendor:         "",
             filterTrade:          "",
@@ -108,14 +109,16 @@ export class BoqDashboard extends Component {
     // ── Data loading ────────────────────────────────────────────────────────
     async _loadAll() {
         try {
-            const [stats, vendors, tradeSummary] = await Promise.all([
+            const [stats, vendors, tradeSummary, alerts] = await Promise.all([
                 this.orm.call("boq.boq", "get_dashboard_stats", []),
                 this.orm.call("boq.boq", "get_vendor_summary", []),
                 this.orm.call("boq.boq", "get_trade_summary", []),
+                this.orm.call("boq.boq", "get_dashboard_alerts", []),
             ]);
             this.state.stats        = stats;
             this.state.vendors      = vendors;
             this.state.tradeSummary = tradeSummary;
+            this.state.alerts       = alerts;
         } catch (err) {
             this.state.error = err.message || "Failed to load dashboard data.";
         } finally {
@@ -146,6 +149,26 @@ export class BoqDashboard extends Component {
             name: "RFQs from BOQ",
             res_model: "purchase.order",
             views: [[false, "list"], [false, "form"]],
+            target: "current",
+        });
+    }
+
+    openBoqForm(boqId) {
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            res_model: "boq.boq",
+            res_id: boqId,
+            views: [[false, "form"]],
+            target: "current",
+        });
+    }
+
+    openPoForm(poId) {
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            res_model: "purchase.order",
+            res_id: poId,
+            views: [[false, "form"]],
             target: "current",
         });
     }
