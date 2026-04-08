@@ -23,7 +23,9 @@
                         string="Mark Done"
                         type="object"
                         class="btn-primary"
-                        invisible="state != 'submitted'"/>
+                        invisible="line_count == 0 and state not in ('submitted',)"
+
+                       />
                 <button name="action_reset_draft"
                         string="Reset to Draft"
                         type="object"
@@ -39,8 +41,8 @@
                         type="object"
                         class="btn-primary"
                         icon="fa-shopping-cart"
-                        invisible="line_count == 0"
-                        confirm="This will generate one RFQ per vendor (per trade). Proceed?"/>
+                     invisible="state != 'submitted'"
+                     confirm="This will generate one RFQ per vendor (per trade). Proceed?"/>
                 <field name="state"
                        widget="statusbar"
                        statusbar_visible="draft,submitted,done"/>
