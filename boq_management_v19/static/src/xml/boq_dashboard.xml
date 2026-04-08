@@ -86,13 +86,48 @@
 
                 <!-- ── STATUS BADGES ───────────────────────────────────── -->
                 <div class="d-flex flex-wrap gap-2 px-4 pb-3">
-                    <span class="fw-semibold small me-2 align-self-center text-muted">Status:</span>
+                    <span class="fw-semibold small me-2 align-self-center" style="color:#6c757d;">Status:</span>
                     <t t-foreach="stateSummary" t-as="s" t-key="s.key">
-                        <span t-attf-class="badge rounded-pill {{ s.cls }} px-3 py-2"><t t-esc="s.label"/>: <t t-esc="s.val"/></span>
+                        <span t-attf-class="badge rounded-pill {{ s.cls }} px-3 py-2" style="font-size:0.8rem;">
+                            <t t-esc="s.label"/>: <t t-esc="s.val"/>
+                        </span>
                     </t>
                 </div>
 
+                <!-- ══ SECTION TAB NAV ═══════════════════════════════════ -->
+                <div class="boq_section_nav px-4 pb-3">
+                    <div class="boq_section_nav_inner">
+                        <button t-on-click="() => this.setSection('vendors')"
+                                t-attf-class="boq_section_tab {{ state.activeSection === 'vendors' ? 'boq_section_tab_active' : '' }}">
+                            <i class="fa fa-users me-1"/>
+                            Vendor Summary
+                            <span class="boq_section_tab_count">
+                                <t t-esc="filteredVendors.length"/>
+                            </span>
+                        </button>
+                        <button t-on-click="() => this.setSection('trades')"
+                                t-attf-class="boq_section_tab {{ state.activeSection === 'trades' ? 'boq_section_tab_active' : '' }}">
+                            <i class="fa fa-th me-1"/>
+                            Trade Overview
+                            <span class="boq_section_tab_count">
+                                <t t-esc="state.tradeSummary.length || 0"/>
+                            </span>
+                        </button>
+                        <button t-on-click="() => this.setSection('reports')"
+                                t-attf-class="boq_section_tab {{ state.activeSection === 'reports' ? 'boq_section_tab_active' : '' }} {{ alertCount > 0 ? 'boq_section_tab_alert' : '' }}">
+                            <i class="fa fa-exclamation-triangle me-1"/>
+                            Reports &amp; Alerts
+                            <t t-if="alertCount > 0">
+                                <span class="boq_section_tab_alert_count">
+                                    <t t-esc="alertCount"/>
+                                </span>
+                            </t>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- ══ REPORTS / ALERTS ═════════════════════════════════ -->
+                <t t-if="state.activeSection === 'reports'">
                 <t t-if="(state.alerts.done_no_rfq and state.alerts.done_no_rfq.length) or (state.alerts.pending_pos and state.alerts.pending_pos.length)">
                     <div class="px-4 pb-4">
 
@@ -220,9 +255,10 @@
                         </div>
                     </div>
                 </t>
+                </t> <!-- end activeSection === 'reports' -->
 
                 <!-- ══ TRADE OVERVIEW ════════════════════════════════════ -->
-                <t t-if="state.tradeSummary and state.tradeSummary.length">
+                <t t-if="state.activeSection === 'trades' and state.tradeSummary and state.tradeSummary.length">
                     <div class="px-4 pb-2">
                         <h5 class="mb-3 fw-bold boq_section_title">
                             <i class="fa fa-th me-2" style="color:#6f42c1;"/>Trade-Wise Overview
@@ -288,6 +324,7 @@
                 </t>
 
                 <!-- ══ VENDOR SECTION ════════════════════════════════════ -->
+                <t t-if="state.activeSection === 'vendors'">
                 <div class="px-4 pb-2 pt-2 d-flex align-items-center justify-content-between">
                     <h5 class="mb-0 fw-bold boq_section_title">
                         <i class="fa fa-users me-2 text-primary"/>Vendor-wise Summary
@@ -674,6 +711,7 @@
                         </div>
                     </div>
                 </t>
+                </t><!-- end activeSection === 'vendors' -->
 
             </div><!-- /boq_dash_scroll -->
         </t><!-- /main -->

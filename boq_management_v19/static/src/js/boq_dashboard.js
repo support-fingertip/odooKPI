@@ -82,6 +82,7 @@ export class BoqDashboard extends Component {
             error:                null,
             filterVendor:         "",
             filterTrade:          "",
+            activeSection:        "vendors",   // default: show vendors immediately
             selectedVendor:       null,
             activeTab:            "summary",
             vendorLines:          [],
@@ -201,9 +202,16 @@ export class BoqDashboard extends Component {
     clearFilter()   { this.state.filterVendor = ""; }
     clearTradeFilter() { this.state.filterTrade = ""; }
     setActiveTab(tab) { this.state.activeTab = tab; }
+    setSection(section) { this.state.activeSection = section; }
 
     filterByTrade(code) {
         this.state.filterTrade = (this.state.filterTrade === code) ? "" : code;
+        this.state.activeSection = "vendors"; // switch to vendor view when filtering by trade
+    }
+
+    get alertCount() {
+        return (this.state.alerts.done_no_rfq?.length || 0) +
+               (this.state.alerts.pending_pos?.length  || 0);
     }
 
     openVendorRfqs(vendorId) {
