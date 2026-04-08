@@ -412,3 +412,73 @@
     .boq_vendor_filter_wrap { width: 100%; }
     .boq_stat_card { min-width: unset; }
 }
+
+/* ══ FORCE VISIBLE COLOURS — override Bootstrap CSS-variable theme ══
+   Bootstrap's .text-muted uses `color: var(--bs-secondary-color) !important`
+   which can resolve to white/near-white when Odoo overrides the variable.
+   These rules use higher specificity to restore readable colours.        */
+
+/* Header subtitle: "Trade-wise vendor summary · margins · project status" */
+.boq_dash_header small,
+.boq_dash_header .text-muted {
+    color: #6c757d !important;
+}
+
+/* All .text-muted elements inside the dashboard */
+.boq_dashboard .text-muted {
+    color: #6c757d !important;
+}
+
+/* Vendor card names and emails */
+.boq_vendor_name  { color: #212529 !important; font-weight: 600; }
+.boq_vendor_email { color: #6c757d !important; }
+
+/* Vendor stats row labels and values */
+.boq_vendor_stat_label { color: #6c757d !important; }
+.boq_vendor_stat_value { color: #212529 !important; }
+
+/* Vendor footer (project names, RFQ states) */
+.boq_vendor_footer      { color: #495057 !important; }
+.boq_vendor_footer span { color: #495057 !important; }
+.boq_vendor_footer small,
+.boq_vendor_footer .text-muted { color: #6c757d !important; }
+
+/* Section titles */
+.boq_section_title  { color: #212529 !important; }
+.boq_section_label  { color: #495057 !important; }
+
+/* Trade cards */
+.boq_trade_card              { color: #212529 !important; }
+.boq_trade_card .text-muted  { color: #6c757d !important; }
+
+/* "Clear trade filter" button and other outline-secondary buttons */
+.boq_dashboard .btn-outline-secondary {
+    color: #495057 !important;
+    border-color: #6c757d !important;
+    background-color: transparent !important;
+}
+.boq_dashboard .btn-outline-secondary:hover {
+    color: #fff !important;
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+}
+
+/* "Refresh" btn-light button text */
+.boq_dashboard .btn-light {
+    color: #212529 !important;
+    background-color: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+}
+.boq_dashboard .btn-light:hover {
+    background-color: #e9ecef !important;
+    color: #212529 !important;
+}
+
+/* "Click to preview" hint text */
+.boq_vendor_click_hint,
+.boq_vendor_click_hint small,
+.boq_vendor_click_hint .text-muted { color: #6c757d !important; }
+
+/* Stat cards */
+.boq_stat_label { color: #6c757d !important; }
+.boq_stat_value { color: #212529 !important; }
