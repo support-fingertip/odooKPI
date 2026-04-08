@@ -483,12 +483,137 @@
 .boq_stat_label { color: #6c757d !important; }
 .boq_stat_value { color: #212529 !important; }
 
-/* ══ ALERTS / REPORTS TABLE ════════════════════════════════════ */
-.boq_alert_table { font-size: 0.82rem; color: #212529; }
-.boq_alert_table th {
-    font-size: 0.72rem !important; color: #6c757d !important;
-    font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em;
-    background: #f8f9fa; border-bottom: 1px solid #dee2e6;
+/* ══ STATUS BADGES ══════════════════════════════════════════════ */
+.boq_badge_draft {
+    background: #e8eaf0 !important; color: #3d4a5c !important;
+    border: 1px solid #c8d0dc !important;
 }
-.boq_alert_table td { color: #212529 !important; border-bottom: 1px solid #f4f6fb; vertical-align: middle; }
-.boq_alert_row:hover td { background: #f8fbff !important; }
+.boq_badge_submitted {
+    background: #fff3cd !important; color: #856404 !important;
+    border: 1px solid #ffe69c !important;
+}
+.boq_badge_done {
+    background: #d1f5e0 !important; color: #0f6e36 !important;
+    border: 1px solid #a8e6c0 !important;
+}
+
+/* ══ ALERTS / REPORTS PANELS ════════════════════════════════════
+   Completely custom — NO Bootstrap table classes used to avoid
+   --bs-table-bg dark theme variable inheritance.               */
+.boq_alert_panel {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1.5px solid #e4e8f0;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.boq_alert_panel_head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+}
+
+.boq_alert_col_head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 16px;
+    background: #f4f6fb !important;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    color: #6c757d !important;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.boq_alert_data_row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: #fff !important;
+    color: #212529 !important;
+    border-bottom: 1px solid #f0f2f5;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.boq_alert_data_row:last-child { border-bottom: none; }
+
+.boq_alert_data_row:hover {
+    background: #f0f6ff !important;
+}
+
+/* ══ SECTION TAB NAVIGATION ════════════════════════════════════ */
+.boq_section_nav_inner {
+    display: flex;
+    gap: 4px;
+    background: #fff;
+    border: 1.5px solid #e4e8f0;
+    border-radius: 10px;
+    padding: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    width: fit-content;
+}
+
+.boq_section_tab {
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 0.84rem;
+    color: #495057 !important;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.boq_section_tab:hover:not(.boq_section_tab_active) {
+    background: #f4f6fb;
+    color: #212529 !important;
+}
+
+.boq_section_tab_active {
+    background: #0d6efd !important;
+    color: #fff !important;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(13,110,253,.25);
+}
+
+.boq_section_tab_active .boq_section_tab_count {
+    background: rgba(255,255,255,.25) !important;
+    color: #fff !important;
+}
+
+.boq_section_tab_count {
+    background: rgba(0,0,0,.08);
+    border-radius: 20px;
+    padding: 1px 7px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #495057;
+    min-width: 20px;
+    text-align: center;
+}
+
+.boq_section_tab_alert {
+    color: #dc3545 !important;
+}
+
+.boq_section_tab_alert_count {
+    background: #dc3545;
+    color: #fff !important;
+    border-radius: 20px;
+    padding: 1px 7px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    min-width: 20px;
+    text-align: center;
+}

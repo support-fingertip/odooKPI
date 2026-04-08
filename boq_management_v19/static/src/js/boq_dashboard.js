@@ -82,6 +82,7 @@ export class BoqDashboard extends Component {
             error:                null,
             filterVendor:         "",
             filterTrade:          "",
+            activeSection:        "vendors",   // default: show vendors immediately
             selectedVendor:       null,
             activeTab:            "summary",
             vendorLines:          [],
@@ -201,9 +202,16 @@ export class BoqDashboard extends Component {
     clearFilter()   { this.state.filterVendor = ""; }
     clearTradeFilter() { this.state.filterTrade = ""; }
     setActiveTab(tab) { this.state.activeTab = tab; }
+    setSection(section) { this.state.activeSection = section; }
 
     filterByTrade(code) {
         this.state.filterTrade = (this.state.filterTrade === code) ? "" : code;
+        this.state.activeSection = "vendors"; // switch to vendor view when filtering by trade
+    }
+
+    get alertCount() {
+        return (this.state.alerts.done_no_rfq?.length || 0) +
+               (this.state.alerts.pending_pos?.length  || 0);
     }
 
     openVendorRfqs(vendorId) {
@@ -290,9 +298,9 @@ export class BoqDashboard extends Component {
     get stateSummary() {
         const sc = this.state.stats.state_counts || {};
         return [
-            { key: "draft",     label: "Draft",     cls: "bg-secondary",        val: sc.draft     || 0 },
-            { key: "submitted", label: "Submitted",  cls: "bg-warning text-dark", val: sc.submitted || 0 },
-            { key: "done",      label: "Done",       cls: "bg-success",          val: sc.done      || 0 },
+            { key: "draft",     label: "Draft",     cls: "boq_badge_draft",      val: sc.draft     || 0 },
+            { key: "submitted", label: "Submitted", cls: "boq_badge_submitted",  val: sc.submitted || 0 },
+            { key: "done",      label: "Done",       cls: "boq_badge_done",       val: sc.done      || 0 },
         ].filter(s => s.val > 0);
     }
 
