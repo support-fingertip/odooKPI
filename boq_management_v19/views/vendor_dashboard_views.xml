@@ -461,47 +461,7 @@
         </field>
     </record>
 
-    <!-- ╔═══════════════════════════════════════════════════════════════╗
-         ║  6. SEARCH VIEW                                               ║
-         ╚═══════════════════════════════════════════════════════════════╝ -->
-    <record id="view_vendor_dashboard_search" model="ir.ui.view">
-        <field name="name">res.partner.vendor.dashboard.search</field>
-        <field name="model">res.partner</field>
-        <field name="priority">99</field>
-        <field name="arch" type="xml">
-            <search string="Vendor Dashboard">
-                <field name="name" string="Vendor"
-                       filter_domain="['|', ('name', 'ilike', self), ('email', 'ilike', self)]"/>
-                <field name="email"/>
-                <field name="city"/>
-                <field name="country_id"/>
-                <separator/>
-                <filter name="filter_rated" string="Rated Vendors"
-                        domain="[('vendor_rating_count', '&gt;', 0)]"/>
-                <filter name="filter_unrated" string="Unrated Vendors"
-                        domain="[('vendor_rating_count', '=', 0)]"/>
-                <separator/>
-                <filter name="filter_excellent" string="Excellent (4.5+)"
-                        domain="[('vendor_rating_avg', '&gt;=', 4.5)]"/>
-                <filter name="filter_good" string="Good (3.5–4.5)"
-                        domain="[('vendor_rating_avg', '&gt;=', 3.5), ('vendor_rating_avg', '&lt;', 4.5)]"/>
-                <filter name="filter_average" string="Average (2.5–3.5)"
-                        domain="[('vendor_rating_avg', '&gt;=', 2.5), ('vendor_rating_avg', '&lt;', 3.5)]"/>
-                <filter name="filter_low" string="Low (&lt; 2.5)"
-                        domain="[('vendor_rating_avg', '&gt;', 0), ('vendor_rating_avg', '&lt;', 2.5)]"/>
-                <separator/>
-                <group expand="0" string="Group By">
-                    <filter name="group_rating_status" string="Rating Status"
-                            context="{'group_by': 'vendor_rating_status'}"/>
-                    <filter name="group_country" string="Country"
-                            context="{'group_by': 'country_id'}"/>
-                    <filter name="group_city" string="City"
-                            context="{'group_by': 'city'}"/>
-                </group>
-            </search>
-        </field>
-    </record>
-
+  
     <!-- ╔═══════════════════════════════════════════════════════════════╗
          ║  7. ACTION + VIEW BINDINGS                                    ║
          ╚═══════════════════════════════════════════════════════════════╝ -->
@@ -511,7 +471,6 @@
         <field name="view_mode">kanban,list,pivot,graph,form</field>
         <field name="domain">[('supplier_rank', '&gt;', 0)]</field>
         <field name="context">{}</field>
-        <field name="search_view_id" ref="view_vendor_dashboard_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">No vendors found.</p>
             <p>Vendors appear here once they have supplier rank &gt; 0. Assign vendors to BOQ trade tabs, create RFQs, and rate vendors after PO completion.</p>
